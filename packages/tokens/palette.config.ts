@@ -41,16 +41,16 @@ const status = {
 
 export const finishes: Record<'su' | 'yu', FinishInput> = {
   su: {
-    // Cool, nearly colorless neutrals with an ink-blue accent.
-    neutral: { hue: 265, chroma: 0.012 },
-    accent: { hue: 272, chroma: 0.19, solid: { light: 0.52, dark: 0.54 } },
+    // Pure gray for now: no hue in the neutrals or the accent until Su's colors are chosen.
+    neutral: { hue: 0, chroma: 0 },
+    accent: { hue: 0, chroma: 0, solid: { light: 0.52, dark: 0.54 } },
     ...status,
     contrast: 0.5,
   },
   yu: {
-    // Ink-jade neutrals and a jade accent, after the blue-green of 碾玉装.
-    neutral: { hue: 172, chroma: 0.028 },
-    accent: { hue: 165, chroma: 0.12, solid: { light: 0.5, dark: 0.82 } },
+    // Pure gray for now: no hue in the neutrals or the accent until Yu's colors are chosen.
+    neutral: { hue: 0, chroma: 0 },
+    accent: { hue: 0, chroma: 0, solid: { light: 0.5, dark: 0.82 } },
     ...status,
     contrast: 0.5,
   },

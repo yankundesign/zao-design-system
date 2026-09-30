@@ -61,6 +61,8 @@ function ramp(name: RampName, input: RampInput, mode: Mode, contrast: number): O
   return lightnessFor(name, input, mode, contrast).map((l, i) => {
     const wanted: Oklch = { mode: 'oklch', l, c: input.chroma * CHROMA[family][i]!, h: input.hue };
     const mapped = toOklch(mapToSrgb(wanted));
+    // Grays have no meaningful hue; keep them exactly achromatic.
+    if (input.chroma === 0 || mapped.c < 0.0005) return { mode: 'oklch', l: mapped.l, c: 0, h: 0 };
     return { mode: 'oklch', l: mapped.l, c: mapped.c, h: mapped.h ?? input.hue };
   });
 }
