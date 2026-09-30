@@ -1,0 +1,79 @@
+{
+  "$description": "Su 素, the plain finish. Quiet, precise and easy to adopt: opaque surfaces, hairline borders, restrained motion. Finish only: nothing here may change the size of a component.",
+  "font": {
+    "family": {
+      "display": {
+        "$type": "fontFamily",
+        "$value": "{font.family.text}",
+        "$description": "Su titles use the text face at display sizes."
+      }
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "control": {
+      "$value": { "value": 6, "unit": "px" },
+      "$description": "Inputs, selects, checkboxes."
+    },
+    "action": { "$value": { "value": 6, "unit": "px" }, "$description": "Buttons." },
+    "surface": {
+      "$value": { "value": 8, "unit": "px" },
+      "$description": "Cards, panels, table wrappers."
+    },
+    "overlay": {
+      "$value": { "value": 10, "unit": "px" },
+      "$description": "Menus, popovers, dialogs, toasts."
+    }
+  },
+  "material": {
+    "$description": "Floating layers only: menus, popovers, dialogs, toasts, the command bar. Components read material tokens and never set blur or translucency themselves.",
+    "overlay": {
+      "fill": { "$type": "color", "$value": "{color.bg.overlay}" },
+      "fill-solid": {
+        "$type": "color",
+        "$value": "{color.bg.overlay}",
+        "$description": "Used when the reader asks for reduced transparency."
+      },
+      "border": { "$type": "color", "$value": "{color.border.subtle}" },
+      "highlight": {
+        "$type": "color",
+        "$value": { "colorSpace": "srgb", "components": [1, 1, 1], "alpha": 0 },
+        "$description": "No highlight in the plain finish."
+      },
+      "blur": { "$type": "dimension", "$value": { "value": 0, "unit": "px" } },
+      "shadow": {
+        "$type": "shadow",
+        "$value": [
+          {
+            "color": "{color.shadow.soft}",
+            "offsetX": { "value": 0, "unit": "px" },
+            "offsetY": { "value": 1, "unit": "px" },
+            "blur": { "value": 2, "unit": "px" },
+            "spread": { "value": 0, "unit": "px" }
+          },
+          {
+            "color": "{color.shadow.strong}",
+            "offsetX": { "value": 0, "unit": "px" },
+            "offsetY": { "value": 8, "unit": "px" },
+            "blur": { "value": 24, "unit": "px" },
+            "spread": { "value": 0, "unit": "px" }
+          }
+        ]
+      }
+    }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "fast": { "$value": { "value": 100, "unit": "ms" }, "$description": "Hover, press, focus." },
+      "base": {
+        "$value": { "value": 160, "unit": "ms" },
+        "$description": "Overlays opening and closing."
+      }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "standard": { "$value": [0.2, 0, 0, 1] }
+    }
+  }
+}

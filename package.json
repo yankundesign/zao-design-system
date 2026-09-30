@@ -1,0 +1,35 @@
+{
+  "name": "zao",
+  "private": true,
+  "description": "ZAO, an agent-friendly design system inspired by Yingzao Fashi.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/**\" run build",
+    "dev": "pnpm build && pnpm --filter @zao/docs dev",
+    "docs:build": "pnpm build && pnpm --filter @zao/docs build",
+    "tokens": "pnpm --filter @zao/tokens run build",
+    "palette": "pnpm --filter @zao/tokens run palette",
+    "test": "pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "prettier": "^3.9.9",
+    "typescript": "^7.0.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "@tailwindcss/oxide"
+    ]
+  }
+}

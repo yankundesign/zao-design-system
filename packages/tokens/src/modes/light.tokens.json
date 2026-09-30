@@ -1,0 +1,156 @@
+{
+  "$description": "Light mode. Maps semantic colors to palette steps. The finish decides which palettes exist; the mode decides which step each role uses.",
+  "color": {
+    "$type": "color",
+    "bg": {
+      "$description": "Backgrounds. Canvas is the page; surface is anything that sits on it; overlay is for floating layers.",
+      "canvas": {
+        "$value": "{palette.neutral.light.2}"
+      },
+      "surface": {
+        "$value": "{palette.neutral.light.1}"
+      },
+      "sunken": {
+        "$value": "{palette.neutral.light.3}",
+        "$description": "Wells: table headers, code, count chips."
+      },
+      "overlay": {
+        "$value": "{palette.neutral.light.1}",
+        "$description": "Floating layers. Pair with material.overlay.*."
+      },
+      "hover": {
+        "$value": "{palette.neutral.light.4}"
+      },
+      "active": {
+        "$value": "{palette.neutral.light.5}",
+        "$description": "Pressed and selected rows."
+      }
+    },
+    "fg": {
+      "default": {
+        "$value": "{palette.neutral.light.12}",
+        "$description": "Primary text. At least 7:1 on canvas and surface."
+      },
+      "muted": {
+        "$value": "{palette.neutral.light.11}",
+        "$description": "Secondary text. At least 4.5:1 on canvas and surface."
+      },
+      "disabled": {
+        "$value": "{palette.neutral.light.8}",
+        "$description": "Disabled labels only. Exempt from contrast minimums, so never use it for readable text."
+      },
+      "on-accent": {
+        "$value": "{palette.accent.light.contrast}",
+        "$description": "Text and icons on color.accent.solid."
+      }
+    },
+    "border": {
+      "subtle": {
+        "$value": "{palette.neutral.light.6}",
+        "$description": "Dividers and card edges."
+      },
+      "default": {
+        "$value": "{palette.neutral.light.7}",
+        "$description": "Input and control borders."
+      },
+      "strong": {
+        "$value": "{palette.neutral.light.8}",
+        "$description": "Hovered borders."
+      }
+    },
+    "accent": {
+      "solid": {
+        "$value": "{palette.accent.light.9}",
+        "$description": "Primary buttons, selected indicators."
+      },
+      "solid-hover": {
+        "$value": "{palette.accent.light.10}"
+      },
+      "subtle": {
+        "$value": "{palette.accent.light.3}",
+        "$description": "Tinted backgrounds for selected or highlighted items."
+      },
+      "subtle-hover": {
+        "$value": "{palette.accent.light.4}"
+      },
+      "border": {
+        "$value": "{palette.accent.light.7}"
+      },
+      "text": {
+        "$value": "{palette.accent.light.11}",
+        "$description": "Links and accent text. At least 4.5:1 on canvas and surface."
+      }
+    },
+    "focus": {
+      "ring": {
+        "$value": "{palette.accent.light.9}",
+        "$description": "Focus rings. At least 3:1 against canvas and surface."
+      }
+    },
+    "success": {
+      "$description": "Completed, approved, healthy.",
+      "solid": {
+        "$value": "{palette.success.light.9}"
+      },
+      "subtle": {
+        "$value": "{palette.success.light.3}"
+      },
+      "border": {
+        "$value": "{palette.success.light.7}"
+      },
+      "text": {
+        "$value": "{palette.success.light.11}",
+        "$description": "At least 4.5:1 on canvas and surface."
+      }
+    },
+    "warning": {
+      "$description": "Needs attention, not yet a failure.",
+      "solid": {
+        "$value": "{palette.warning.light.9}"
+      },
+      "subtle": {
+        "$value": "{palette.warning.light.3}"
+      },
+      "border": {
+        "$value": "{palette.warning.light.7}"
+      },
+      "text": {
+        "$value": "{palette.warning.light.11}",
+        "$description": "At least 4.5:1 on canvas and surface."
+      }
+    },
+    "danger": {
+      "$description": "Errors and destructive actions.",
+      "solid": {
+        "$value": "{palette.danger.light.9}"
+      },
+      "subtle": {
+        "$value": "{palette.danger.light.3}"
+      },
+      "border": {
+        "$value": "{palette.danger.light.7}"
+      },
+      "text": {
+        "$value": "{palette.danger.light.11}",
+        "$description": "At least 4.5:1 on canvas and surface."
+      }
+    },
+    "shadow": {
+      "$type": "color",
+      "soft": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.2, 0.02, 265],
+          "alpha": 0.06
+        }
+      },
+      "strong": {
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.2, 0.02, 265],
+          "alpha": 0.1
+        }
+      }
+    }
+  }
+}

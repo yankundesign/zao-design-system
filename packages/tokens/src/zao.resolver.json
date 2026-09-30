@@ -1,0 +1,41 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/resolver.json",
+  "version": "2025.10",
+  "name": "ZAO",
+  "description": "Structure is shared, finish is chosen. The structure set holds everything that decides size and layout. The theme modifier picks a finish (palettes, radius, material, motion, display face). The mode modifier maps semantic colors to palette steps.",
+  "sets": {
+    "structure": {
+      "description": "Shared by every finish: the fen unit, spacing, control sizes and type roles.",
+      "sources": [{ "$ref": "./base/space.tokens.json" }, { "$ref": "./base/type.tokens.json" }]
+    }
+  },
+  "modifiers": {
+    "theme": {
+      "description": "The finish. Su 素 is plain; Yu 玉 is jade.",
+      "contexts": {
+        "su": [
+          { "$ref": "./palettes/su.generated.tokens.json" },
+          { "$ref": "./themes/su.tokens.json" }
+        ],
+        "yu": [
+          { "$ref": "./palettes/yu.generated.tokens.json" },
+          { "$ref": "./themes/yu.tokens.json" }
+        ]
+      },
+      "default": "su"
+    },
+    "mode": {
+      "description": "Light or dark. Yu ships dark only in v0.1.",
+      "contexts": {
+        "light": [{ "$ref": "./modes/light.tokens.json" }],
+        "dark": [{ "$ref": "./modes/dark.tokens.json" }]
+      },
+      "default": "light"
+    }
+  },
+  "resolutionOrder": [
+    { "$ref": "#/sets/structure" },
+    { "$ref": "#/modifiers/theme" },
+    { "$ref": "#/modifiers/mode" }
+  ]
+}

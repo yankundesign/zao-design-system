@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+@import '@zao/react/fonts.css';
+@import '@zao/react/theme.css';
+
+/* Let Tailwind see class names used inside the ZAO packages. */
+@source '../../../packages/react/src';

@@ -1,0 +1,197 @@
+{
+  "$description": "Yu 玉, the jade finish. Memorable: color, depth, translucent glass on floating layers, and Newsreader for titles. Dark first; Yu light is planned for v0.2. Finish only: nothing here may change the size of a component.",
+  "font": {
+    "family": {
+      "display": {
+        "$type": "fontFamily",
+        "$value": [
+          "Newsreader",
+          "Newsreader Fallback",
+          "Noto Serif SC",
+          "Songti SC",
+          "STSong",
+          "Georgia",
+          "serif"
+        ],
+        "$description": "Display roles only (display, title), at 20px and up. Chinese titles fall back to a Song-style serif."
+      }
+    }
+  },
+  "type": {
+    "$type": "typography",
+    "display": {
+      "$description": "Same size and line height as Su. Newsreader needs less negative tracking and a lighter weight than Geist.",
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": {
+          "value": 36,
+          "unit": "px"
+        },
+        "fontWeight": 520,
+        "lineHeight": 1.1111,
+        "letterSpacing": {
+          "value": -0.5,
+          "unit": "px"
+        }
+      }
+    },
+    "title": {
+      "$description": "Same size and line height as Su, in Newsreader.",
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "fontWeight": 520,
+        "lineHeight": 1.3333,
+        "letterSpacing": {
+          "value": -0.24,
+          "unit": "px"
+        }
+      }
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "control": {
+      "$value": {
+        "value": 10,
+        "unit": "px"
+      },
+      "$description": "Inputs, selects, checkboxes."
+    },
+    "action": {
+      "$value": {
+        "value": 9999,
+        "unit": "px"
+      },
+      "$description": "Buttons are pills in the jade finish."
+    },
+    "surface": {
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$description": "Cards, panels, table wrappers."
+    },
+    "overlay": {
+      "$value": {
+        "value": 14,
+        "unit": "px"
+      },
+      "$description": "Menus, popovers, dialogs, toasts."
+    }
+  },
+  "material": {
+    "$description": "Glass, on floating layers only. Content surfaces stay opaque so text contrast never depends on what is behind it.",
+    "overlay": {
+      "fill": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.95, 0.04, 165],
+          "alpha": 0.1
+        }
+      },
+      "fill-solid": {
+        "$type": "color",
+        "$value": "{palette.neutral.dark.4}",
+        "$description": "Opaque fallback for reduced transparency and for browsers without backdrop-filter. Dark only until Yu light ships."
+      },
+      "border": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.95, 0.04, 165],
+          "alpha": 0.26
+        }
+      },
+      "highlight": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [1, 1, 1],
+          "alpha": 0.18
+        },
+        "$description": "A 1px inner highlight along the top edge of the glass."
+      },
+      "blur": {
+        "$type": "dimension",
+        "$value": {
+          "value": 18,
+          "unit": "px"
+        }
+      },
+      "shadow": {
+        "$type": "shadow",
+        "$value": [
+          {
+            "color": "{material.overlay.highlight}",
+            "offsetX": {
+              "value": 0,
+              "unit": "px"
+            },
+            "offsetY": {
+              "value": 1,
+              "unit": "px"
+            },
+            "blur": {
+              "value": 0,
+              "unit": "px"
+            },
+            "spread": {
+              "value": 0,
+              "unit": "px"
+            },
+            "inset": true
+          },
+          {
+            "color": "{color.shadow.strong}",
+            "offsetX": {
+              "value": 0,
+              "unit": "px"
+            },
+            "offsetY": {
+              "value": 14,
+              "unit": "px"
+            },
+            "blur": {
+              "value": 32,
+              "unit": "px"
+            },
+            "spread": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "fast": {
+        "$value": {
+          "value": 140,
+          "unit": "ms"
+        },
+        "$description": "Hover, press, focus."
+      },
+      "base": {
+        "$value": {
+          "value": 240,
+          "unit": "ms"
+        },
+        "$description": "Overlays opening and closing."
+      }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "standard": {
+        "$value": [0.2, 0, 0, 1]
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+node_modules
+dist
+.next
+pnpm-lock.yaml
+packages/tokens/src/palettes/*.generated.tokens.json

@@ -1,0 +1,245 @@
+/*
+ * ZAO for Tailwind CSS v4.
+ *
+ * In your app's main CSS file:
+ *
+ *   @import "tailwindcss";
+ *   @import "@zao/react/fonts.css";
+ *   @import "@zao/react/theme.css";
+ *
+ * Then set a finish on <html> (or any element):
+ *
+ *   <html data-zao-theme="su">                       Su, follows the OS light/dark setting
+ *   <html data-zao-theme="su" data-zao-mode="dark">  Su, always dark
+ *   <html data-zao-theme="yu">                       Yu (dark first)
+ *
+ * Rules this file enforces:
+ * - Only ZAO exists. Tailwind's default colors, type sizes, radii, shadows and
+ *   easings are removed, so `bg-blue-500` or `text-sm` simply don't compile.
+ * - Spacing numbers are fen: `p-3` is 3 fen (12px). Stay on the scale in
+ *   @zao/tokens (0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20).
+ * - Type is set by role (`type-body`, `type-label`, ...), never by size.
+ */
+
+@import '@zao/tokens/css';
+
+/* Remove Tailwind's defaults for everything ZAO defines. */
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --font-weight-*: initial;
+  --tracking-*: initial;
+  --leading-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+}
+
+@theme inline {
+  /* 1 fen */
+  --spacing: var(--zao-unit);
+
+  --default-font-family: var(--zao-font-family-text);
+  --default-mono-font-family: var(--zao-font-family-mono);
+
+  /* Backgrounds: bg-canvas, bg-surface, ... */
+  --background-color-canvas: var(--zao-color-bg-canvas);
+  --background-color-surface: var(--zao-color-bg-surface);
+  --background-color-sunken: var(--zao-color-bg-sunken);
+  --background-color-overlay: var(--zao-color-bg-overlay);
+  --background-color-hover: var(--zao-color-bg-hover);
+  --background-color-active: var(--zao-color-bg-active);
+  --background-color-accent: var(--zao-color-accent-solid);
+  --background-color-accent-hover: var(--zao-color-accent-solid-hover);
+  --background-color-accent-subtle: var(--zao-color-accent-subtle);
+  --background-color-accent-subtle-hover: var(--zao-color-accent-subtle-hover);
+  --background-color-success: var(--zao-color-success-solid);
+  --background-color-success-subtle: var(--zao-color-success-subtle);
+  --background-color-warning: var(--zao-color-warning-solid);
+  --background-color-warning-subtle: var(--zao-color-warning-subtle);
+  --background-color-danger: var(--zao-color-danger-solid);
+  --background-color-danger-subtle: var(--zao-color-danger-subtle);
+
+  /* Text: text-default, text-muted, ... */
+  --text-color-default: var(--zao-color-fg-default);
+  --text-color-muted: var(--zao-color-fg-muted);
+  --text-color-disabled: var(--zao-color-fg-disabled);
+  --text-color-on-accent: var(--zao-color-fg-on-accent);
+  --text-color-accent: var(--zao-color-accent-text);
+  --text-color-success: var(--zao-color-success-text);
+  --text-color-warning: var(--zao-color-warning-text);
+  --text-color-danger: var(--zao-color-danger-text);
+
+  /* Borders: border-subtle, border-default, ... */
+  --border-color-subtle: var(--zao-color-border-subtle);
+  --border-color-default: var(--zao-color-border-default);
+  --border-color-strong: var(--zao-color-border-strong);
+  --border-color-accent: var(--zao-color-accent-border);
+  --border-color-success: var(--zao-color-success-border);
+  --border-color-warning: var(--zao-color-warning-border);
+  --border-color-danger: var(--zao-color-danger-border);
+
+  /* Focus: outline-focus, ring-focus */
+  --outline-color-focus: var(--zao-color-focus-ring);
+  --ring-color-focus: var(--zao-color-focus-ring);
+
+  /* Families: font-text, font-display, font-mono */
+  --font-text: var(--zao-font-family-text);
+  --font-display: var(--zao-font-family-display);
+  --font-mono: var(--zao-font-family-mono);
+
+  /* Weights for emphasis inside a role: font-regular, font-medium, font-strong */
+  --font-weight-regular: var(--zao-font-weight-regular);
+  --font-weight-medium: var(--zao-font-weight-medium);
+  --font-weight-strong: var(--zao-font-weight-strong);
+
+  /* Radii: rounded-control, rounded-action, rounded-surface, rounded-overlay, rounded-pill */
+  --radius-control: var(--zao-radius-control);
+  --radius-action: var(--zao-radius-action);
+  --radius-surface: var(--zao-radius-surface);
+  --radius-overlay: var(--zao-radius-overlay);
+  --radius-pill: var(--zao-radius-pill);
+
+  /* Motion: ease-standard, duration-fast, duration-base */
+  --ease-standard: var(--zao-motion-easing-standard);
+}
+
+/* Type roles. Each sets family, size, weight, line height and tracking together. */
+@utility type-display {
+  font-family: var(--zao-type-display-font-family);
+  font-size: var(--zao-type-display-font-size);
+  font-weight: var(--zao-type-display-font-weight);
+  line-height: var(--zao-type-display-line-height);
+  letter-spacing: var(--zao-type-display-letter-spacing);
+}
+@utility type-title {
+  font-family: var(--zao-type-title-font-family);
+  font-size: var(--zao-type-title-font-size);
+  font-weight: var(--zao-type-title-font-weight);
+  line-height: var(--zao-type-title-line-height);
+  letter-spacing: var(--zao-type-title-letter-spacing);
+}
+@utility type-heading {
+  font-family: var(--zao-type-heading-font-family);
+  font-size: var(--zao-type-heading-font-size);
+  font-weight: var(--zao-type-heading-font-weight);
+  line-height: var(--zao-type-heading-line-height);
+  letter-spacing: var(--zao-type-heading-letter-spacing);
+}
+@utility type-body {
+  font-family: var(--zao-type-body-font-family);
+  font-size: var(--zao-type-body-font-size);
+  font-weight: var(--zao-type-body-font-weight);
+  line-height: var(--zao-type-body-line-height);
+  letter-spacing: var(--zao-type-body-letter-spacing);
+}
+@utility type-label {
+  font-family: var(--zao-type-label-font-family);
+  font-size: var(--zao-type-label-font-size);
+  font-weight: var(--zao-type-label-font-weight);
+  line-height: var(--zao-type-label-line-height);
+  letter-spacing: var(--zao-type-label-letter-spacing);
+}
+@utility type-caption {
+  font-family: var(--zao-type-caption-font-family);
+  font-size: var(--zao-type-caption-font-size);
+  font-weight: var(--zao-type-caption-font-weight);
+  line-height: var(--zao-type-caption-line-height);
+  letter-spacing: var(--zao-type-caption-letter-spacing);
+}
+@utility type-code {
+  font-family: var(--zao-type-code-font-family);
+  font-size: var(--zao-type-code-font-size);
+  font-weight: var(--zao-type-code-font-weight);
+  line-height: var(--zao-type-code-line-height);
+  letter-spacing: var(--zao-type-code-letter-spacing);
+}
+
+/* Control labels trim their line box to cap height and baseline, so padding means what it says. */
+@utility trim-label {
+  text-box: trim-both cap alphabetic;
+}
+
+/* IDs, codes and anything a reader might copy: tell I, l and 1 apart. */
+@utility figures-id {
+  font-feature-settings: 'ss03', 'ss05', 'tnum';
+}
+
+/* Numbers that line up or change. */
+@utility figures-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility duration-fast {
+  transition-duration: var(--zao-motion-duration-fast);
+}
+@utility duration-base {
+  transition-duration: var(--zao-motion-duration-base);
+}
+
+/*
+ * Floating layers only: menus, popovers, dialogs, toasts, the command bar.
+ * Plain in Su, glass in Yu. Falls back to an opaque fill when the reader asks
+ * for reduced transparency, when the page sets data-zao-transparency="reduced"
+ * (prefers-reduced-transparency only works in Chromium), or when the browser
+ * has no backdrop-filter.
+ */
+@utility material-overlay {
+  background-color: var(--zao-material-overlay-fill);
+  border: 1px solid var(--zao-material-overlay-border);
+  border-radius: var(--zao-radius-overlay);
+  box-shadow: var(--zao-material-overlay-shadow);
+  -webkit-backdrop-filter: blur(var(--zao-material-overlay-blur));
+  backdrop-filter: blur(var(--zao-material-overlay-blur));
+
+  @media (prefers-reduced-transparency: reduce) {
+    background-color: var(--zao-material-overlay-fill-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  :where([data-zao-transparency='reduced']) & {
+    background-color: var(--zao-material-overlay-fill-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background-color: var(--zao-material-overlay-fill-solid);
+  }
+}
+
+@layer base {
+  html {
+    background-color: var(--zao-color-bg-canvas);
+    color: var(--zao-color-fg-default);
+    font-family: var(--zao-type-body-font-family);
+    font-size: var(--zao-type-body-font-size);
+    line-height: var(--zao-type-body-line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--zao-color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--zao-color-accent-subtle-hover);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}

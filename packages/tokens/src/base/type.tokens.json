@@ -1,0 +1,104 @@
+{
+  "$description": "Structure: the text face and every type role's size and line height are shared by all finishes. A finish may change only the display face (display and title roles).",
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "text": {
+        "$value": [
+          "Geist",
+          "Geist Fallback",
+          "PingFang SC",
+          "Noto Sans SC",
+          "system-ui",
+          "sans-serif"
+        ],
+        "$description": "All interface text in every finish. Chinese falls back to the system (PingFang SC, then Noto Sans SC)."
+      },
+      "mono": {
+        "$value": ["Geist Mono", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        "$description": "Code, keyboard keys, IDs and token names."
+      }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "$description": "Geist is variable, so the medium and strong stops sit between the usual 500 and 600 for a finer hierarchy. Tune by eye in the docs.",
+      "regular": { "$value": 400 },
+      "medium": { "$value": 530 },
+      "strong": { "$value": 630 }
+    }
+  },
+  "type": {
+    "$type": "typography",
+    "$description": "Type roles. Use roles, never raw sizes or weights. Geist has no optical-size axis, so each role carries its own tracking: tighter for large roles, slightly open for the smallest.",
+    "display": {
+      "$description": "Hero and marketing headlines. Uses the finish's display face.",
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": { "value": 36, "unit": "px" },
+        "fontWeight": "{font.weight.strong}",
+        "lineHeight": 1.1111,
+        "letterSpacing": { "value": -0.9, "unit": "px" }
+      }
+    },
+    "title": {
+      "$description": "Page titles and empty-state titles. Uses the finish's display face.",
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": { "value": 24, "unit": "px" },
+        "fontWeight": "{font.weight.strong}",
+        "lineHeight": 1.3333,
+        "letterSpacing": { "value": -0.48, "unit": "px" }
+      }
+    },
+    "heading": {
+      "$description": "Section and card headings. Always the text face.",
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": { "value": 16, "unit": "px" },
+        "fontWeight": "{font.weight.strong}",
+        "lineHeight": 1.5,
+        "letterSpacing": { "value": -0.16, "unit": "px" }
+      }
+    },
+    "body": {
+      "$description": "Running text and table cells.",
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": { "value": 14, "unit": "px" },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.4286,
+        "letterSpacing": { "value": 0, "unit": "px" }
+      }
+    },
+    "label": {
+      "$description": "Control labels: buttons, tabs, form labels, badges. Controls also trim the line box to cap height and baseline.",
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": { "value": 13, "unit": "px" },
+        "fontWeight": "{font.weight.medium}",
+        "lineHeight": 1.2308,
+        "letterSpacing": { "value": 0, "unit": "px" }
+      }
+    },
+    "caption": {
+      "$description": "Helper text, timestamps, metadata.",
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": { "value": 12, "unit": "px" },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.3333,
+        "letterSpacing": { "value": 0.12, "unit": "px" }
+      }
+    },
+    "code": {
+      "$description": "Inline code, keyboard keys, IDs.",
+      "$value": {
+        "fontFamily": "{font.family.mono}",
+        "fontSize": { "value": 13, "unit": "px" },
+        "fontWeight": "{font.weight.regular}",
+        "lineHeight": 1.5385,
+        "letterSpacing": { "value": 0, "unit": "px" }
+      }
+    }
+  }
+}

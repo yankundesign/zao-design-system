@@ -1,0 +1,59 @@
+{
+  "$description": "Structure: shared by every finish. ZAO's base unit is the fen, named after the fen of Yingzao Fashi's cai–fen module. Every spacing and sizing value is a whole or half multiple of it.",
+  "unit": {
+    "$type": "dimension",
+    "$value": { "value": 4, "unit": "px" },
+    "$description": "1 fen. The base unit. Tailwind's spacing multiplier is set to this value, so p-3 means 3 fen (12px)."
+  },
+  "space": {
+    "$type": "dimension",
+    "$description": "Spacing scale in fen. Use these steps only; off-scale values fail lint.",
+    "0": { "$value": { "value": 0, "unit": "px" } },
+    "0-5": {
+      "$value": { "value": 2, "unit": "px" },
+      "$description": "Half a fen. Hairline gaps only, such as between an icon and a badge."
+    },
+    "1": { "$value": { "value": 4, "unit": "px" } },
+    "1-5": { "$value": { "value": 6, "unit": "px" } },
+    "2": { "$value": { "value": 8, "unit": "px" } },
+    "3": { "$value": { "value": 12, "unit": "px" } },
+    "4": { "$value": { "value": 16, "unit": "px" } },
+    "5": { "$value": { "value": 20, "unit": "px" } },
+    "6": { "$value": { "value": 24, "unit": "px" } },
+    "8": { "$value": { "value": 32, "unit": "px" } },
+    "10": { "$value": { "value": 40, "unit": "px" } },
+    "12": { "$value": { "value": 48, "unit": "px" } },
+    "16": { "$value": { "value": 64, "unit": "px" } },
+    "20": { "$value": { "value": 80, "unit": "px" } }
+  },
+  "size": {
+    "$type": "dimension",
+    "control": {
+      "$description": "Heights of buttons, inputs, selects and tabs. Identical in every finish so components never change size between themes.",
+      "sm": {
+        "$value": { "value": 28, "unit": "px" },
+        "$description": "7 fen. Dense tables and toolbars."
+      },
+      "md": { "$value": { "value": 32, "unit": "px" }, "$description": "8 fen. The default." },
+      "lg": {
+        "$value": { "value": 40, "unit": "px" },
+        "$description": "10 fen. Primary actions on sparse pages."
+      }
+    },
+    "icon": {
+      "sm": { "$value": { "value": 16, "unit": "px" } },
+      "md": { "$value": { "value": 20, "unit": "px" } }
+    },
+    "target": {
+      "min": {
+        "$value": { "value": 24, "unit": "px" },
+        "$description": "Smallest pointer target (WCAG 2.2, 2.5.8)."
+      }
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "none": { "$value": { "value": 0, "unit": "px" } },
+    "pill": { "$value": { "value": 9999, "unit": "px" } }
+  }
+}
