@@ -24,10 +24,13 @@
   "scripts": {
     "palette": "node scripts/generate-palettes.ts",
     "build": "tz build && node scripts/export-json.ts",
+    "dev": "node scripts/dev-watch.ts",
+    "dev:watch": "node scripts/dev-watch.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@zao/engine": "workspace:*",
     "@terrazzo/cli": "^2.7.1",
     "@terrazzo/parser": "^2.7.1",
     "@terrazzo/plugin-css": "^2.7.1",

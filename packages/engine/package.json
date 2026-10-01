@@ -1,0 +1,28 @@
+{
+  "name": "@zao/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./palette": "./src/palette.ts",
+    "./contrast": "./src/contrast.ts",
+    "./files": "./src/files.ts",
+    "./schema/style.schema.json": "./schema/style.schema.json"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "schema": "node scripts/write-schema.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "culori": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/culori": "^4.0.1",
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}

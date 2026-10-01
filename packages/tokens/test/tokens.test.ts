@@ -8,6 +8,7 @@ import { wcagContrast, type Color } from 'culori';
 import type { TokenNormalized, TokenNormalizedSet } from '@terrazzo/parser';
 import { contexts } from '../contexts.ts';
 import { loadResolver } from '../scripts/export-json.ts';
+import { contrastCases, contrastPromises } from '@zao/engine/contrast';
 
 const resolved: Record<string, TokenNormalizedSet> = {};
 
@@ -76,21 +77,10 @@ describe('structure is shared, finish is chosen', () => {
 });
 
 describe('contrast', () => {
-  const surfaces = ['color.bg.canvas', 'color.bg.surface'];
-  const cases: Array<[fg: string, min: number]> = [
-    ['color.fg.default', 7],
-    ['color.fg.muted', 4.5],
-    ['color.accent.text', 4.5],
-    ['color.success.text', 4.5],
-    ['color.warning.text', 4.5],
-    ['color.danger.text', 4.5],
-    ['color.focus.ring', 3],
-  ];
-
   for (const ctx of contexts) {
     describe(ctx.id, () => {
-      for (const [fg, min] of cases) {
-        for (const bg of surfaces) {
+      for (const [fg, min] of contrastCases) {
+        for (const bg of contrastPromises.surfaces) {
           it(`${fg} on ${bg} is at least ${min}:1`, () => {
             expect(contrast(resolved[ctx.id]!, fg, bg)).toBeGreaterThanOrEqual(min);
           });
@@ -98,8 +88,12 @@ describe('contrast', () => {
       }
       it('color.fg.on-accent on color.accent.solid is at least 4.5:1', () => {
         expect(
-          contrast(resolved[ctx.id]!, 'color.fg.on-accent', 'color.accent.solid'),
-        ).toBeGreaterThanOrEqual(4.5);
+          contrast(
+            resolved[ctx.id]!,
+            contrastPromises.onAccent.foreground,
+            contrastPromises.onAccent.background,
+          ),
+        ).toBeGreaterThanOrEqual(contrastPromises.onAccent.minimum);
       });
     });
   }

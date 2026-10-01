@@ -6,21 +6,32 @@ ZAO is a design system built to be used well by agents. The same idea applies he
 
 ## Repo map
 
-| Path              | What it is                                                                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/tokens` | `@zao/tokens`. DTCG token sources, the resolver, the palette generator, the build (Terrazzo) and the tests. The source of truth for every value. |
-| `packages/react`  | `@zao/react`. The Tailwind v4 theme, self-hosted fonts and (from milestone 2) components built on Base UI.                                       |
-| `packages/agent`  | Planned: component manifests, the MCP server and the validator for agents using ZAO in other repos.                                              |
-| `apps/docs`       | `@zao/docs`. The Next.js docs site. It renders from the token JSON, so it can't drift from the source.                                           |
-| `evals`           | Planned: agent output with and without ZAO, compared on the same prompts.                                                                        |
-| `BRIEF.md`        | Goals, scope, milestones and the decision log. Read it before proposing structural changes.                                                      |
-| `docs/research`   | Research behind decisions, such as typography.                                                                                                   |
+| Path              | What it is                                                                                                                          |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/tokens` | `@zao/tokens`. DTCG token sources, the resolver, the build (Terrazzo) and the tests. The source of truth for every published value. |
+| `packages/engine` | `@zao/engine`. Private palette generator, contrast logic, parameter registry, style validation and transformations.                 |
+| `packages/react`  | `@zao/react`. The Tailwind v4 theme, self-hosted fonts and (from milestone 2) components built on Base UI.                          |
+| `packages/agent`  | Planned: component manifests, the MCP server and the validator for agents using ZAO in other repos.                                 |
+| `apps/docs`       | `@zao/docs`. The Next.js docs site. It renders from the token JSON, so it can't drift from the source.                              |
+| `apps/lab`        | `@zao/lab`. Private, local style workbench with specimens and a registry-driven editor.                                             |
+| `explorations`    | Working styles, reference metadata, snapshots and journal. Reference images and trial fonts are gitignored.                         |
+| `evals`           | Planned: agent output with and without ZAO, compared on the same prompts.                                                           |
+| `BRIEF.md`        | Goals, scope, milestones and the decision log. Read it before proposing structural changes.                                         |
+| `PLAN.md`         | The current work plan: Phase 2, tools for finding the style. Read it before starting any work package.                              |
+| `study/STUDY.md`  | Yankun's Phase 1 study plan. Not a task list for agents.                                                                            |
+| `docs/research`   | Research behind decisions, such as typography.                                                                                      |
 
 ## Commands
 
 ```sh
 pnpm install          # once
-pnpm dev              # build packages, then run the docs at http://localhost:3000
+pnpm dev              # build packages, then run token watch and docs at http://localhost:3000
+pnpm lab              # build packages, then run token watch and private lab at http://localhost:3001
+pnpm lab:style help   # file-based style commands for agents and people
+pnpm lab:reference help # reference board commands, including image sampling and seed drafts
+pnpm lab:check        # validate every saved style and its inheritance
+pnpm lab:snap --styles su --specimens settings --contexts all # capture saved styles
+pnpm lab:promote help # inspect promotion options; only Yankun invokes a style promotion
 pnpm tokens           # rebuild tokens after editing packages/tokens/src
 pnpm palette          # regenerate palettes after editing packages/tokens/palette.config.ts
 pnpm test             # completeness, shared structure and contrast tests
@@ -28,6 +39,8 @@ pnpm typecheck
 pnpm format
 pnpm changeset        # describe any change to a published package
 ```
+
+`pnpm dev` keeps the token build live: edits to token sources trigger a rebuild and refresh the exported JSON; edits to `palette.config.ts` or the engine palette generator regenerate palettes first.
 
 Before you finish a change: `pnpm build && pnpm test && pnpm typecheck && pnpm format:check`.
 

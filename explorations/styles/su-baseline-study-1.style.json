@@ -1,0 +1,8 @@
+{
+  "id": "su-baseline-study-1",
+  "name": "Su baseline study - 1",
+  "extends": "su",
+  "author": "yankun",
+  "modes": ["light", "dark"],
+  "params": {}
+}

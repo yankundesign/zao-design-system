@@ -18,3 +18,9 @@ playwright-report/
 !.env.example
 .DS_Store
 *.log
+
+# Private lab material
+apps/lab/specimens/local/
+explorations/references/files/
+explorations/fonts/
+explorations/snapshots/private/

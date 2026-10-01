@@ -28,25 +28,34 @@ pnpm dev               # builds the packages and opens the docs at http://localh
 
 ## Commands
 
-| Command          | What it does                                                          |
-| ---------------- | --------------------------------------------------------------------- |
-| `pnpm dev`       | Build the packages, then run the docs site                            |
-| `pnpm build`     | Build `@zao/tokens` and `@zao/react`                                  |
-| `pnpm tokens`    | Rebuild tokens after editing `packages/tokens/src`                    |
-| `pnpm palette`   | Regenerate palettes after editing `packages/tokens/palette.config.ts` |
-| `pnpm test`      | Completeness, shared-structure and contrast tests                     |
-| `pnpm typecheck` | TypeScript across the workspace                                       |
-| `pnpm format`    | Prettier                                                              |
-| `pnpm changeset` | Describe a change to a published package                              |
+| Command              | What it does                                                                      |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `pnpm dev`           | Build the packages, then run the docs site with live token rebuilding             |
+| `pnpm lab`           | Build the packages, then run the private style lab on localhost:3001              |
+| `pnpm lab:style`     | Inspect and edit saved styles from the command line                               |
+| `pnpm lab:reference` | Collect references and print explicitly seeded style drafts from the command line |
+| `pnpm lab:check`     | Validate saved styles, inheritance and the generated style schema                 |
+| `pnpm lab:snap`      | Capture saved styles and specimens as PNGs with a contact sheet                   |
+| `pnpm lab:promote`   | Promote a chosen style into token sources after Yankun's decision                 |
+| `pnpm build`         | Build `@zao/engine`, `@zao/tokens` and `@zao/react`                               |
+| `pnpm tokens`        | Rebuild tokens after editing `packages/tokens/src`                                |
+| `pnpm palette`       | Regenerate palettes after editing `packages/tokens/palette.config.ts`             |
+| `pnpm test`          | Completeness, shared-structure and contrast tests                                 |
+| `pnpm typecheck`     | TypeScript across the workspace                                                   |
+| `pnpm format`        | Prettier                                                                          |
+| `pnpm changeset`     | Describe a change to a published package                                          |
 
 ## Packages
 
 | Package                              | Description                                                                                |
 | ------------------------------------ | ------------------------------------------------------------------------------------------ |
 | [`@zao/tokens`](./packages/tokens)   | W3C DTCG tokens with a resolver for every finish and mode, built to CSS variables and JSON |
+| [`@zao/engine`](./packages/engine)   | Private style engine, parameter registry, palette generator and contrast promises          |
 | [`@zao/react`](./packages/react)     | Tailwind CSS v4 theme, self-hosted fonts, and (soon) components built on Base UI           |
 | [`packages/agent`](./packages/agent) | Planned: manifests, an MCP server and a validator for agents                               |
 | [`apps/docs`](./apps/docs)           | The docs site (Next.js)                                                                    |
+| [`apps/lab`](./apps/lab)             | Local style lab with specimens and a parameter editor                                      |
+| [`explorations`](./explorations)     | Saved styles and working material; reference images and trial fonts stay local             |
 | [`evals`](./evals)                   | Planned: agent output with and without ZAO                                                 |
 
 ## For agents

@@ -3,7 +3,7 @@
 > ZAO is the foundation for how we build.
 > Inspired by the principles of Yingzao Fashi, it defines the shared materials, patterns, and rules that help teams construct consistent digital experiences.
 
-_Owner: Yankun · Started Sept 2026 · Status: pre-v0.1_
+_Owner: Yankun · Started Sept 2026 · Status: v0.1 in progress · Repo: [github.com/yankundesign/zao-design-system](https://github.com/yankundesign/zao-design-system)_
 
 ## Why
 
@@ -124,6 +124,9 @@ Memorable, with more color, depth and translucency. The proposed direction comes
 Each takes roughly one or two weekends.
 
 1. **Foundation:** repo, base unit, token architecture and Resolver file, theme generator, Su in light and dark, docs shell, CI. **Done Sept 29, 2026** (Yu dark is set up too).
+
+   Before milestone 2: **Phase 1, study** (`study/STUDY.md`) and **Phase 2, tools for finding the style** (`PLAN.md`). Components wait until both are done.
+
 2. **Inputs:** Button, TextField, Select.
 3. **Overlays & navigation:** Dialog, Tooltip, Tabs, Toast.
 4. **Yu:** the second finish, and the zero-component-change test.
@@ -157,6 +160,8 @@ Each takes roughly one or two weekends.
 | 2026-09-29 | Headless layer: **Base UI**. Styling: **Tailwind v4** with a locked theme                                                                                                    |
 | 2026-09-29 | Typography: **Geist** for text in both finishes, **Newsreader** for Yu's titles (with Noto Serif SC for Chinese), **Geist Mono** for code. See `docs/research/typography.md` |
 | 2026-09-29 | npm scope **@zao**, **MIT** license. Tokens built with **Terrazzo**; palettes generated in OKLCH from `palette.config.ts`                                                    |
+| 2026-09-29 | Both finishes are **pure gray** (neutrals and accent) until their colors are chosen. Status colors keep their hues                                                           |
+| 2026-09-29 | **Slow down before components:** study first (`study/STUDY.md`), then build tools for finding the style (`PLAN.md`). Visual values are chosen by Yankun, never by agents     |
 
 ## Open decisions
 

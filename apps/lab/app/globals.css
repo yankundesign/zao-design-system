@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+@import '@zao/react/fonts.css';
+@import '@zao/react/theme.css';
+
+@source '../specimens';
+@source '../components';
+@source '../../../packages/react/src';
+
+.lab-island {
+  background-color: var(--zao-color-bg-canvas);
+  color: var(--zao-color-fg-default);
+  font-family: var(--zao-type-body-font-family);
+  min-width: 0;
+  isolation: isolate;
+}
+
+.lab-island ::selection {
+  background-color: var(--zao-color-accent-subtle-hover);
+}
+
+/* The private lab lets control-height parameters vary without changing the published theme. */
+.lab-island :is(button, input, select, textarea).h-7 {
+  height: var(--zao-size-control-sm);
+}
+
+.lab-island :is(button, input, select, textarea).h-8 {
+  height: var(--zao-size-control-md);
+}
+
+.lab-island :is(button, input, select, textarea).h-10 {
+  height: var(--zao-size-control-lg);
+}
+
+.lab-shell input[type='radio'] {
+  accent-color: var(--zao-color-accent-solid);
+}

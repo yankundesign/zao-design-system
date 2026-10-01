@@ -1,0 +1,179 @@
+/** Promotion is a local, explicit command. The planner runs before any token source is written. */
+import { spawn } from 'node:child_process';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  baseVariablesFromTokens,
+  baselineStyles,
+  evaluateContrast,
+  validateStyle,
+  type StyleFile,
+} from '../packages/engine/src/index.ts';
+import {
+  planPromotion,
+  promotionPaths,
+  type PromotionSources,
+} from '../packages/engine/src/promote.ts';
+import { finishes } from '../packages/tokens/palette.config.ts';
+
+const root = fileURLToPath(new URL('../', import.meta.url));
+const stylesPath = join(root, 'explorations/styles');
+
+function usage() {
+  console.log(`Usage: pnpm lab:promote <style> --finish su|yu [--groups color,shape,...] [--include-shared] [--dry-run]
+
+The applying command updates token sources, then runs pnpm palette, pnpm tokens and pnpm test.
+Use --dry-run to preview without writing. Shared mode and structure parameters require --include-shared.
+Extra CSS and extra ramps block promotion until they have token mappings.`);
+}
+
+function argumentsFor(commandLine: string[]) {
+  const [id, ...rest] = commandLine;
+  if (!id || id === 'help' || id === '--help') return undefined;
+  const flags: Record<string, string | boolean> = {};
+  for (let index = 0; index < rest.length; index++) {
+    const flag = rest[index]!;
+    if (!flag.startsWith('--')) throw new Error(`Unexpected argument "${flag}".`);
+    const name = flag.slice(2);
+    if (!['finish', 'groups', 'include-shared', 'dry-run'].includes(name))
+      throw new Error(`Unknown option ${flag}.`);
+    if (name in flags) throw new Error(`Option ${flag} may appear only once.`);
+    if (name === 'include-shared' || name === 'dry-run') flags[name] = true;
+    else {
+      const value = rest[++index];
+      if (!value || value.startsWith('--')) throw new Error(`Option ${flag} needs a value.`);
+      flags[name] = value;
+    }
+  }
+  if (flags.finish !== 'su' && flags.finish !== 'yu')
+    throw new Error('Promotion needs --finish su or --finish yu.');
+  const groupAliases: Record<string, string> = {
+    space: 'space and density',
+    depth: 'depth and material',
+    material: 'depth and material',
+  };
+  return {
+    id,
+    finish: flags.finish,
+    includeShared: flags['include-shared'] === true,
+    dryRun: flags['dry-run'] === true,
+    groups:
+      typeof flags.groups === 'string'
+        ? flags.groups.split(',').map((part) => groupAliases[part.trim()] ?? part.trim())
+        : undefined,
+  } as const;
+}
+
+async function styles() {
+  const library: Record<string, StyleFile> = { ...baselineStyles() };
+  let names: string[] = [];
+  try {
+    names = (await readdir(stylesPath)).filter((name) => name.endsWith('.style.json'));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+  }
+  for (const name of names) {
+    const value: unknown = JSON.parse(await readFile(join(stylesPath, name), 'utf8'));
+    validateStyle(value);
+    const style = value as StyleFile;
+    if (`${style.id}.style.json` !== name)
+      throw new Error(`${name} does not match the id inside it.`);
+    library[style.id] = style;
+  }
+  return library;
+}
+
+async function sources(): Promise<PromotionSources> {
+  return Object.fromEntries(
+    await Promise.all(
+      promotionPaths.map(async (path) => [path, await readFile(join(root, path), 'utf8')]),
+    ),
+  ) as PromotionSources;
+}
+
+async function run(command: string, args: string[]) {
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, { cwd: root, stdio: 'inherit' });
+    child.once('error', reject);
+    child.once('exit', (code, signal) =>
+      code === 0
+        ? resolve()
+        : reject(new Error(`${command} ${args.join(' ')} failed (${signal ?? code}).`)),
+    );
+  });
+}
+
+async function printContrast() {
+  for (const context of ['su-light', 'su-dark', 'yu-dark']) {
+    const document = JSON.parse(
+      await readFile(join(root, `packages/tokens/dist/json/${context}.json`), 'utf8'),
+    ) as {
+      tokens: Record<string, { type: string; cssVar: string; value: unknown; aliasOf?: string }>;
+    };
+    const checks = evaluateContrast(baseVariablesFromTokens(document.tokens));
+    const failures = checks.filter((result) => !result.pass);
+    console.log(
+      `${context}: ${checks.length - failures.length}/${checks.length} contrast promises pass.`,
+    );
+    for (const failure of failures)
+      console.error(
+        `  ${failure.label}: ${failure.ratio.toFixed(2)}:1, needs ${failure.minimum}:1`,
+      );
+    if (failures.length) throw new Error(`Contrast promises failed in ${context}.`);
+  }
+}
+
+async function main() {
+  const options = argumentsFor(process.argv.slice(2));
+  if (!options) return usage();
+  const library = await styles();
+  const style = library[options.id];
+  if (!style) throw new Error(`Style "${options.id}" was not found.`);
+  const plan = planPromotion({
+    style,
+    library,
+    finish: options.finish,
+    includeShared: options.includeShared,
+    groups: options.groups,
+    sources: await sources(),
+    paletteInput: finishes,
+  });
+  console.log(`${options.dryRun ? 'Dry run' : 'Promotion'}: ${style.name} → ${options.finish}`);
+  if (plan.files.length) {
+    for (const file of plan.files)
+      console.log(`  ${file.path}: ${[...new Set(file.parameters)].join(', ')}`);
+  } else console.log('  No token source changes.');
+  if (plan.skippedShared.length)
+    console.log(
+      `Skipped shared parameters (pass --include-shared): ${plan.skippedShared.join(', ')}`,
+    );
+  for (const effect of plan.sharedEffects)
+    console.log(
+      `Also changes ${effect.affectedFinish}: ${effect.id} → ${JSON.stringify(effect.value)}`,
+    );
+  for (const item of plan.unsupported) console.error(`Cannot promote ${item.id}: ${item.reason}`);
+  console.log(`Decision-log draft for BRIEF.md:\n${plan.decisionLogDraft}`);
+  if (plan.unsupported.length)
+    throw new Error(
+      'Promotion stopped because some selected style values have no safe token mapping.',
+    );
+  if (options.dryRun || !plan.files.length) return;
+
+  for (const file of plan.files) await writeFile(join(root, file.path), file.after);
+  if (plan.files.some((file) => file.path === 'packages/tokens/palette.config.ts'))
+    await run('pnpm', ['exec', 'prettier', '--write', 'packages/tokens/palette.config.ts']);
+  await run('pnpm', ['palette']);
+  await run('pnpm', ['tokens']);
+  await run('pnpm', ['test']);
+  await printContrast();
+  await run('git', ['diff', '--stat', '--', 'packages/tokens']);
+  console.log(
+    'Promotion checks passed. Review the diff and add the decision-log row if you keep it.',
+  );
+}
+
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+});
