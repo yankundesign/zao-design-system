@@ -1,0 +1,126 @@
+/* One fixed housing and one connected sliding face, shared by Su and Yu. */
+@layer components {
+  .switch-construction {
+    --switch-contact: calc(var(--zao-space-0-5) / 2);
+    --switch-travel: calc(var(--zao-space-10) - var(--zao-space-4) - 2 * var(--zao-space-1));
+    --switch-position: 0px;
+    --switch-side: var(--zao-color-border-default);
+    --switch-face-fill: var(--zao-color-bg-surface);
+    --switch-hover-fill: var(--zao-color-bg-hover);
+    --switch-pressed-fill: var(--zao-color-bg-active);
+    --switch-face-edge: var(--zao-color-border-default);
+    position: relative;
+    isolation: isolate;
+    border: var(--switch-contact) solid var(--zao-color-border-default);
+    padding: 0;
+    cursor: pointer;
+    background: var(--zao-color-bg-sunken);
+    box-shadow:
+      inset 0 var(--switch-contact) 0 var(--zao-color-border-subtle),
+      0 var(--switch-contact) 0 var(--zao-color-border-subtle);
+    transition:
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      border-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+  }
+
+  .switch-construction[data-checked] {
+    --switch-position: var(--switch-travel);
+    background: var(--zao-color-accent-solid);
+    border-color: var(--zao-color-accent-border);
+  }
+
+  .switch-construction:dir(rtl) {
+    --switch-travel: calc(-1 * (var(--zao-space-10) - var(--zao-space-4) - 2 * var(--zao-space-1)));
+  }
+
+  .switch-construction > [data-zao-slot='thumb'] {
+    position: absolute;
+    inset-block-start: var(--zao-space-1);
+    inset-inline-start: calc(var(--zao-space-1) - var(--switch-contact));
+    inline-size: var(--zao-space-4);
+    block-size: var(--zao-space-4);
+    pointer-events: none;
+    background: var(--switch-side);
+    transform: translateX(var(--switch-position));
+    transition: transform var(--zao-motion-duration-base) var(--zao-motion-easing-standard);
+  }
+
+  /* The side stays joined to the face as the complete thumb crosses the channel. */
+  .switch-construction > [data-zao-slot='thumb'] > [data-zao-slot='face'] {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    border: var(--switch-contact) solid var(--switch-face-edge);
+    background: var(--switch-face-fill);
+    transform: translateY(calc(-1 * var(--switch-contact)));
+    transition:
+      transform var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .switch-construction:not([data-disabled], [data-readonly]):hover {
+      --switch-face-fill: var(--switch-hover-fill);
+    }
+  }
+
+  .switch-construction:not([data-disabled], [data-readonly])[data-zao-pressed] {
+    --switch-face-fill: var(--switch-pressed-fill);
+  }
+
+  .switch-construction:not([data-disabled], [data-readonly])[data-zao-pressed]
+    > [data-zao-slot='thumb']
+    > [data-zao-slot='face'] {
+    transform: none;
+  }
+
+  .switch-construction[data-readonly] {
+    cursor: default;
+  }
+
+  .switch-construction[data-disabled] {
+    --switch-side: var(--zao-color-fg-disabled);
+    --switch-face-edge: var(--zao-color-fg-disabled);
+    border-color: var(--zao-color-border-subtle);
+    background: var(--zao-color-bg-sunken);
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .switch-construction,
+    .switch-construction > [data-zao-slot='thumb'],
+    .switch-construction > [data-zao-slot='thumb'] > [data-zao-slot='face'] {
+      transition: none;
+    }
+
+    .switch-construction:not([data-disabled], [data-readonly])[data-zao-pressed]
+      > [data-zao-slot='thumb']
+      > [data-zao-slot='face'] {
+      transform: translateY(calc(-1 * var(--switch-contact)));
+    }
+  }
+
+  @media (forced-colors: active) {
+    .switch-construction {
+      --switch-side: ButtonText;
+      --switch-face-edge: ButtonText;
+      --switch-face-fill: Canvas;
+      --switch-hover-fill: Canvas;
+      --switch-pressed-fill: ButtonFace;
+      forced-color-adjust: none;
+      border-color: ButtonText;
+      background: Canvas;
+    }
+
+    .switch-construction[data-checked] {
+      background: Highlight;
+    }
+
+    .switch-construction[data-disabled] {
+      --switch-side: GrayText;
+      --switch-face-edge: GrayText;
+      border-color: GrayText;
+      background: Canvas;
+    }
+  }
+}

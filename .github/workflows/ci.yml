@@ -22,7 +22,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build packages
         run: pnpm build
-      - name: Test tokens (completeness, shared structure, contrast)
+      - name: Install component test browser
+        run: pnpm --filter @zao/docs exec playwright install --with-deps chromium
+      - name: Test packages and components
         run: pnpm test
       - name: Build docs
         run: pnpm --filter @zao/docs build

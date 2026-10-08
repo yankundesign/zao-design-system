@@ -1,0 +1,110 @@
+/* A fixed reference track and one quantitative face, shared by Su and Yu. */
+@layer components {
+  .progress-construction {
+    --progress-contact: calc(var(--zao-space-0-5) / 2);
+  }
+
+  .progress-construction [data-zao-slot='label'] {
+    overflow-wrap: anywhere;
+  }
+
+  .progress-construction > [data-zao-slot='track'] {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    block-size: var(--zao-space-2);
+    border-radius: var(--zao-radius-none);
+    background: var(--zao-color-bg-sunken);
+    box-shadow: 0 var(--progress-contact) 0 var(--zao-color-border-subtle);
+  }
+
+  /* Paint the frame over the track, so it never changes the quantitative span. */
+  .progress-construction > [data-zao-slot='track']::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    border: var(--progress-contact) solid var(--zao-color-border-subtle);
+    box-shadow: inset 0 var(--progress-contact) 0 var(--zao-color-border-subtle);
+    pointer-events: none;
+  }
+
+  .progress-construction > [data-zao-slot='track'] > [data-zao-slot='indicator'] {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    overflow: hidden;
+    block-size: 100%;
+    background: var(--zao-color-accent-solid);
+    box-shadow: inset 0 calc(-1 * var(--progress-contact)) 0 var(--zao-color-accent-border);
+    transition: width var(--zao-motion-duration-base) var(--zao-motion-easing-standard);
+  }
+
+  /* The end edge stays inside the measured face, including very small values. */
+  .progress-construction > [data-zao-slot='track'] > [data-zao-slot='indicator']::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: var(--progress-contact);
+    background: var(--zao-color-accent-border);
+    pointer-events: none;
+  }
+
+  .progress-construction
+    > [data-zao-slot='track']
+    > [data-zao-slot='indicator'][data-indeterminate] {
+    display: none;
+  }
+
+  /* A full-span interrupted reference has no occupied fraction or idle motion. */
+  .progress-construction > [data-zao-slot='track'][data-indeterminate]::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--zao-space-2);
+    inset-block-start: calc(50% - var(--progress-contact) / 2);
+    block-size: var(--progress-contact);
+    background: repeating-linear-gradient(
+      90deg,
+      var(--zao-color-border-default) 0 var(--zao-space-1),
+      transparent var(--zao-space-1) var(--zao-space-2)
+    );
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-construction > [data-zao-slot='track'] > [data-zao-slot='indicator'] {
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .progress-construction > [data-zao-slot='track'] {
+      forced-color-adjust: none;
+      background: Canvas;
+      box-shadow: none;
+    }
+
+    .progress-construction > [data-zao-slot='track']::before {
+      border-color: CanvasText;
+      box-shadow: none;
+    }
+
+    .progress-construction > [data-zao-slot='track'] > [data-zao-slot='indicator'] {
+      background: Highlight;
+      box-shadow: none;
+    }
+
+    .progress-construction > [data-zao-slot='track'] > [data-zao-slot='indicator']::after {
+      background: Highlight;
+    }
+
+    .progress-construction > [data-zao-slot='track'][data-indeterminate]::after {
+      background: repeating-linear-gradient(
+        90deg,
+        CanvasText 0 var(--zao-space-1),
+        transparent var(--zao-space-1) var(--zao-space-2)
+      );
+    }
+  }
+}

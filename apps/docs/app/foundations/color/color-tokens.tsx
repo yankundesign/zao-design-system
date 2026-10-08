@@ -32,7 +32,7 @@ const stepJobs = [
 ];
 
 export function ColorTokens() {
-  const { contextId, theme } = useFinish();
+  const { contextId } = useFinish();
   const file = tokenFiles[contextId];
 
   return (
@@ -81,7 +81,7 @@ export function ColorTokens() {
 
       <section className="flex flex-col gap-3">
         <div className="flex max-w-2xl flex-col gap-1">
-          <h2 className="type-heading">Palettes · {theme === 'yu' ? 'Yu 玉' : 'Su 素'}</h2>
+          <h2 className="type-heading">Palettes · Su 素</h2>
           <p className="type-body text-muted">
             Generated in OKLCH from palette.config.ts. Every step has one job, so modes can map
             roles to steps. Don&apos;t use these directly in product code.

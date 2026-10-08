@@ -46,7 +46,9 @@ export default function SpacePage() {
       <section className="flex flex-col gap-3">
         <h2 className="type-heading">Control heights</h2>
         <p className="max-w-2xl type-body text-muted">
-          Identical in every finish, so buttons, inputs and tabs never change size between themes.
+          Identical in every finish, so inputs and tabs never change size between themes. Button
+          uses these small and large heights; its default is{' '}
+          {String(allTokens['size.button.default']!.value)} to match its approved reference.
         </p>
         <div className="flex flex-wrap items-end gap-4">
           {controls.map((id) => {

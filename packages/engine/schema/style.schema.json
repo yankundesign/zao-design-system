@@ -794,6 +794,8 @@
         "type.heading.tracking": { "type": "number", "minimum": -4, "maximum": 4 },
         "type.body.size": { "type": "number", "minimum": 8, "maximum": 96 },
         "type.body.tracking": { "type": "number", "minimum": -4, "maximum": 4 },
+        "type.button.size": { "type": "number", "minimum": 8, "maximum": 96 },
+        "type.button.tracking": { "type": "number", "minimum": -4, "maximum": 4 },
         "type.label.size": { "type": "number", "minimum": 8, "maximum": 96 },
         "type.label.tracking": { "type": "number", "minimum": -4, "maximum": 4 },
         "type.caption.size": { "type": "number", "minimum": 8, "maximum": 96 },

@@ -1,19 +1,19 @@
 import type { CSSProperties } from 'react';
 
 /**
- * The same markup in any finish. Used on the overview to show that structure is
- * shared: only color, radius, material and the title face change.
+ * The same Su markup in light and dark. Mode changes semantic colors while
+ * structure and finish stay consistent.
  */
 export function FinishSample({
   theme,
   mode,
   label,
 }: {
-  theme: 'su' | 'yu';
+  theme: 'su';
   mode: 'light' | 'dark';
   label: string;
 }) {
-  // Stepped bands (叠晕) behind the floating toast, so Yu's glass has something to show through.
+  // Stepped bands provide context behind the floating toast.
   const n = (step: number) => `var(--zao-palette-neutral-${mode}-${step})`;
   const a = (step: number) => `var(--zao-palette-accent-${mode}-${step})`;
   const bands: CSSProperties = {

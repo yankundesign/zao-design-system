@@ -1,0 +1,271 @@
+/* Ruler and recessed selector share stationary labels, targets, and keyboard focus. */
+@layer components {
+  .tabs-viewport {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    padding: var(--zao-space-1);
+    margin: calc(-1 * var(--zao-space-1));
+    overflow: auto;
+  }
+
+  .tabs-viewport:has(> .tabs-list[data-orientation='vertical']) {
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+
+  .tabs-list {
+    --tabs-hairline: calc(var(--zao-space-0-5) / 2);
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    inline-size: max-content;
+    gap: var(--zao-space-4);
+    padding-block-end: var(--zao-space-2);
+  }
+
+  .tabs-list[data-orientation='vertical'] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--zao-space-2);
+    padding-block-end: 0;
+    padding-inline-end: var(--zao-space-2);
+  }
+
+  .tabs-tab {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+  }
+
+  .tabs-list > [data-zao-slot='rail'] {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: var(--zao-space-2);
+    pointer-events: none;
+    /* Small end stops share the guide's centerline. */
+    background:
+      linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) left center /
+        var(--tabs-hairline) var(--zao-space-1) no-repeat,
+      linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) right center /
+        var(--tabs-hairline) var(--zao-space-1) no-repeat;
+  }
+
+  .tabs-list > [data-zao-slot='rail']::before,
+  .tabs-list > [data-zao-slot='rail']::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 50%;
+  }
+
+  .tabs-list > [data-zao-slot='rail']::before {
+    block-size: var(--tabs-hairline);
+    background: var(--zao-color-border-subtle);
+    transform: translateY(-50%);
+  }
+
+  .tabs-list > [data-zao-slot='rail']::after {
+    margin-block-start: var(--tabs-hairline);
+    block-size: var(--zao-space-0-5);
+    opacity: 0.5;
+    background: repeating-linear-gradient(
+      to right,
+      var(--zao-color-border-subtle) 0 var(--tabs-hairline),
+      transparent var(--tabs-hairline) var(--zao-space-4)
+    );
+  }
+
+  .tabs-tab > [data-zao-slot='tick'] {
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: calc(100% + var(--zao-space-1));
+    inline-size: var(--tabs-hairline);
+    block-size: var(--zao-space-1);
+    background: var(--zao-color-border-subtle);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition:
+      block-size var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+  }
+
+  .tabs-tab:not([data-disabled]):is(:hover, :focus-visible) > [data-zao-slot='tick'] {
+    block-size: var(--zao-space-2);
+    background: var(--zao-color-border-default);
+  }
+
+  .tabs-indicator {
+    position: absolute;
+    inset: 0 auto auto 0;
+    inline-size: var(--active-tab-width);
+    block-size: var(--active-tab-height);
+    transform: translate(var(--active-tab-left), var(--active-tab-top));
+    pointer-events: none;
+    transition:
+      transform var(--zao-motion-duration-base) var(--zao-motion-easing-standard),
+      inline-size var(--zao-motion-duration-base) var(--zao-motion-easing-standard),
+      block-size var(--zao-motion-duration-base) var(--zao-motion-easing-standard),
+      translate var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+  }
+
+  .tabs-indicator > [data-zao-slot='selection-line'] {
+    position: absolute;
+    inset-inline: var(--zao-space-2);
+    inset-block-start: calc(100% + var(--zao-space-1));
+    block-size: var(--zao-space-0-5);
+    background: var(--zao-color-fg-default);
+    transform: translateY(-50%);
+    transition: block-size var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+  }
+
+  .tabs-indicator > [data-zao-slot='selection-line']::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: 50%;
+    inline-size: var(--tabs-hairline);
+    block-size: var(--zao-space-2);
+    background: inherit;
+    transform: translate(-50%, -50%);
+  }
+
+  .tabs-list:has(> .tabs-tab[data-active]:is(:active, [data-zao-pressed]))
+    > .tabs-indicator
+    > [data-zao-slot='selection-line'] {
+    block-size: var(--tabs-hairline);
+  }
+
+  /* The secondary face follows the active cell, including consumer-supplied grids. */
+  .tabs-list[data-zao-variant='secondary'] {
+    gap: var(--zao-space-0-5);
+    padding: var(--zao-space-0-5);
+    border: var(--tabs-hairline) solid var(--zao-color-border-subtle);
+    background: var(--zao-color-bg-sunken);
+    box-shadow: inset 0 var(--tabs-hairline) 0 var(--zao-color-border-subtle);
+  }
+
+  .tabs-list[data-zao-variant='secondary'] > .tabs-tab > [data-zao-slot='tick'] {
+    display: none;
+  }
+
+  .tabs-list[data-zao-variant='secondary'] > .tabs-tab:not([data-active], [data-disabled]):hover {
+    background: var(--zao-color-bg-hover);
+  }
+
+  .tabs-list[data-zao-variant='secondary'] > .tabs-indicator {
+    background: var(--zao-color-bg-surface);
+    border: var(--tabs-hairline) solid var(--zao-color-border-default);
+    box-shadow: calc(-1 * var(--tabs-hairline)) var(--tabs-hairline) 0
+      var(--zao-color-border-default);
+  }
+
+  .tabs-list[data-zao-variant='secondary']:has(
+      > .tabs-tab[data-active]:is(:active, [data-zao-pressed])
+    )
+    > .tabs-indicator {
+    translate: 0 var(--tabs-hairline);
+    background: var(--zao-color-bg-hover);
+    box-shadow: none;
+  }
+
+  /* Vertical navigation uses the same rail, ticks, and centered selection on its right. */
+  .tabs-list[data-zao-variant='primary'][data-orientation='vertical'] {
+    & > [data-zao-slot='rail'] {
+      inset-block: 0;
+      inset-inline: auto 0;
+      inline-size: var(--zao-space-2);
+      block-size: auto;
+      background:
+        linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) center top /
+          var(--zao-space-1) var(--tabs-hairline) no-repeat,
+        linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) center
+          bottom / var(--zao-space-1) var(--tabs-hairline) no-repeat;
+
+      &::before,
+      &::after {
+        inset-block: 0;
+        inset-inline-start: 50%;
+      }
+
+      &::before {
+        inline-size: var(--tabs-hairline);
+        block-size: auto;
+        transform: translateX(-50%);
+      }
+
+      &::after {
+        margin-block-start: 0;
+        margin-inline-start: var(--tabs-hairline);
+        inline-size: var(--zao-space-0-5);
+        block-size: auto;
+        background: repeating-linear-gradient(
+          to bottom,
+          var(--zao-color-border-subtle) 0 var(--tabs-hairline),
+          transparent var(--tabs-hairline) var(--zao-space-4)
+        );
+      }
+    }
+
+    & > .tabs-tab > [data-zao-slot='tick'] {
+      inset-inline-start: calc(100% + var(--zao-space-1));
+      inset-block-start: 50%;
+      inline-size: var(--zao-space-1);
+      block-size: var(--tabs-hairline);
+      transition:
+        inline-size var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+        background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+    }
+
+    & > .tabs-tab:not([data-disabled]):is(:hover, :focus-visible) > [data-zao-slot='tick'] {
+      inline-size: var(--zao-space-2);
+      block-size: var(--tabs-hairline);
+    }
+
+    & > .tabs-indicator > [data-zao-slot='selection-line'] {
+      inset-inline: auto;
+      inset-inline-start: calc(100% + var(--zao-space-1));
+      inset-block: var(--zao-space-2);
+      inline-size: var(--zao-space-0-5);
+      block-size: auto;
+      transform: translateX(-50%);
+      transition: inline-size var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+
+      &::after {
+        inline-size: var(--zao-space-2);
+        block-size: var(--tabs-hairline);
+      }
+    }
+
+    &:has(> .tabs-tab[data-active]:is(:active, [data-zao-pressed]))
+      > .tabs-indicator
+      > [data-zao-slot='selection-line'] {
+      inline-size: var(--tabs-hairline);
+      block-size: auto;
+    }
+  }
+
+  /* Logical tick positions need the matching half-width shift in right-to-left layouts. */
+  .tabs-list:dir(rtl) .tabs-tab > [data-zao-slot='tick'],
+  .tabs-list:dir(rtl) .tabs-indicator > [data-zao-slot='selection-line']::after {
+    transform: translate(50%, -50%);
+  }
+
+  .tabs-list[data-zao-variant='primary'][data-orientation='vertical']:dir(rtl) {
+    & > [data-zao-slot='rail']::before,
+    & > .tabs-indicator > [data-zao-slot='selection-line'] {
+      transform: translateX(50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tabs-indicator,
+    .tabs-indicator > [data-zao-slot='selection-line'],
+    .tabs-tab > [data-zao-slot='tick'] {
+      transition: none !important;
+    }
+  }
+}

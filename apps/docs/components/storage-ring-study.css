@@ -1,0 +1,62 @@
+/* Local data study: semantic ink and existing finish motion, with fixed quantitative geometry. */
+.storage-ring-study [data-zao-slot='storage-mark'] {
+  stroke: var(--zao-color-border-subtle);
+  transition: stroke var(--zao-motion-duration-base) var(--zao-motion-easing-standard);
+}
+
+.storage-ring-study [data-zao-slot='storage-mark'][data-state='used'] {
+  stroke: var(--zao-color-accent-solid);
+}
+
+.storage-ring-study[data-inspection='available']
+  [data-zao-slot='storage-mark'][data-state='available'] {
+  stroke: var(--zao-color-fg-muted);
+}
+
+.storage-region-control {
+  background: transparent;
+  color: var(--zao-color-fg-muted);
+}
+
+.storage-region-control[data-active],
+.storage-region-control[aria-pressed='true'] {
+  background: var(--zao-color-bg-active);
+  color: var(--zao-color-fg-default);
+}
+
+.storage-inspection-guide {
+  animation: storage-inspection-reveal var(--zao-motion-duration-base)
+    var(--zao-motion-easing-standard);
+}
+
+@keyframes storage-inspection-reveal {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .storage-ring-study [data-zao-slot='storage-mark'] {
+    transition: none;
+  }
+  .storage-inspection-guide {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .storage-ring-study [data-zao-slot='storage-mark'][data-state='used'],
+  .storage-ring-study .storage-inspection-guide {
+    stroke: CanvasText;
+  }
+  .storage-ring-study [data-zao-slot='storage-mark'][data-state='available'] {
+    stroke: GrayText;
+  }
+  .storage-region-control[data-active],
+  .storage-region-control[aria-pressed='true'] {
+    outline: 1px solid Highlight;
+  }
+}

@@ -29,7 +29,7 @@
   "size": {
     "$type": "dimension",
     "control": {
-      "$description": "Heights of buttons, inputs, selects and tabs. Identical in every finish so components never change size between themes.",
+      "$description": "Heights of inputs, selects and tabs, plus small and large Buttons. Identical in every finish so components never change size between themes. Default Button uses size.button.default from its approved reference.",
       "sm": {
         "$value": { "value": 28, "unit": "px" },
         "$description": "7 fen. Dense tables and toolbars."
@@ -38,6 +38,12 @@
       "lg": {
         "$value": { "value": 40, "unit": "px" },
         "$description": "10 fen. Primary actions on sparse pages."
+      }
+    },
+    "button": {
+      "default": {
+        "$value": { "value": 34, "unit": "px" },
+        "$description": "Default Button height in every finish: an 18px label line box and 8px padding above and below, matching the approved Figma reference. Small and large retain the shared 28px and 40px control heights."
       }
     },
     "icon": {

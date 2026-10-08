@@ -25,7 +25,8 @@ const roles = [
       'The assistant drafted these from last week’s access requests. Nothing changes until you approve.',
     use: 'Running text and table cells.',
   },
-  { role: 'label', sample: 'Approve 3 changes', use: 'Buttons, tabs, form labels, badges.' },
+  { role: 'button', sample: 'Approve 3 changes', use: 'Button action labels.' },
+  { role: 'label', sample: 'Approve 3 changes', use: 'Tabs, form labels, badges.' },
   {
     role: 'caption',
     sample: 'Drafted 2 minutes ago by the assistant',
@@ -39,6 +40,7 @@ const utility: Record<string, string> = {
   title: 'type-title',
   heading: 'type-heading',
   body: 'type-body',
+  button: 'type-button',
   label: 'type-label',
   caption: 'type-caption',
   code: 'type-code',

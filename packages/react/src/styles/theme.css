@@ -22,6 +22,11 @@
  */
 
 @import '@zao/tokens/css';
+@import './composer.css';
+@import './conversation.css';
+@import './tabs.css';
+@import './switch.css';
+@import './progress.css';
 
 /* Remove Tailwind's defaults for everything ZAO defines. */
 @theme {
@@ -101,6 +106,7 @@
 
   /* Radii: rounded-control, rounded-action, rounded-surface, rounded-overlay, rounded-pill */
   --radius-control: var(--zao-radius-control);
+  --radius-none: var(--zao-radius-none);
   --radius-action: var(--zao-radius-action);
   --radius-surface: var(--zao-radius-surface);
   --radius-overlay: var(--zao-radius-overlay);
@@ -146,6 +152,13 @@
   line-height: var(--zao-type-label-line-height);
   letter-spacing: var(--zao-type-label-letter-spacing);
 }
+@utility type-button {
+  font-family: var(--zao-type-button-font-family);
+  font-size: var(--zao-type-button-font-size);
+  font-weight: var(--zao-type-button-font-weight);
+  line-height: var(--zao-type-button-line-height);
+  letter-spacing: var(--zao-type-button-letter-spacing);
+}
 @utility type-caption {
   font-family: var(--zao-type-caption-font-family);
   font-size: var(--zao-type-caption-font-size);
@@ -181,6 +194,457 @@
 }
 @utility duration-base {
   transition-duration: var(--zao-motion-duration-base);
+}
+
+/* A static contact edge grounds a content surface without moving its contents or actions. */
+@utility card-construction {
+  --card-contact: calc(var(--zao-space-0-5) / 2);
+  box-shadow: calc(-1 * var(--card-contact)) var(--card-contact) 0 0 var(--zao-color-border-subtle);
+}
+
+/* Fine rules organize one reading plane; only semantic emphasis changes during use. */
+@utility table-plane {
+  & > thead {
+    border-block-end: 1px solid var(--zao-color-border-subtle);
+  }
+
+  & > tbody + tbody,
+  & > tbody > tr + tr {
+    border-block-start: 1px solid var(--zao-color-border-subtle);
+  }
+
+  & > tfoot {
+    border-block-start: 1px solid var(--zao-color-border-default);
+  }
+
+  & > tbody > tr:focus-within {
+    background-color: var(--zao-color-bg-hover);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    & > tbody > tr:hover {
+      background-color: var(--zao-color-bg-hover);
+    }
+  }
+
+  & > tbody > tr[data-selected] {
+    background-color: var(--zao-color-bg-active);
+  }
+}
+
+/* Native state and focus, with an explicitly square monochrome face. */
+@utility table-checkbox {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  border: 1px solid var(--zao-color-border-default);
+  border-radius: var(--zao-radius-none);
+  background-color: var(--zao-color-bg-surface);
+  color: var(--zao-color-bg-canvas);
+
+  &::after {
+    content: '';
+    width: var(--zao-space-2);
+    height: var(--zao-space-1);
+    border-inline-start: var(--zao-space-0-5) solid currentColor;
+    border-block-end: var(--zao-space-0-5) solid currentColor;
+    transform: rotate(-45deg);
+    visibility: hidden;
+  }
+
+  &:checked,
+  &:indeterminate {
+    border-color: var(--zao-color-fg-default);
+    background-color: var(--zao-color-fg-default);
+  }
+
+  &:checked::after {
+    visibility: visible;
+  }
+
+  &:indeterminate::after {
+    height: 0;
+    border-inline-start: 0;
+    transform: none;
+    visibility: visible;
+  }
+
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    border-color: ButtonText;
+    background-color: Canvas;
+
+    &:checked,
+    &:indeterminate {
+      border-color: Highlight;
+      background-color: Highlight;
+      color: HighlightText;
+    }
+  }
+}
+
+@utility h-button {
+  height: var(--zao-size-button-default);
+}
+
+/* IconButton reuses Button's construction with a square face at each shared size. */
+@utility icon-button-sizing {
+  --icon-button-size: var(--zao-size-button-default);
+  --icon-button-icon-size: var(--zao-size-icon-sm);
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
+
+  &[data-zao-size='small'] {
+    --icon-button-size: var(--zao-size-control-sm);
+  }
+
+  &[data-zao-size='large'] {
+    --icon-button-size: var(--zao-size-control-lg);
+    --icon-button-icon-size: var(--zao-size-icon-md);
+  }
+
+  & > [data-zao-slot='face'] {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+  }
+
+  & [data-zao-slot='icon'] {
+    width: var(--icon-button-icon-size);
+    height: var(--icon-button-icon-size);
+    flex-shrink: 0;
+  }
+}
+
+/* Button's face and connected side move together over a stationary seat and hit area. */
+@utility button-construction {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  --button-contact: calc(var(--zao-space-0-5) / 2);
+  --button-lift: var(--zao-space-0-5);
+  --button-x: 0px;
+  --button-y: 0px;
+  --button-fill: var(--zao-color-accent-solid);
+  --button-hover-fill: var(--zao-color-accent-solid-hover);
+  --button-pressed-fill: var(--zao-color-accent-solid-hover);
+  --button-face-fill: var(--button-fill);
+  --button-ink: var(--zao-color-fg-on-accent);
+  --button-edge: var(--zao-color-accent-solid);
+  --button-side: var(--zao-color-accent-solid-hover);
+
+  &[data-zao-variant='secondary'] {
+    --button-fill: var(--zao-color-bg-surface);
+    --button-hover-fill: var(--zao-color-bg-hover);
+    --button-pressed-fill: var(--zao-color-bg-active);
+    --button-ink: var(--zao-color-fg-default);
+    --button-edge: var(--zao-color-border-default);
+    --button-side: var(--zao-color-border-default);
+  }
+
+  &[data-zao-variant='quiet'] {
+    --button-fill: transparent;
+    --button-hover-fill: var(--zao-color-bg-surface);
+    --button-pressed-fill: var(--zao-color-bg-hover);
+    --button-ink: var(--zao-color-fg-default);
+    --button-edge: transparent;
+    --button-side: transparent;
+  }
+
+  &::before {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: -1;
+    background: var(--button-side);
+    transform: translate(calc(-1 * var(--button-contact)), var(--button-contact));
+    content: '';
+  }
+
+  &::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--button-side);
+    /* Extend paint without enlarging the layout box or adding offset silhouettes. */
+    box-shadow: 0 0 0 var(--button-lift) var(--button-side);
+    /* One continuous side joins the moving face to the fixed seat at every pose. */
+    clip-path: polygon(
+      var(--button-x) var(--button-y),
+      calc(100% + var(--button-x)) var(--button-y),
+      calc(100% + var(--button-x)) calc(100% + var(--button-y)),
+      calc(100% - var(--button-contact)) calc(100% + var(--button-contact)),
+      calc(-1 * var(--button-contact)) calc(100% + var(--button-contact)),
+      calc(-1 * var(--button-contact)) var(--button-contact)
+    );
+    transition:
+      clip-path var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+    content: '';
+  }
+
+  & > [data-zao-slot='face'] {
+    position: relative;
+    pointer-events: none;
+    border-radius: inherit;
+    background: var(--button-face-fill);
+    color: var(--button-ink);
+    box-shadow: inset 0 0 0 1px var(--button-edge);
+    transform: translate(var(--button-x), var(--button-y));
+    transition:
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      transform var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+  }
+
+  &:disabled {
+    --button-fill: var(--zao-color-bg-sunken);
+    --button-ink: var(--zao-color-fg-disabled);
+    --button-edge: transparent;
+    --button-side: transparent;
+
+    &[data-zao-variant='secondary'] {
+      --button-edge: var(--zao-color-border-subtle);
+    }
+
+    &[data-zao-variant='quiet'] {
+      --button-fill: transparent;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:enabled:hover {
+      --button-x: var(--button-lift);
+      --button-y: calc(-1 * var(--button-lift));
+
+      &[data-zao-variant='quiet'] {
+        --button-face-fill: var(--button-hover-fill);
+        --button-side: var(--zao-color-bg-sunken);
+      }
+    }
+
+    /* Releasing or dragging outside lets native activation and hover decide the next pose. */
+    &:enabled:active:hover {
+      --button-x: calc(-1 * var(--button-contact));
+      --button-y: var(--button-contact);
+      --button-face-fill: var(--button-pressed-fill);
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    &:enabled:active {
+      --button-x: calc(-1 * var(--button-contact));
+      --button-y: var(--button-contact);
+      --button-face-fill: var(--button-pressed-fill);
+    }
+  }
+
+  &:enabled[data-zao-pressed] {
+    --button-x: calc(-1 * var(--button-contact));
+    --button-y: var(--button-contact);
+    --button-face-fill: var(--button-pressed-fill);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* The fixed seat supplies the contact edge when spatial motion is disabled. */
+    &::after {
+      display: none;
+      transition: none;
+    }
+
+    & > [data-zao-slot='face'] {
+      transition: none;
+      transform: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:enabled:hover:not(:active):not([data-zao-pressed]) {
+        --button-face-fill: var(--button-hover-fill);
+
+        &[data-zao-variant='primary'] {
+          /* Distinguish stationary hover from press using the two semantic solid fills. */
+          --button-face-fill: color-mix(in srgb, var(--button-fill), var(--button-hover-fill));
+        }
+      }
+    }
+  }
+}
+
+/* Menu keeps the Button's input poses; its open cue identifies the attached panel. */
+@utility menu-trigger-construction {
+  &:enabled[aria-expanded='true'][data-zao-variant='secondary'] {
+    --button-fill: var(--zao-color-bg-active);
+    --button-hover-fill: var(--zao-color-bg-active);
+    --button-pressed-fill: var(--zao-color-bg-active);
+
+    & [data-zao-slot='menu-indicator'] {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+/* One progress value keeps the reveal and its leading edge together, including reversal. */
+@property --zao-menu-reveal-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+/* Uncover one full-size plane from its anchor; labels and selection targets stay fixed. */
+@utility menu-construction {
+  --zao-menu-reveal-progress: 1;
+  --menu-contact: calc(var(--zao-space-0-5) / 2);
+  --menu-reveal-outset: calc(-1 * var(--zao-space-1));
+  --menu-reveal-near: calc(-1 * var(--zao-menu-reveal-progress) * var(--zao-space-1));
+  --menu-reveal-far: calc(
+    (1 - var(--zao-menu-reveal-progress)) * 100% - var(--zao-menu-reveal-progress) *
+      var(--zao-space-1)
+  );
+  position: relative;
+  min-width: min(var(--anchor-width), var(--available-width));
+  max-width: var(--available-width);
+  max-height: var(--available-height);
+  &[data-zao-slot='popup'] {
+    border-color: var(--zao-color-border-subtle);
+    box-shadow: calc(-1 * var(--menu-contact)) var(--menu-contact) 0 0
+      var(--zao-color-border-default);
+  }
+  opacity: 1;
+  transform: none;
+  /* Leave room for the outside focus outline and the crisp contact edge at rest. */
+  clip-path: inset(
+    var(--menu-reveal-near) var(--menu-reveal-outset) var(--menu-reveal-far)
+      var(--menu-reveal-outset)
+  );
+  transition: --zao-menu-reveal-progress var(--zao-motion-duration-base)
+    var(--zao-motion-easing-standard);
+
+  &[data-side='top'] {
+    clip-path: inset(
+      var(--menu-reveal-far) var(--menu-reveal-outset) var(--menu-reveal-near)
+        var(--menu-reveal-outset)
+    );
+  }
+  &[data-side='left'] {
+    clip-path: inset(
+      var(--menu-reveal-outset) var(--menu-reveal-near) var(--menu-reveal-outset)
+        var(--menu-reveal-far)
+    );
+  }
+  &[data-side='right'] {
+    clip-path: inset(
+      var(--menu-reveal-outset) var(--menu-reveal-far) var(--menu-reveal-outset)
+        var(--menu-reveal-near)
+    );
+  }
+  &[data-starting-style],
+  &[data-ending-style] {
+    --zao-menu-reveal-progress: 0;
+  }
+  &[data-ending-style] {
+    transition-duration: var(--zao-motion-duration-fast);
+
+    & [data-zao-slot='items'] > [data-zao-slot='item'] {
+      background-color: transparent;
+      &::before {
+        opacity: 0;
+      }
+      &[data-zao-exit-highlighted]:not([data-disabled]) {
+        background-color: var(--zao-color-bg-hover);
+        &::before {
+          opacity: 1;
+        }
+      }
+    }
+  }
+  &[data-instant] {
+    transition: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &,
+    &[data-starting-style],
+    &[data-ending-style] {
+      transition: none;
+      transform: none;
+      --zao-menu-reveal-progress: 1;
+    }
+  }
+}
+
+/* Scroll only the actions; the frame and decorative front edge remain attached. */
+@utility menu-content-construction {
+  max-height: calc(var(--available-height) - var(--zao-space-0-5));
+}
+
+@utility menu-reveal-edge {
+  position: absolute;
+  inset: calc(-1 * var(--menu-contact));
+  pointer-events: none;
+  transform: translateY(calc((var(--zao-menu-reveal-progress) - 1) * 100%));
+
+  &::after {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: var(--menu-contact);
+    background-color: var(--zao-color-border-default);
+    content: '';
+  }
+  [data-zao-slot='popup'][data-side='top'] > & {
+    transform: translateY(calc((1 - var(--zao-menu-reveal-progress)) * 100%));
+    &::after {
+      top: 0;
+      bottom: auto;
+    }
+  }
+  [data-zao-slot='popup'][data-side='left'] > & {
+    transform: translateX(calc((1 - var(--zao-menu-reveal-progress)) * 100%));
+    &::after {
+      inset-block: 0;
+      left: 0;
+      right: auto;
+      width: var(--menu-contact);
+      height: auto;
+    }
+  }
+  [data-zao-slot='popup'][data-side='right'] > & {
+    transform: translateX(calc((var(--zao-menu-reveal-progress) - 1) * 100%));
+    &::after {
+      inset-block: 0;
+      right: 0;
+      left: auto;
+      width: var(--menu-contact);
+      height: auto;
+    }
+  }
+}
+
+/* Action rows remain still; the inset mark identifies the current navigation target. */
+@utility menu-item-construction {
+  position: relative;
+  overflow-wrap: anywhere;
+
+  &::before {
+    position: absolute;
+    inset-block: var(--zao-space-2);
+    inset-inline-start: var(--zao-space-1);
+    width: calc(var(--zao-space-0-5) / 2);
+    background-color: var(--zao-color-fg-default);
+    pointer-events: none;
+    content: '';
+    opacity: 0;
+  }
+  &[data-highlighted]:not([data-disabled]) {
+    background-color: var(--zao-color-bg-hover);
+    &::before {
+      opacity: 1;
+    }
+  }
 }
 
 /*

@@ -1,1 +1,681 @@
-[]
+[
+  {
+    "title": "User reference: node monitor",
+    "tags": ["user-reference", "monitor", "data-density"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-9024124b-875f-46f8-9d6d-d84789bc7e76",
+    "createdAt": "2026-10-05T00:46:39.557Z",
+    "updatedAt": "2026-10-05T00:46:39.557Z",
+    "imageFile": "ref-9024124b-875f-46f8-9d6d-d84789bc7e76-37bcbdb7.png",
+    "analysis": {
+      "width": 3208,
+      "height": 1912,
+      "swatches": [
+        {
+          "id": "neutral-1",
+          "kind": "neutral",
+          "hex": "#eeeeee",
+          "share": 0.4963235294117647,
+          "lightness": 0.9482812993596456,
+          "chroma": 1.1040127277789309e-7,
+          "hue": null
+        },
+        {
+          "id": "neutral-2",
+          "kind": "neutral",
+          "hex": "#131313",
+          "share": 0.2653952205882353,
+          "lightness": 0.18855717715204207,
+          "chroma": 4.1674201369982556e-7,
+          "hue": null
+        },
+        {
+          "id": "neutral-3",
+          "kind": "neutral",
+          "hex": "#cbcbcb",
+          "share": 0.14930555555555555,
+          "lightness": 0.8431888141512399,
+          "chroma": 9.728021148214497e-7,
+          "hue": null
+        },
+        {
+          "id": "neutral-4",
+          "kind": "neutral",
+          "hex": "#3f3f3f",
+          "share": 0.04848345588235294,
+          "lightness": 0.369448617124373,
+          "chroma": 7.981453213928834e-7,
+          "hue": null
+        },
+        {
+          "id": "neutral-5",
+          "kind": "neutral",
+          "hex": "#8e8e8e",
+          "share": 0.028543709150326797,
+          "lightness": 0.645239603266406,
+          "chroma": 0.00001497718737585668,
+          "hue": null
+        },
+        {
+          "id": "neutral-6",
+          "kind": "neutral",
+          "hex": "#0c0c0c",
+          "share": 0.011948529411764705,
+          "lightness": 0.1554514878754439,
+          "chroma": 0.000007969682721307994,
+          "hue": null
+        }
+      ],
+      "neutrals": {
+        "share": 1,
+        "averageHue": null,
+        "averageChroma": 0.0000014246415209366113,
+        "lightnessMin": 0,
+        "lightnessMax": 1.0000000000000002
+      },
+      "neutralChromaThreshold": 0.035
+    }
+  },
+  {
+    "title": "User reference: system load dashboard",
+    "tags": ["user-reference", "readout", "data-hierarchy"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-eefaf7b6-5fa2-48f4-89d0-843ca632289b",
+    "createdAt": "2026-10-05T00:46:40.074Z",
+    "updatedAt": "2026-10-05T00:46:40.074Z",
+    "imageFile": "ref-eefaf7b6-5fa2-48f4-89d0-843ca632289b-7cfe13c2.png",
+    "analysis": {
+      "width": 3216,
+      "height": 1950,
+      "swatches": [
+        {
+          "id": "neutral-1",
+          "kind": "neutral",
+          "hex": "#fdfdfd",
+          "share": 0.8185483870967742,
+          "lightness": 0.9953060973113422,
+          "chroma": 3.357208700715497e-8,
+          "hue": null
+        },
+        {
+          "id": "neutral-2",
+          "kind": "neutral",
+          "hex": "#cdcdcd",
+          "share": 0.06900201612903226,
+          "lightness": 0.8488020487215835,
+          "chroma": 3.993623215992344e-7,
+          "hue": null
+        },
+        {
+          "id": "neutral-3",
+          "kind": "neutral",
+          "hex": "#787878",
+          "share": 0.04571572580645161,
+          "lightness": 0.5723113313062786,
+          "chroma": 0,
+          "hue": null
+        },
+        {
+          "id": "neutral-4",
+          "kind": "neutral",
+          "hex": "#000000",
+          "share": 0.03359375,
+          "lightness": 0,
+          "chroma": 0,
+          "hue": null
+        },
+        {
+          "id": "neutral-5",
+          "kind": "neutral",
+          "hex": "#494949",
+          "share": 0.02525201612903226,
+          "lightness": 0.4052026113513727,
+          "chroma": 0,
+          "hue": null
+        },
+        {
+          "id": "neutral-6",
+          "kind": "neutral",
+          "hex": "#070707",
+          "share": 0.007888104838709678,
+          "lightness": 0.12884391767271566,
+          "chroma": 0.000010326944292071158,
+          "hue": null
+        }
+      ],
+      "neutrals": {
+        "share": 1,
+        "averageHue": null,
+        "averageChroma": 2.439063803219007e-7,
+        "lightnessMin": 0,
+        "lightnessMax": 1.0000000000000002
+      },
+      "neutralChromaThreshold": 0.035
+    }
+  },
+  {
+    "title": "User reference: audio capture control",
+    "tags": ["user-reference", "radial-feedback", "control"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-e841dcfa-e844-427b-9591-b07ddbab748b",
+    "createdAt": "2026-10-05T00:46:40.659Z",
+    "updatedAt": "2026-10-05T00:46:40.659Z",
+    "imageFile": "ref-e841dcfa-e844-427b-9591-b07ddbab748b-9ece758a.png",
+    "analysis": {
+      "width": 880,
+      "height": 1146,
+      "swatches": [
+        {
+          "id": "neutral-1",
+          "kind": "neutral",
+          "hex": "#151619",
+          "share": 0.696621192893401,
+          "lightness": 0.2011083308730022,
+          "chroma": 0.0061692870911768585,
+          "hue": 271.3812409718903
+        },
+        {
+          "id": "neutral-2",
+          "kind": "neutral",
+          "hex": "#dedede",
+          "share": 0.2106797271573604,
+          "lightness": 0.9000418171650193,
+          "chroma": 0.00002524155868953594,
+          "hue": null
+        },
+        {
+          "id": "neutral-3",
+          "kind": "neutral",
+          "hex": "#333437",
+          "share": 0.027740323604060913,
+          "lightness": 0.32409148327990317,
+          "chroma": 0.005872626093287501,
+          "hue": 269.64043513665735
+        },
+        {
+          "id": "neutral-4",
+          "kind": "neutral",
+          "hex": "#88898a",
+          "share": 0.025341053299492385,
+          "lightness": 0.6296583215185588,
+          "chroma": 0.0020472260914420597,
+          "hue": 266.76773098183065
+        },
+        {
+          "id": "neutral-5",
+          "kind": "neutral",
+          "hex": "#08090d",
+          "share": 0.02393321700507614,
+          "lightness": 0.1396779778516227,
+          "chroma": 0.008467002428533531,
+          "hue": 269.87510369467657
+        },
+        {
+          "id": "neutral-6",
+          "kind": "neutral",
+          "hex": "#5a5b5e",
+          "share": 0.014792195431472081,
+          "lightness": 0.4721670553257837,
+          "chroma": 0.004181363013246166,
+          "hue": 269.6997467053323
+        },
+        {
+          "id": "color-1",
+          "kind": "color",
+          "hex": "#fd4444",
+          "share": 0.0004957170050761421,
+          "lightness": 0.6608507731348041,
+          "chroma": 0.22106698422005883,
+          "hue": 25.646170788905795
+        },
+        {
+          "id": "color-2",
+          "kind": "color",
+          "hex": "#5a2527",
+          "share": 0.00015862944162436547,
+          "lightness": 0.3397405952655757,
+          "chroma": 0.07792936133877204,
+          "hue": 19.56211193937411
+        },
+        {
+          "id": "color-3",
+          "kind": "color",
+          "hex": "#4c2224",
+          "share": 0.0001388007614213198,
+          "lightness": 0.3111574822138747,
+          "chroma": 0.06402210234657858,
+          "hue": 18.15852162555845
+        },
+        {
+          "id": "color-4",
+          "kind": "color",
+          "hex": "#6a272a",
+          "share": 0.00005948604060913706,
+          "lightness": 0.3726876163460278,
+          "chroma": 0.09648634274730233,
+          "hue": 20.417909367636298
+        },
+        {
+          "id": "color-5",
+          "kind": "color",
+          "hex": "#3f1f22",
+          "share": 0.00003965736040609137,
+          "lightness": 0.2842760011758033,
+          "chroma": 0.049647897594695574,
+          "hue": 14.754416471590448
+        }
+      ],
+      "neutrals": {
+        "share": 0.9991077093908629,
+        "averageHue": 271.17082152951014,
+        "averageChroma": 0.004810059083405219,
+        "lightnessMin": 0,
+        "lightnessMax": 0.9548595172481326
+      },
+      "neutralChromaThreshold": 0.035
+    }
+  },
+  {
+    "title": "User reference: dark software instrument",
+    "tags": ["user-reference", "software-panel", "ambient-visual"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-9a1d6320-9673-43de-87d5-b8a3ec897b82",
+    "createdAt": "2026-10-05T00:46:41.117Z",
+    "updatedAt": "2026-10-05T00:46:41.117Z",
+    "imageFile": "ref-9a1d6320-9673-43de-87d5-b8a3ec897b82-a1bef61c.png",
+    "analysis": {
+      "width": 2846,
+      "height": 1700,
+      "swatches": [
+        {
+          "id": "neutral-1",
+          "kind": "neutral",
+          "hex": "#211c24",
+          "share": 0.5811376633986928,
+          "lightness": 0.2354913442605652,
+          "chroma": 0.015767071098147636,
+          "hue": 312.0333039516197
+        },
+        {
+          "id": "neutral-2",
+          "kind": "neutral",
+          "hex": "#2c262f",
+          "share": 0.328686683006536,
+          "lightness": 0.2788499578569668,
+          "chroma": 0.018337232033827585,
+          "hue": 313.8132723713763
+        },
+        {
+          "id": "neutral-3",
+          "kind": "neutral",
+          "hex": "#0d0b0f",
+          "share": 0.0765420751633987,
+          "lightness": 0.15450765446160208,
+          "chroma": 0.007843257842450862,
+          "hue": 312.69137712786613
+        },
+        {
+          "id": "neutral-4",
+          "kind": "neutral",
+          "hex": "#524c54",
+          "share": 0.009369893790849673,
+          "lightness": 0.4249623115671022,
+          "chroma": 0.014240249266807198,
+          "hue": 316.3418174935187
+        },
+        {
+          "id": "neutral-5",
+          "kind": "neutral",
+          "hex": "#878288",
+          "share": 0.002195669934640523,
+          "lightness": 0.6132497785736383,
+          "chroma": 0.010098613353246634,
+          "hue": 319.37587078375356
+        },
+        {
+          "id": "neutral-6",
+          "kind": "neutral",
+          "hex": "#e3dee5",
+          "share": 0.0015063316993464053,
+          "lightness": 0.9059733872840274,
+          "chroma": 0.01083430623773704,
+          "hue": 316.80097329806506
+        },
+        {
+          "id": "color-1",
+          "kind": "color",
+          "hex": "#a99058",
+          "share": 0.00015318627450980392,
+          "lightness": 0.664540071919298,
+          "chroma": 0.0810735231573646,
+          "hue": 86.65459708852491
+        },
+        {
+          "id": "color-2",
+          "kind": "color",
+          "hex": "#7f6d4e",
+          "share": 0.00010212418300653595,
+          "lightness": 0.5436745830002266,
+          "chroma": 0.050858265723912485,
+          "hue": 81.28391592796075
+        },
+        {
+          "id": "color-3",
+          "kind": "color",
+          "hex": "#69513c",
+          "share": 0.00010212418300653595,
+          "lightness": 0.4537233516075797,
+          "chroma": 0.04641503329848148,
+          "hue": 61.598668783025204
+        },
+        {
+          "id": "color-4",
+          "kind": "color",
+          "hex": "#705c47",
+          "share": 0.00010212418300653595,
+          "lightness": 0.4888563628080611,
+          "chroma": 0.04136690808490947,
+          "hue": 70.00672068797223
+        },
+        {
+          "id": "color-5",
+          "kind": "color",
+          "hex": "#c9ab66",
+          "share": 0.00007659313725490196,
+          "lightness": 0.751574003334468,
+          "chroma": 0.09479805064807982,
+          "hue": 86.64387532428795
+        },
+        {
+          "id": "color-6",
+          "kind": "color",
+          "hex": "#0f1929",
+          "share": 0.000025531045751633988,
+          "lightness": 0.2126432229159114,
+          "chroma": 0.035093694609710964,
+          "hue": 259.50064482420447
+        }
+      ],
+      "neutrals": {
+        "share": 0.9994383169934641,
+        "averageHue": 312.781189440296,
+        "averageChroma": 0.01610270387738496,
+        "lightnessMin": 0.0846725099673314,
+        "lightnessMax": 0.9667062588094818
+      },
+      "neutralChromaThreshold": 0.035
+    }
+  },
+  {
+    "title": "Braun ET 55 calculator",
+    "sourceUrl": "https://www.moma.org/collection/works/3697",
+    "tags": ["industrial-control", "button"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-c4c9e3af-e2f7-4648-a783-896e6abef220",
+    "createdAt": "2026-10-05T00:46:41.603Z",
+    "updatedAt": "2026-10-05T00:46:41.603Z"
+  },
+  {
+    "title": "Otl Aicher archive",
+    "sourceUrl": "https://hfg-archiv.museumulm.de/hfg-sammlung/werknachlaesse/nachlass-otl-aicher/",
+    "tags": ["ulm", "information-system"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-362be96e-4e3f-477f-bf35-20f0b753bfcb",
+    "createdAt": "2026-10-05T00:46:41.975Z",
+    "updatedAt": "2026-10-05T00:46:41.975Z"
+  },
+  {
+    "title": "SBB information manual",
+    "sourceUrl": "https://eshop.museum-gestaltung.ch/?id=9177&lang=en&op=product",
+    "tags": ["swiss-style", "wayfinding"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-fff2225b-d301-4665-bc9d-b5c97f1bd977",
+    "createdAt": "2026-10-05T00:46:42.346Z",
+    "updatedAt": "2026-10-05T00:46:42.346Z"
+  },
+  {
+    "title": "Wim Crouwel",
+    "sourceUrl": "https://designmuseum.org/designers/wim-crouwel",
+    "tags": ["swiss-style", "grid"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-6c2c3bb5-012f-4a25-ae4a-b39cc95e7aae",
+    "createdAt": "2026-10-05T00:46:42.711Z",
+    "updatedAt": "2026-10-05T00:46:42.711Z"
+  },
+  {
+    "title": "Teenage Engineering TX-6",
+    "sourceUrl": "https://teenage.engineering/products/tx-6",
+    "tags": ["instrument", "physical-control"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-c67a7c5b-3e75-47cc-a41e-aa2e1a13d73c",
+    "createdAt": "2026-10-05T00:46:43.080Z",
+    "updatedAt": "2026-10-05T00:46:43.080Z"
+  },
+  {
+    "title": "Ableton Live 12 interface",
+    "sourceUrl": "https://www.ableton.com/en/live-manual/12/first-steps/",
+    "tags": ["software-instrument", "dark-mode"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-c956d26a-456b-4065-9077-9aabcabb9a9b",
+    "createdAt": "2026-10-05T00:46:43.454Z",
+    "updatedAt": "2026-10-05T00:46:43.454Z"
+  },
+  {
+    "title": "Spectrum Action button",
+    "sourceUrl": "https://spectrum.adobe.com/page/action-button/",
+    "tags": ["design-system", "button-states"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-92e6f28a-f74b-40d4-b6e3-13247f6466a9",
+    "createdAt": "2026-10-05T00:46:43.825Z",
+    "updatedAt": "2026-10-05T00:46:43.825Z"
+  },
+  {
+    "title": "Primer ActionMenu",
+    "sourceUrl": "https://primer.style/product/components/action-menu/guidelines/",
+    "tags": ["design-system", "menu"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-edad7e36-0d56-4de4-8738-6826a89dea61",
+    "createdAt": "2026-10-05T00:46:44.197Z",
+    "updatedAt": "2026-10-05T00:46:44.197Z"
+  },
+  {
+    "title": "Primer TextInput",
+    "sourceUrl": "https://primer.style/product/components/text-input/guidelines/",
+    "tags": ["design-system", "text-field"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "",
+    "likes": "",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "",
+      "contrast": "",
+      "accentUse": "",
+      "density": "",
+      "radiusFamily": "",
+      "typeContrast": "",
+      "depth": "",
+      "motion": ""
+    },
+    "id": "ref-697d044c-2a58-48b7-b105-3ccaf9335c8c",
+    "createdAt": "2026-10-05T00:46:44.574Z",
+    "updatedAt": "2026-10-05T00:46:44.574Z"
+  },
+  {
+    "title": "Hairline figures, Lucas Marques",
+    "sourceUrl": "https://hairline.lucasmarkes.com/figures",
+    "tags": ["user-reference", "clarity", "linework", "neutral"],
+    "boards": ["su-quiet-instrument"],
+    "notes": "Added at Yankun's request on 2026-10-06 for the clarity of the figures page. Quiet instrument's base palette is now achromatic in both modes; further stroke and component refinement remains open.",
+    "likes": "Generous open space; precise fine linework; contrast that keeps the subject distinct from supporting detail; geometry explained through interaction.",
+    "dislikes": "",
+    "teardown": {
+      "neutralTemperature": "Visually near-neutral white and gray surfaces; remove the green tint from Quiet instrument's base planes.",
+      "contrast": "Fine gray drawing details, darker labels, and a clear outside keyboard-focus outline.",
+      "accentUse": "The inspected figures view relies mainly on value contrast; retain semantic status colors in ZAO.",
+      "density": "Open breathing room around small precise figures and concise labels.",
+      "radiusFamily": "Reference has rounded enclosures; Su keeps its chosen square actions and trial 2px passive corners.",
+      "typeContrast": "Hierarchy separates headings, explanations, names, and readings; preserve ZAO's Geist roles.",
+      "depth": "Thin linework makes layered geometry legible with restrained supporting surfaces.",
+      "motion": "The Exploded figure describes pointer position as layer separation and selection; study cause-and-effect motion in future component detail."
+    },
+    "id": "ref-e968b3f6-5cd6-408d-a618-62a198d0f7f8",
+    "createdAt": "2026-10-06T21:21:45.085Z",
+    "updatedAt": "2026-10-06T21:21:45.085Z"
+  }
+]

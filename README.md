@@ -5,16 +5,21 @@
 
 ZAO is a design system built to be used well by people and by coding agents. It shrinks the choice space, explains itself in a form machines can read, and measures its own promises in tests.
 
-It ships two finishes on one structure:
+Its current design direction is **Quiet construction**: an experiment at the boundary of 2D and 3D interfaces, combining clear information with measured physical presence and quiet response. Yingzao Fashi informs proportion, parts, assembly, and finish; Hairline informs the feeling and the experimental method. Usability benefits remain hypotheses to test. Read the [direction brief](./BRIEF.md#current-design-direction-quiet-construction).
 
-- **Su 素**, plain: quiet, precise and easy to adopt, in light and dark.
-- **Yu 玉**, jade: color, depth and glass on floating layers, dark first.
+**Care for every detail; keep the number of details small.** Give visual form, interaction, and craft equal attention, refining a small, coherent set of purposeful details before adding more.
 
-Spacing, control sizes and type sizes are shared by both, so components never change size between finishes. See [BRIEF.md](./BRIEF.md) for the thinking, scope and decision log.
+The shared theme comes first. Yankun will define interactions one component at a time. Exact gestures, depth, motion values, and component treatments remain open.
+
+The current scope is one finish: **Su 素**, plain, in light and dark. Build one coherent design system and polish its visual form, interaction, and craft first. **Yu 玉** is deferred as a possible phase 2, with no committed release date or mode scope.
+
+Spacing, control sizes, type sizes, component anatomy, and interaction meaning stay consistent across Su's modes. The token architecture still separates structure, finish, and mode so future finishes can build on the same foundation. Quiet construction names the design direction. See [BRIEF.md](./BRIEF.md) for the thinking, scope and decision log.
 
 ## Status
 
-v0.1 in progress. Milestone 1 (foundation) is done: tokens, palettes, the Tailwind theme, fonts, tests, CI and the docs shell. Components arrive in milestone 2.
+v0.1 in progress. Milestone 1 (foundation) is done: tokens, palettes, the Tailwind theme, fonts, tests, CI and the docs shell. The component library includes Button, TextField, Card, Combobox, Dialog, Menu, Progress, Select, Switch, and Tabs. Button, TextField, and Card were the first components for studying the Su finish.
+
+Open `/components` in the docs for a separate page for each component. Each page uses the Quiet instrument study for Su. Foundations → Design notes reads the study's `design.md`. The header mode switcher offers System, Light, and Dark for Su. Yu is absent from the current docs previews; existing Yu token, engine, and lab assets remain deferred groundwork. The existing study name, CSS, and trial values remain the current preview; they do not prescribe the new direction's interactions. See the [Su CSS study](./docs/style-studies.md) for the source files and styling hooks.
 
 ## Getting started
 
@@ -34,16 +39,19 @@ pnpm dev               # builds the packages and opens the docs at http://localh
 | `pnpm lab`           | Build the packages, then run the private style lab on localhost:3001              |
 | `pnpm lab:style`     | Inspect and edit saved styles from the command line                               |
 | `pnpm lab:reference` | Collect references and print explicitly seeded style drafts from the command line |
+| `pnpm lab:journal`   | List and write journal notes from the command line                                |
 | `pnpm lab:check`     | Validate saved styles, inheritance and the generated style schema                 |
 | `pnpm lab:snap`      | Capture saved styles and specimens as PNGs with a contact sheet                   |
 | `pnpm lab:promote`   | Promote a chosen style into token sources after Yankun's decision                 |
 | `pnpm build`         | Build `@zao/engine`, `@zao/tokens` and `@zao/react`                               |
 | `pnpm tokens`        | Rebuild tokens after editing `packages/tokens/src`                                |
 | `pnpm palette`       | Regenerate palettes after editing `packages/tokens/palette.config.ts`             |
-| `pnpm test`          | Completeness, shared-structure and contrast tests                                 |
+| `pnpm test`          | Token, engine, lab and component browser tests                                    |
 | `pnpm typecheck`     | TypeScript across the workspace                                                   |
 | `pnpm format`        | Prettier                                                                          |
 | `pnpm changeset`     | Describe a change to a published package                                          |
+
+Use `pnpm lab:style compare <id1> <id2> [id3 id4] [--context su-dark]` to print parameter differences across 2–4 styles in one context. Use `pnpm lab:journal help` for filtered journal listing and file-based note writing.
 
 ## Packages
 
@@ -51,7 +59,7 @@ pnpm dev               # builds the packages and opens the docs at http://localh
 | ------------------------------------ | ------------------------------------------------------------------------------------------ |
 | [`@zao/tokens`](./packages/tokens)   | W3C DTCG tokens with a resolver for every finish and mode, built to CSS variables and JSON |
 | [`@zao/engine`](./packages/engine)   | Private style engine, parameter registry, palette generator and contrast promises          |
-| [`@zao/react`](./packages/react)     | Tailwind CSS v4 theme, self-hosted fonts, and (soon) components built on Base UI           |
+| [`@zao/react`](./packages/react)     | Tailwind CSS v4 theme, self-hosted fonts, and components built on Base UI                  |
 | [`packages/agent`](./packages/agent) | Planned: manifests, an MCP server and a validator for agents                               |
 | [`apps/docs`](./apps/docs)           | The docs site (Next.js)                                                                    |
 | [`apps/lab`](./apps/lab)             | Local style lab with specimens and a parameter editor                                      |

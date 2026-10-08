@@ -1,0 +1,88 @@
+/* Composer-independent transcript structure; the host supplies the bounded height. */
+.zao-conversation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-3);
+  min-width: 0;
+  min-height: 0;
+  color: var(--zao-color-fg-default);
+}
+
+.zao-conversation-viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-anchor: none;
+  scroll-behavior: auto;
+}
+
+.zao-conversation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-5);
+  min-width: 0;
+  margin: 0;
+  padding: var(--zao-space-3);
+  list-style: none;
+}
+
+.zao-message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-1-5);
+  min-width: 0;
+  padding: var(--zao-space-2) var(--zao-space-3);
+  overflow-wrap: anywhere;
+  color: var(--zao-color-fg-default);
+}
+
+.zao-message[data-zao-kind='user'] {
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  background: var(--zao-color-bg-surface);
+  border-inline-start: 1px solid var(--zao-color-border-subtle);
+}
+
+.zao-message [data-zao-slot='metadata'] {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--zao-space-2);
+}
+
+.zao-message [data-zao-slot='metadata']::before {
+  content: '';
+  inline-size: 1px;
+  block-size: var(--zao-space-2);
+  align-self: center;
+  flex-shrink: 0;
+  background: var(--zao-color-border-subtle);
+}
+
+.zao-message [data-zao-slot='status'] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zao-space-1-5);
+}
+
+.zao-message [data-zao-slot='status']::before {
+  content: '';
+  inline-size: var(--zao-space-1);
+  block-size: var(--zao-space-1);
+  background: currentColor;
+}
+
+.zao-message-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* Rich-result authors provide a named, focusable region for overflowing code and data. */
+.zao-message-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  overflow-wrap: normal;
+}

@@ -1,0 +1,137 @@
+/* Su study: measured rules and registration blue. Trial values, scoped to /components. */
+.study[data-study='calibration-sheet'] {
+  --paper: #f5f6f2;
+  --sheet: #fffefa;
+  --ink: #17232d;
+  --muted: #586773;
+  --rule: #aab9c9;
+  --fine-rule: #d6e0e8;
+  --accent: #173dc8;
+  --accent-hover: #0b2eaa;
+  --on-accent: #fffefa;
+  --wash: #e8edff;
+  --wash-strong: #d9e2ff;
+
+  --zao-color-bg-canvas: var(--paper);
+  --zao-color-bg-surface: var(--sheet);
+  --zao-color-bg-sunken: var(--wash);
+  --zao-color-bg-overlay: var(--sheet);
+  --zao-color-bg-hover: var(--wash);
+  --zao-color-bg-active: var(--wash-strong);
+  --zao-color-fg-default: var(--ink);
+  --zao-color-fg-muted: var(--muted);
+  --zao-color-fg-disabled: var(--muted);
+  --zao-color-fg-on-accent: var(--on-accent);
+  --zao-color-border-subtle: var(--fine-rule);
+  --zao-color-border-default: var(--rule);
+  --zao-color-border-strong: var(--accent);
+  --zao-color-accent-solid: var(--accent);
+  --zao-color-accent-solid-hover: var(--accent-hover);
+  --zao-color-accent-subtle: var(--wash);
+  --zao-color-accent-subtle-hover: var(--wash-strong);
+  --zao-color-accent-border: var(--accent);
+  --zao-color-accent-text: var(--accent);
+  --zao-color-focus-ring: var(--accent);
+  --zao-radius-action: 0px;
+  --zao-radius-control: 0px;
+  --zao-radius-surface: 0px;
+  --zao-radius-overlay: 0px;
+  --zao-motion-duration-fast: 100ms;
+}
+
+.study[data-study='calibration-sheet'][data-zao-mode='dark'] {
+  --paper: #111c28;
+  --sheet: #172636;
+  --ink: #f0f5f7;
+  --muted: #b1c5d0;
+  --rule: #718ea7;
+  --fine-rule: #354c60;
+  --accent: #a6bdff;
+  --accent-hover: #c5d3ff;
+  --on-accent: #10203b;
+  --wash: #263b58;
+  --wash-strong: #354d74;
+}
+
+/* Button: a registered mark, with no change to the shared control dimensions. */
+.study[data-study='calibration-sheet'] [data-zao-component='button'] {
+  border-radius: 0;
+  box-shadow: inset 0 -2px transparent;
+  transition:
+    background-color var(--zao-motion-duration-fast) ease,
+    border-color var(--zao-motion-duration-fast) ease,
+    box-shadow var(--zao-motion-duration-fast) ease;
+}
+
+.study[data-study='calibration-sheet']
+  [data-zao-component='button'][data-zao-variant='primary']:is(:hover, :focus-visible):not(
+    :disabled
+  ) {
+  box-shadow: inset 0 -2px var(--on-accent);
+}
+
+.study[data-study='calibration-sheet'] [data-zao-component='button'][data-zao-variant='secondary'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.study[data-study='calibration-sheet']
+  [data-zao-component='button'][data-zao-variant='secondary']:hover:not(:disabled),
+.study[data-study='calibration-sheet']
+  [data-zao-component='button'][data-zao-variant='quiet']:hover:not(:disabled) {
+  box-shadow: inset 0 -2px var(--accent);
+}
+
+/* TextField: the complete rectangle reads like a calibrated cell. */
+.study[data-study='calibration-sheet'] [data-zao-component='text-field'] [data-zao-slot='control'] {
+  border-radius: 0;
+  background-color: var(--sheet);
+}
+
+.study[data-study='calibration-sheet']
+  [data-zao-component='text-field']
+  [data-zao-slot='control']:is(:hover, :focus-visible):not(:disabled):not([aria-invalid='true']) {
+  border-color: var(--accent);
+}
+
+/* Card: a record with rules and a grid confined to its data figure. */
+.study[data-study='calibration-sheet'] [data-zao-component='card'] {
+  border-color: var(--rule);
+  border-radius: 0;
+  box-shadow: inset 2px 0 var(--accent);
+}
+
+.study[data-study='calibration-sheet'] .card-topline,
+.study[data-study='calibration-sheet'] .card-foot {
+  border-color: var(--rule);
+}
+
+.study[data-study='calibration-sheet'] .card-topline .figures-id {
+  font-family: var(--zao-font-family-mono);
+}
+
+.study[data-study='calibration-sheet'] .card-copy dl > div {
+  border-top-style: dotted;
+}
+
+.study[data-study='calibration-sheet'] .system-figure {
+  border-radius: 0;
+  border-color: var(--rule);
+  background-color: var(--sheet);
+  background-image:
+    linear-gradient(to right, var(--fine-rule) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--fine-rule) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.study[data-study='calibration-sheet'] .figure-mark {
+  background: var(--sheet);
+  outline: 1px solid var(--rule);
+  padding: var(--zao-unit);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study[data-study='calibration-sheet'] [data-zao-component='button'] {
+    transition: none;
+  }
+}

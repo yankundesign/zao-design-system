@@ -34,9 +34,14 @@ const fieldClass =
 const buttonClass =
   'h-8 rounded-action border border-default bg-surface px-3 type-label trim-label text-default hover:bg-hover disabled:opacity-50';
 
-function nativeContext(style: StyleFile, selected: ContextId): ContextId {
-  if (style.id === 'su' && selected === 'yu-dark') return 'su-dark';
-  if (style.id === 'yu') return 'yu-dark';
+function nativeContext(
+  style: StyleFile,
+  selected: ContextId,
+  library: Record<string, StyleFile>,
+): ContextId {
+  if (rootFinish(style, library) === 'yu') return 'yu-dark';
+  if (selected === 'yu-dark' || (selected === 'su-light' && !style.modes.includes('light')))
+    return 'su-dark';
   return selected;
 }
 
@@ -176,7 +181,7 @@ export default function ExplorePanel({
           previews: compareIds.flatMap((id) => {
             const style = library[id];
             return style
-              ? [{ style, context: nativeContext(style, context), label: style.name }]
+              ? [{ style, context: nativeContext(style, context, library), label: style.name }]
               : [];
           }),
           error: '',

@@ -208,8 +208,14 @@ async function main() {
   if (command === 'compare') {
     const { positional, flags } = parseOptions(args);
     onlyFlags(flags, ['context']);
-    if (positional.length < 2 || positional.length > 4 || new Set(positional).size !== positional.length)
-      throw new Error('Usage: compare <id1> <id2> [id3 id4] [--context su-light|su-dark|yu-dark]. Choose 2–4 distinct styles.');
+    if (
+      positional.length < 2 ||
+      positional.length > 4 ||
+      new Set(positional).size !== positional.length
+    )
+      throw new Error(
+        'Usage: compare <id1> <id2> [id3 id4] [--context su-light|su-dark|yu-dark]. Choose 2–4 distinct styles.',
+      );
     const styles = { ...baselineStyles(), ...(await allStyles()) } as Record<string, StyleFile>;
     const selected = positional.map((id) => requireStyle(id, styles));
     const hasYu = selected.some((style) => nativeContext(style, styles) === 'yu-dark');
@@ -217,13 +223,24 @@ async function main() {
     const contextId = flags.context ?? (hasYu && native === 'su-light' ? 'su-dark' : native);
     if (!contexts.includes(contextId as (typeof contexts)[number]))
       throw new Error('Context must be su-light, su-dark or yu-dark.');
-    const baseline = await baselineParams(contextId as (typeof contexts)[number]);
-    const values = selected.map((style) => {
+    const selectedContexts = selected.map((style) =>
+      nativeContext(style, styles) === 'yu-dark'
+        ? 'yu-dark'
+        : contextId === 'yu-dark' || (contextId === 'su-light' && !style.modes.includes('light'))
+          ? 'su-dark'
+          : contextId,
+    ) as Array<(typeof contexts)[number]>;
+    const baselines = Object.fromEntries(
+      await Promise.all(
+        [...new Set(selectedContexts)].map(async (id) => [id, await baselineParams(id)]),
+      ),
+    ) as Record<(typeof contexts)[number], Record<string, unknown>>;
+    const values = selected.map((style, index) => {
       const inherited = resolveStyle(style, styles).params;
       return Object.fromEntries(
         parameterRegistry.map((parameter) => [
           parameter.id,
-          inherited[parameter.id] ?? baseline[parameter.id],
+          inherited[parameter.id] ?? baselines[selectedContexts[index]!]![parameter.id],
         ]),
       );
     });
@@ -242,7 +259,11 @@ async function main() {
       JSON.stringify(
         {
           context: contextId,
-          styles: selected.map(({ id, name }) => ({ id, name })),
+          styles: selected.map(({ id, name }, index) => ({
+            id,
+            name,
+            context: selectedContexts[index],
+          })),
           differences,
         },
         null,
@@ -406,7 +427,7 @@ async function main() {
   }
   if (command === 'diff') {
     const styles = await allStyles();
-    const all = { ...baselineStyles(), ...styles };
+    const all: Record<string, StyleFile> = { ...baselineStyles(), ...styles };
     const parent = all[style.extends];
     if (!parent) throw new Error(`Parent style "${style.extends}" was not found.`);
     console.log(JSON.stringify(diff(resolveStyle(parent, all), resolveStyle(style, all)), null, 2));

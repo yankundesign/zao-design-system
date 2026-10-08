@@ -977,7 +977,16 @@ export function toCssVars(style: StyleFile, context: CssContext) {
     vars['--zao-material-overlay-shadow'] = shadow;
   }
   if (Object.keys(resolved.params).some((id) => id.startsWith('font.') || id.startsWith('type.')))
-    for (const role of ['display', 'title', 'heading', 'body', 'label', 'caption', 'code']) {
+    for (const role of [
+      'display',
+      'title',
+      'heading',
+      'body',
+      'button',
+      'label',
+      'caption',
+      'code',
+    ]) {
       const prefix = `--zao-type-${role}`;
       const family = vars[`${prefix}-font-family`];
       const size = vars[`${prefix}-font-size`];

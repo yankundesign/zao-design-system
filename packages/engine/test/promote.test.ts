@@ -6,10 +6,12 @@ import { finishes } from '../../tokens/palette.config.ts';
 import { parameterRegistry } from '../src/registry/index.ts';
 import { baselineStyles } from '../src/style.ts';
 import {
+  applyPromotionPlan,
   planPromotion,
   promotionMapping,
   promotionPaths,
   type PromotionSources,
+  type PromotionPlan,
 } from '../src/promote.ts';
 import type { StyleFile } from '../src/types.ts';
 
@@ -27,11 +29,11 @@ const style = (params: Record<string, unknown>, extraCss = ''): StyleFile => ({
   params,
   extraCss,
 });
-const plan = (candidate: StyleFile, includeShared = false) =>
+const plan = (candidate: StyleFile, includeShared = false, finish: 'su' | 'yu' = 'su') =>
   planPromotion({
     style: candidate,
     library,
-    finish: 'su',
+    finish,
     includeShared,
     sources,
     paletteInput: finishes,
@@ -136,7 +138,26 @@ describe('promotion planner', () => {
     expect(type.font.weight.medium.$value).toBe(540);
     expect(space.unit.$value.value).toBe(5);
     expect(space.space['0-5'].$value.value).toBe(2.5);
-    expect(output.sharedEffects.map((effect) => effect.affectedFinish)).toEqual(['yu', 'yu', 'yu']);
+    expect(output.sharedEffects.map((effect) => [effect.id, effect.contexts])).toEqual([
+      ['font.weight.medium', ['yu-dark']],
+      ['space.unit', ['yu-dark']],
+    ]);
+  });
+
+  it('reports only shipped contexts affected by a mode change', () => {
+    expect(plan(style({ 'mode.canvas': { light: 3 } }), true).sharedEffects).toEqual([]);
+    expect(plan(style({ 'mode.canvas': { dark: 4 } }), true).sharedEffects).toEqual([
+      { id: 'mode.canvas', value: { dark: 4 }, contexts: ['yu-dark'] },
+    ]);
+    expect(plan(style({ 'mode.canvas': { light: 3, dark: 4 } }), true, 'yu').sharedEffects).toEqual(
+      [
+        {
+          id: 'mode.canvas',
+          value: { light: 3, dark: 4 },
+          contexts: ['su-light', 'su-dark'],
+        },
+      ],
+    );
   });
 
   it('keeps theme typography composites aligned when a shared display size changes', () => {
@@ -189,5 +210,89 @@ describe('promotion planner', () => {
       { id: 'extraCss', reason: 'Make this a registry parameter first.' },
       { id: 'color.ramp.extra', reason: 'Extra ramps need new semantic roles before promotion.' },
     ]);
+  });
+});
+
+describe('promotion application', () => {
+  const fixture: PromotionPlan = {
+    finish: 'su',
+    styleId: 'fixture',
+    files: [
+      {
+        path: 'packages/tokens/palette.config.ts',
+        before: 'preexisting local palette edit',
+        after: 'promoted palette edit',
+        parameters: ['color.accent.hue'],
+      },
+      {
+        path: 'packages/tokens/src/themes/su.tokens.json',
+        before: 'preexisting local theme edit',
+        after: 'promoted theme edit',
+        parameters: ['radius.action'],
+      },
+    ],
+    skippedShared: [],
+    unsupported: [],
+    sharedEffects: [],
+    decisionLogDraft: '',
+  };
+
+  it.each(['palette', 'tokens', 'tests', 'contrast'] as const)(
+    'restores original sources and derived files after %s fails',
+    async (failedStage) => {
+      const contents = new Map(fixture.files.map((file) => [file.path, file.before]));
+      const stages: string[] = [];
+      let generated = 'preexisting generated edit';
+      let failed = false;
+      const stage = (name: string) => async () => {
+        stages.push(name);
+        generated = 'regenerated';
+        if (name === failedStage && !failed) {
+          failed = true;
+          throw new Error(`${name} failed`);
+        }
+      };
+      await expect(
+        applyPromotionPlan(fixture, {
+          writeSource: async (path, value) => {
+            contents.set(path, value);
+          },
+          formatPalette: async () => {},
+          runPalette: stage('palette'),
+          runTokens: stage('tokens'),
+          runTests: stage('tests'),
+          checkContrast: stage('contrast'),
+          restoreDerived: async () => {
+            stages.push('restore derived');
+            generated = 'preexisting generated edit';
+          },
+        }),
+      ).rejects.toThrow(
+        `Promotion failed: ${failedStage} failed\nRestored prior token source and derived files.`,
+      );
+      expect(contents).toEqual(new Map(fixture.files.map((file) => [file.path, file.before])));
+      expect(generated).toBe('preexisting generated edit');
+      expect(stages.slice(-3)).toEqual(['palette', 'tokens', 'restore derived']);
+    },
+  );
+
+  it('reports a failed rollback together with the original error', async () => {
+    await expect(
+      applyPromotionPlan(fixture, {
+        writeSource: async (_path, contents) => {
+          if (contents.startsWith('preexisting')) throw new Error('restore denied');
+        },
+        formatPalette: async () => {},
+        runPalette: async () => {},
+        runTokens: async () => {},
+        runTests: async () => {
+          throw new Error('tests failed');
+        },
+        checkContrast: async () => {},
+        restoreDerived: async () => {},
+      }),
+    ).rejects.toThrow(
+      /Promotion failed: tests failed\nRollback incomplete: restore .*restore denied/,
+    );
   });
 });

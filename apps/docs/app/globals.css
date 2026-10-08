@@ -4,3 +4,219 @@
 
 /* Let Tailwind see class names used inside the ZAO packages. */
 @source '../../../packages/react/src';
+
+.docs-shell {
+  max-inline-size: 80rem;
+  margin-inline: auto;
+}
+
+@media (min-width: 64rem) {
+  .docs-detail-section {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+
+/* Keep native scrolling and its geometry; desktop thumbs appear on hover. */
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+  :where(
+    .docs-scroll-region,
+    .docs-shell [class~='overflow-x-auto'],
+    .docs-shell [class~='overflow-y-auto']
+  ) {
+    scrollbar-color: transparent transparent;
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+  }
+
+  :where(
+    .docs-scroll-region,
+    .docs-shell [class~='overflow-x-auto'],
+    .docs-shell [class~='overflow-y-auto']
+  ):hover {
+    scrollbar-color: var(--zao-color-border-default) transparent;
+  }
+
+  @supports selector(::-webkit-scrollbar) {
+    html {
+      scrollbar-color: auto;
+      scrollbar-width: auto;
+      scrollbar-gutter: stable;
+    }
+
+    html::-webkit-scrollbar {
+      width: var(--zao-space-2);
+      height: var(--zao-space-2);
+      background: transparent;
+    }
+
+    html::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+
+    html::-webkit-scrollbar-thumb:hover,
+    html::-webkit-scrollbar-thumb:active {
+      background: var(--zao-color-border-default);
+    }
+  }
+}
+
+/* A selected page is an attached slip; only its unprinted left lip can flex. */
+.docs-nav-link {
+  --docs-nav-paper-contact: calc(var(--zao-space-0-5) / 2);
+  --docs-nav-paper-lip-contact: var(--docs-nav-paper-contact);
+  --docs-nav-paper-flex: 0deg;
+  position: relative;
+}
+
+.docs-nav-label {
+  position: relative;
+  z-index: 1;
+}
+
+.docs-nav-paper {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--zao-space-1);
+  inset-inline-end: 0;
+  background-color: var(--zao-color-bg-active);
+  box-shadow: 0 var(--docs-nav-paper-contact) 0 var(--zao-color-border-subtle);
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+    box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+    background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+}
+
+.docs-nav-paper::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(-1 * var(--zao-space-1));
+  inline-size: var(--zao-space-1);
+  background-color: inherit;
+  box-shadow: calc(-1 * var(--docs-nav-paper-lip-contact)) var(--docs-nav-paper-lip-contact) 0
+    var(--zao-color-border-subtle);
+  content: '';
+  transform: perspective(var(--zao-space-12)) rotateY(var(--docs-nav-paper-flex));
+  transform-origin: right center;
+  transition:
+    transform var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+    box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+    background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+}
+
+.docs-nav-paper::after {
+  position: absolute;
+  inset-block: var(--zao-space-2);
+  inset-inline-end: 0;
+  inline-size: var(--zao-space-1);
+  background-color: var(--zao-color-fg-default);
+  content: '';
+}
+
+.docs-nav-link[aria-current='page'] .docs-nav-paper {
+  opacity: 1;
+}
+
+.docs-nav-link[aria-current='page']:where(:focus-visible) {
+  --docs-nav-paper-flex: 30deg;
+  --docs-nav-paper-lip-contact: var(--zao-space-0-5);
+}
+
+.docs-nav-link:where(:focus-visible):not([aria-current='page']) {
+  background-color: var(--zao-color-bg-hover);
+  color: var(--zao-color-fg-default);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .docs-nav-link[aria-current='page']:where(:hover) {
+    --docs-nav-paper-flex: 30deg;
+    --docs-nav-paper-lip-contact: var(--zao-space-0-5);
+  }
+
+  .docs-nav-link:where(:hover):not([aria-current='page']) {
+    background-color: var(--zao-color-bg-hover);
+    color: var(--zao-color-fg-default);
+  }
+}
+
+.docs-nav-link:active,
+.docs-nav-link[data-pressed] {
+  --docs-nav-paper-contact: 0px;
+  --docs-nav-paper-lip-contact: 0px;
+  --docs-nav-paper-flex: 0deg;
+  background-color: var(--zao-color-bg-active);
+  color: var(--zao-color-fg-default);
+  transition: none;
+}
+
+.docs-nav-link:active .docs-nav-paper,
+.docs-nav-link[data-pressed] .docs-nav-paper,
+.docs-nav-link:active .docs-nav-paper::before,
+.docs-nav-link[data-pressed] .docs-nav-paper::before {
+  transition: none;
+}
+
+/* A section's assembly answers its links; labels and targets stay stationary. */
+.docs-nav-figure {
+  color: var(--docs-nav-figure-ink, var(--zao-color-fg-muted));
+  pointer-events: none;
+  transition: color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+}
+
+.docs-nav-figure-detail {
+  stroke: var(--zao-color-border-subtle);
+}
+
+.docs-nav-figure-part {
+  transform: translateY(var(--docs-nav-figure-lift, 0px));
+  transition: transform var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+}
+
+.docs-nav-section:has(a:focus-visible) {
+  --docs-nav-figure-ink: var(--zao-color-fg-default);
+  --docs-nav-figure-lift: calc(-1 * var(--zao-space-1));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .docs-nav-section:has(a:hover) {
+    --docs-nav-figure-ink: var(--zao-color-fg-default);
+    --docs-nav-figure-lift: calc(-1 * var(--zao-space-1));
+  }
+}
+
+@media (min-width: 48rem) {
+  .docs-nav-aside {
+    --docs-nav-top: calc(var(--zao-space-20) + var(--zao-space-4));
+    position: sticky;
+    top: var(--docs-nav-top);
+    align-self: start;
+  }
+
+  .docs-nav-desktop {
+    max-block-size: calc(100dvh - var(--docs-nav-top) - var(--zao-space-4));
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    overscroll-behavior-block: contain;
+    scroll-padding-block: var(--zao-space-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-nav-figure,
+  .docs-nav-figure-part,
+  .docs-nav-link,
+  .docs-nav-paper,
+  .docs-nav-paper::before {
+    transition: none;
+  }
+
+  .docs-nav-figure-part,
+  .docs-nav-paper::before {
+    transform: none;
+  }
+
+  .docs-nav-link[aria-current='page'] {
+    --docs-nav-paper-lip-contact: var(--docs-nav-paper-contact);
+  }
+}

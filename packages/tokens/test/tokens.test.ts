@@ -51,7 +51,7 @@ describe('structure is shared, finish is chosen', () => {
   const structural = (id: string) =>
     /^(unit|space\.|size\.|radius\.(none|pill)|font\.family\.(text|mono)|font\.weight\.)/.test(
       id,
-    ) || /^type\.(heading|body|label|caption|code)$/.test(id);
+    ) || /^type\.(heading|body|button|label|caption|code)$/.test(id);
 
   it('keeps every structural token identical', () => {
     const base = resolved['su-light']!;

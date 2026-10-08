@@ -1,0 +1,143 @@
+/* Su study: open writing lines and architectural section rules on warm paper. */
+.study[data-study='living-folio'] {
+  --paper: #f1f0e9;
+  --sheet: #faf9f4;
+  --ink: #252b29;
+  --muted: #5a6762;
+  --rule: #a7b3ac;
+  --fine-rule: #d0d9d2;
+  --accent: #315e86;
+  --accent-hover: #244b6c;
+  --on-accent: #faf9f4;
+  --wash: #e3eae5;
+  --wash-strong: #d4e0d8;
+
+  --zao-color-bg-canvas: var(--paper);
+  --zao-color-bg-surface: var(--sheet);
+  --zao-color-bg-sunken: var(--wash);
+  --zao-color-bg-overlay: var(--sheet);
+  --zao-color-bg-hover: var(--wash);
+  --zao-color-bg-active: var(--wash-strong);
+  --zao-color-fg-default: var(--ink);
+  --zao-color-fg-muted: var(--muted);
+  --zao-color-fg-disabled: var(--muted);
+  --zao-color-fg-on-accent: var(--on-accent);
+  --zao-color-border-subtle: var(--fine-rule);
+  --zao-color-border-default: var(--rule);
+  --zao-color-border-strong: var(--ink);
+  --zao-color-accent-solid: var(--ink);
+  --zao-color-accent-solid-hover: var(--accent-hover);
+  --zao-color-accent-subtle: var(--wash);
+  --zao-color-accent-subtle-hover: var(--wash-strong);
+  --zao-color-accent-border: var(--accent);
+  --zao-color-accent-text: var(--accent);
+  --zao-color-focus-ring: var(--accent);
+  --zao-radius-action: 0px;
+  --zao-radius-control: 0px;
+  --zao-radius-surface: 0px;
+  --zao-radius-overlay: 0px;
+  --zao-motion-duration-fast: 140ms;
+}
+
+.study[data-study='living-folio'][data-zao-mode='dark'] {
+  --paper: #1d2321;
+  --sheet: #252d29;
+  --ink: #f0f1e9;
+  --muted: #b4c4b9;
+  --rule: #788a7e;
+  --fine-rule: #45564b;
+  --accent: #a6c9e3;
+  --accent-hover: #b9d7ee;
+  --on-accent: #17232a;
+  --wash: #303f36;
+  --wash-strong: #405447;
+}
+
+/* Button: printed ink, a keyline, then an underlined quiet action. */
+.study[data-study='living-folio'] [data-zao-component='button'] {
+  border-radius: 0;
+  transition:
+    background-color var(--zao-motion-duration-fast) ease,
+    border-color var(--zao-motion-duration-fast) ease,
+    box-shadow var(--zao-motion-duration-fast) ease;
+}
+
+.study[data-study='living-folio'] [data-zao-component='button'][data-zao-variant='secondary'] {
+  border-color: var(--rule);
+  background: transparent;
+}
+
+.study[data-study='living-folio']
+  [data-zao-component='button'][data-zao-variant='secondary']:hover:not(:disabled) {
+  border-color: var(--ink);
+  background: var(--wash);
+}
+
+.study[data-study='living-folio']
+  [data-zao-component='button'][data-zao-variant='quiet']:hover:not(:disabled) {
+  background: transparent;
+  box-shadow: inset 0 -1px var(--ink);
+}
+
+/* TextField: an open writing line; the native focus outline remains visible. */
+.study[data-study='living-folio'] [data-zao-component='text-field'] [data-zao-slot='control'] {
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: var(--rule);
+  border-left-color: transparent;
+  border-radius: 0;
+  background: transparent;
+}
+
+.study[data-study='living-folio']
+  [data-zao-component='text-field']
+  [data-zao-slot='control']:is(:hover, :focus-visible):not(:disabled):not([aria-invalid='true']) {
+  border-bottom-color: var(--accent);
+}
+
+.study[data-study='living-folio']
+  [data-zao-component='text-field']
+  [data-zao-slot='control'][aria-invalid='true'] {
+  border-bottom-color: var(--zao-color-danger-border);
+}
+
+/* Card: a record bounded by section rules, with a contained contour figure. */
+.study[data-study='living-folio'] [data-zao-component='card'] {
+  border-top-color: var(--ink);
+  border-right-color: transparent;
+  border-bottom-color: var(--ink);
+  border-left-color: transparent;
+  border-radius: 0;
+}
+
+.study[data-study='living-folio'] .card-topline,
+.study[data-study='living-folio'] .card-foot {
+  border-color: var(--rule);
+}
+
+.study[data-study='living-folio'] .card-topline .figures-id {
+  font-family: var(--zao-font-family-mono);
+}
+
+.study[data-study='living-folio'] .system-figure {
+  border-color: var(--rule);
+  border-radius: 0;
+  background-color: var(--sheet);
+  background-image: repeating-radial-gradient(
+    ellipse at 48% 115%,
+    transparent 0 18px,
+    var(--fine-rule) 19px 20px,
+    transparent 21px 35px
+  );
+}
+
+.study[data-study='living-folio'] .figure-mark {
+  background: var(--sheet);
+  padding: var(--zao-unit);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study[data-study='living-folio'] [data-zao-component='button'] {
+    transition: none;
+  }
+}

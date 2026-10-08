@@ -45,7 +45,9 @@ function add(
   if (id === 'font.family.text')
     cssVariables = [
       '--zao-font-family-text',
-      ...['heading', 'body', 'label', 'caption'].map((role) => `--zao-type-${role}-font-family`),
+      ...['heading', 'body', 'button', 'label', 'caption'].map(
+        (role) => `--zao-type-${role}-font-family`,
+      ),
     ];
   if (id === 'font.family.mono')
     cssVariables = ['--zao-font-family-mono', '--zao-type-code-font-family'];
@@ -189,7 +191,7 @@ for (const shadow of ['soft', 'strong'])
   );
 for (const weight of ['regular', 'medium', 'strong'])
   add(`font.weight.${weight}`, 'type', 'number', 'structure', [100, 900]);
-for (const role of ['display', 'title', 'heading', 'body', 'label', 'caption', 'code']) {
+for (const role of ['display', 'title', 'heading', 'body', 'button', 'label', 'caption', 'code']) {
   add(`type.${role}.size`, 'type', 'number', 'structure', [8, 96], 'px', `type.${role}.font-size`);
   add(
     `type.${role}.tracking`,

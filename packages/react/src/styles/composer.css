@@ -1,0 +1,86 @@
+/* A quiet perimeter and one joined contact edge form a stationary raised writing tray. */
+[data-zao-component='composer'].composer-construction {
+  --composer-contact: calc(var(--zao-space-0-5) / 2);
+  --composer-contact-color: var(--zao-color-border-default);
+  box-shadow: calc(-1 * var(--composer-contact)) var(--composer-contact) 0 0
+    var(--composer-contact-color);
+  overflow: visible;
+}
+
+/* Only entering the draft emphasizes the edge; controls retain their own focus treatment. */
+[data-zao-component='composer'].composer-construction:not([data-zao-disabled]):has(
+    .composer-input:focus
+  ) {
+  --composer-contact-color: var(--zao-color-border-strong);
+}
+
+[data-zao-component='composer'] .composer-input {
+  box-sizing: border-box;
+  resize: none;
+  min-block-size: max(
+    var(--zao-space-6),
+    calc(var(--zao-type-body-font-size) * var(--zao-type-body-line-height))
+  );
+  max-block-size: calc(8 * var(--zao-type-body-font-size) * var(--zao-type-body-line-height));
+  padding: 0;
+  border: 0;
+  border-radius: var(--zao-radius-none);
+  overflow-wrap: anywhere;
+  transition: none;
+}
+
+/* Text inputs also match :focus-visible on pointer focus; keep the outline for keyboard entry. */
+[data-zao-component='composer'] .composer-input[data-zao-pointer-focus]:focus {
+  outline: none;
+}
+
+[data-zao-component='composer'] .composer-context-label {
+  overflow-wrap: anywhere;
+}
+
+[data-zao-slot='context-icon'].composer-context-icon {
+  inline-size: var(--zao-size-icon-sm);
+  block-size: var(--zao-size-icon-sm);
+
+  & > svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* Give the toolbar room below the draft without adding another interior band. */
+[data-zao-component='composer'] > [data-zao-slot='actions'] {
+  margin-block-start: var(--zao-space-1);
+}
+
+/* The plus fills half its SVG; enlarge its drawing and align it with the draft edge. */
+[data-zao-component='composer'] .composer-attach {
+  margin-inline-start: calc(var(--zao-size-icon-md) / 4 - var(--zao-size-control-sm) / 2);
+
+  & [data-zao-slot='icon'] {
+    inline-size: var(--zao-size-icon-md);
+    block-size: var(--zao-size-icon-md);
+  }
+}
+
+[data-zao-component='composer'] .composer-filename {
+  overflow-wrap: anywhere;
+}
+
+[data-zao-component='composer'] .composer-attachment {
+  max-inline-size: min(100%, calc(var(--zao-space-20) * 3));
+}
+
+[data-zao-component='composer'] [data-zao-slot='tooltip'] {
+  overflow-wrap: anywhere;
+}
+
+[data-zao-component='composer'][data-zao-disabled] {
+  --composer-contact-color: var(--zao-color-border-subtle);
+  background-color: var(--zao-color-bg-sunken);
+
+  & [data-zao-slot='label'],
+  & [data-zao-slot='attachment-name'] {
+    color: var(--zao-color-fg-disabled);
+  }
+}

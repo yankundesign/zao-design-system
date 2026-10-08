@@ -1,0 +1,261 @@
+/* Su study: achromatic planes, legible controls, and recessed readings. */
+.study[data-study='quiet-instrument'] {
+  --surface: #f7f7f7;
+  --well: #e1e1e1;
+  --ink: #262626;
+  --muted: #626262;
+  --disabled: #727272;
+  --rule: #bababa;
+  --rule-strong: #575757;
+  --accent: #292929;
+  --accent-hover: #434343;
+  --on-accent: #fff;
+  --hover: #dbdbdb;
+
+  --zao-color-bg-surface: var(--surface);
+  --zao-color-bg-sunken: var(--well);
+  --zao-color-bg-overlay: var(--surface);
+  --zao-color-bg-hover: var(--hover);
+  --zao-color-bg-active: var(--well);
+  --zao-color-fg-default: var(--ink);
+  --zao-color-fg-muted: var(--muted);
+  --zao-color-fg-disabled: var(--disabled);
+  --zao-color-fg-on-accent: var(--on-accent);
+  --zao-color-border-subtle: var(--rule);
+  --zao-color-border-default: var(--rule-strong);
+  --zao-color-border-strong: var(--ink);
+  --zao-color-accent-solid: var(--accent);
+  --zao-color-accent-solid-hover: var(--accent-hover);
+  --zao-color-accent-subtle: var(--well);
+  --zao-color-accent-subtle-hover: var(--hover);
+  --zao-color-accent-border: var(--rule-strong);
+  --zao-color-accent-text: var(--ink);
+  --zao-color-focus-ring: var(--ink);
+  --zao-radius-action: 0px;
+  --zao-radius-control: 2px;
+  --zao-radius-surface: 2px;
+  --zao-radius-overlay: 2px;
+  --zao-motion-duration-fast: 80ms;
+}
+
+.study[data-study='quiet-instrument'][data-zao-mode='dark'] {
+  --canvas: #131313;
+  --zao-color-bg-canvas: var(--canvas);
+  --surface: #1f1f1f;
+  --well: #0e0e0e;
+  --ink: #efefef;
+  --muted: #bababa;
+  --disabled: #8f8f8f;
+  --rule: #484848;
+  --rule-strong: #969696;
+  --accent: #efefef;
+  --accent-hover: #d0d0d0;
+  --on-accent: #161616;
+  --hover: #303030;
+  --zao-color-success-solid: #8cbba5;
+  --zao-color-success-text: #a7d2ba;
+  --zao-color-success-border: #8cbba5;
+  --zao-color-danger-text: #ffaaa3;
+  --zao-color-danger-border: #e88982;
+  color-scheme: dark;
+}
+
+/* Button inherits the approved stationary base and hover lift from @zao/react.
+ * This study supplies semantic colors and timing, without moving the hit area. */
+
+/* Working field family: one stationary enclosure and one recessed value plane. */
+.study[data-study='quiet-instrument'] [data-zao-field-frame] {
+  border-radius: var(--zao-radius-none);
+  background-color: var(--zao-color-bg-sunken);
+  border-color: var(--zao-color-border-subtle);
+}
+
+/* Light fields use a clear value plane; the grey well identifies disabled controls. */
+.study[data-study='quiet-instrument']:where([data-zao-mode='light'])
+  [data-zao-field-frame]:not([data-zao-disabled]) {
+  background-color: var(--zao-color-bg-canvas);
+  border-color: var(--zao-color-border-default);
+}
+
+.study[data-study='quiet-instrument']
+  [data-zao-field-frame]:not([data-zao-disabled], [data-zao-invalid], [aria-invalid='true']):is(
+    :hover,
+    :focus-within
+  ) {
+  border-color: var(--zao-color-border-strong);
+}
+
+.study[data-study='quiet-instrument']
+  [data-zao-field-frame]:is([data-zao-invalid], [aria-invalid='true']) {
+  border-color: var(--zao-color-danger-border);
+}
+
+/* The keyboard outline surrounds the group, including its auxiliary actions. */
+.study[data-study='quiet-instrument'] [data-zao-slot='input-group']:has(:focus-visible) {
+  outline: 2px solid var(--zao-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.study[data-study='quiet-instrument'] [data-zao-slot='input-group'] {
+  & > [data-zao-slot='input'] {
+    background-color: transparent;
+    border-radius: inherit;
+  }
+  & :focus-visible {
+    outline: none;
+  }
+}
+
+/* Reuse Menu's Pocket progress and contact geometry only inside this study. */
+.study[data-study='quiet-instrument']
+  :is([data-zao-component='combobox'], [data-zao-component='select']) {
+  & [data-zao-slot='popup'] {
+    --zao-menu-reveal-progress: 1;
+    --field-contact: calc(var(--zao-space-0-5) / 2);
+    --field-reveal-outset: calc(-1 * var(--zao-space-1));
+    --field-reveal-near: calc(-1 * var(--zao-menu-reveal-progress) * var(--zao-space-1));
+    --field-reveal-far: calc(
+      (1 - var(--zao-menu-reveal-progress)) * 100% - var(--zao-menu-reveal-progress) *
+        var(--zao-space-1)
+    );
+    border-radius: var(--zao-radius-none);
+    border-color: var(--zao-color-border-subtle);
+    box-shadow: calc(-1 * var(--field-contact)) var(--field-contact) 0 0
+      var(--zao-color-border-default);
+    opacity: 1;
+    transform: none;
+    clip-path: inset(
+      var(--field-reveal-near) var(--field-reveal-outset) var(--field-reveal-far)
+        var(--field-reveal-outset)
+    );
+    transition: --zao-menu-reveal-progress var(--zao-motion-duration-base)
+      var(--zao-motion-easing-standard);
+
+    &[data-side='top'] {
+      clip-path: inset(
+        var(--field-reveal-far) var(--field-reveal-outset) var(--field-reveal-near)
+          var(--field-reveal-outset)
+      );
+    }
+    &[data-side='left'] {
+      clip-path: inset(
+        var(--field-reveal-outset) var(--field-reveal-near) var(--field-reveal-outset)
+          var(--field-reveal-far)
+      );
+    }
+    &[data-side='right'] {
+      clip-path: inset(
+        var(--field-reveal-outset) var(--field-reveal-far) var(--field-reveal-outset)
+          var(--field-reveal-near)
+      );
+    }
+    &[data-starting-style],
+    &[data-ending-style] {
+      --zao-menu-reveal-progress: 0;
+    }
+    &[data-ending-style] {
+      transition-duration: var(--zao-motion-duration-fast);
+      & [data-zao-slot='item'] {
+        background-color: transparent;
+        &[data-zao-exit-highlighted]:not([data-disabled]) {
+          background-color: var(--zao-color-bg-hover);
+        }
+      }
+    }
+    &[data-instant] {
+      transition: none;
+    }
+  }
+
+  & [data-zao-slot='viewport'] {
+    padding-inline: 0;
+  }
+  & [data-zao-slot='item'] {
+    border-radius: var(--zao-radius-none);
+    padding-block: var(--zao-space-1);
+  }
+  & [data-zao-slot='item-text'] {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+
+  /* The front edge is a sibling of the scroll viewport, never a scrolling row. */
+  & [data-zao-slot='reveal-edge'] {
+    position: absolute;
+    inset: calc(-1 * var(--field-contact));
+    pointer-events: none;
+    transform: translateY(calc((var(--zao-menu-reveal-progress) - 1) * 100%));
+    &::after {
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      height: var(--field-contact);
+      background-color: var(--zao-color-border-default);
+      content: '';
+    }
+  }
+  & [data-zao-slot='popup'][data-side='top'] > [data-zao-slot='reveal-edge'] {
+    transform: translateY(calc((1 - var(--zao-menu-reveal-progress)) * 100%));
+    &::after {
+      top: 0;
+      bottom: auto;
+    }
+  }
+  & [data-zao-slot='popup'][data-side='left'] > [data-zao-slot='reveal-edge'] {
+    transform: translateX(calc((1 - var(--zao-menu-reveal-progress)) * 100%));
+    &::after {
+      inset-block: 0;
+      left: 0;
+      right: auto;
+      width: var(--field-contact);
+      height: auto;
+    }
+  }
+  & [data-zao-slot='popup'][data-side='right'] > [data-zao-slot='reveal-edge'] {
+    transform: translateX(calc((var(--zao-menu-reveal-progress) - 1) * 100%));
+    &::after {
+      inset-block: 0;
+      right: 0;
+      left: auto;
+      width: var(--field-contact);
+      height: auto;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study[data-study='quiet-instrument'] [data-zao-field-frame] {
+    transition: none;
+  }
+  .study[data-study='quiet-instrument']
+    :is([data-zao-component='combobox'], [data-zao-component='select'])
+    [data-zao-slot='popup'] {
+    &,
+    &[data-starting-style],
+    &[data-ending-style] {
+      transition: none;
+      transform: none;
+      --zao-menu-reveal-progress: 1;
+    }
+  }
+}
+
+/* Card: a quiet enclosure with a static contact edge. Readouts share its open content plane. */
+.study[data-study='quiet-instrument'] [data-zao-component='card'] {
+  border-color: var(--zao-color-border-subtle);
+}
+
+.study[data-study='quiet-instrument'] .card-foot {
+  border-color: var(--zao-color-border-subtle);
+}
+
+.study[data-study='quiet-instrument'] .system-card .figures-id {
+  font-family: var(--zao-font-family-mono);
+}
+
+.study[data-study='quiet-instrument'] .system-figure {
+  background: var(--zao-color-bg-sunken);
+  border-color: var(--zao-color-border-subtle);
+}

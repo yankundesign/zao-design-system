@@ -1,7 +1,7 @@
 import suLight from '@zao/tokens/json/su-light';
 import suDark from '@zao/tokens/json/su-dark';
-import yuDark from '@zao/tokens/json/yu-dark';
-import type { ContextId } from '@zao/tokens';
+
+export type ContextId = 'su-light' | 'su-dark';
 
 export interface TokenEntry {
   type: string;
@@ -19,7 +19,6 @@ export interface TokenFile {
 export const tokenFiles: Record<ContextId, TokenFile> = {
   'su-light': suLight as TokenFile,
   'su-dark': suDark as TokenFile,
-  'yu-dark': yuDark as TokenFile,
 };
 
 /** Token IDs are identical in every context (a test in @zao/tokens guarantees it). */

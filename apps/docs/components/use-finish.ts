@@ -1,16 +1,14 @@
 'use client';
 
 import { useCallback, useSyncExternalStore } from 'react';
-import type { ContextId } from '@zao/tokens';
+import type { ContextId } from '@/lib/tokens';
 import { MODE_KEY, THEME_KEY } from '@/lib/finish-script';
 
-export type Theme = 'su' | 'yu';
 export type ModeSetting = 'system' | 'light' | 'dark';
 
 function read() {
   if (typeof document === 'undefined') return 'su|system|light';
   const el = document.documentElement;
-  const theme = (el.getAttribute('data-zao-theme') as Theme) || 'su';
   let setting: ModeSetting = 'system';
   try {
     setting = (localStorage.getItem(MODE_KEY) as ModeSetting) || 'system';
@@ -22,7 +20,7 @@ function read() {
       : window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light';
-  return `${theme}|${setting}|${resolved}`;
+  return `su|${setting}|${resolved}`;
 }
 
 function subscribe(onChange: () => void) {
@@ -39,26 +37,23 @@ function subscribe(onChange: () => void) {
   };
 }
 
-function apply(theme: Theme, setting: ModeSetting) {
+function apply(setting: ModeSetting) {
   const el = document.documentElement;
-  el.setAttribute('data-zao-theme', theme);
-  if (theme === 'yu') el.setAttribute('data-zao-mode', 'dark');
-  else if (setting === 'system') el.removeAttribute('data-zao-mode');
+  el.setAttribute('data-zao-theme', 'su');
+  if (setting === 'system') el.removeAttribute('data-zao-mode');
   else el.setAttribute('data-zao-mode', setting);
   try {
-    localStorage.setItem(THEME_KEY, theme);
+    localStorage.setItem(THEME_KEY, 'su');
     localStorage.setItem(MODE_KEY, setting);
   } catch {}
 }
 
 export function useFinish() {
   const snapshot = useSyncExternalStore(subscribe, read, () => 'su|system|light');
-  const [theme, setting, resolved] = snapshot.split('|') as [Theme, ModeSetting, 'light' | 'dark'];
-  const contextId: ContextId =
-    theme === 'yu' ? 'yu-dark' : resolved === 'dark' ? 'su-dark' : 'su-light';
+  const [theme, setting, resolved] = snapshot.split('|') as ['su', ModeSetting, 'light' | 'dark'];
+  const contextId: ContextId = resolved === 'dark' ? 'su-dark' : 'su-light';
 
-  const setTheme = useCallback((next: Theme) => apply(next, setting), [setting]);
-  const setMode = useCallback((next: ModeSetting) => apply(theme, next), [theme]);
+  const setMode = useCallback((next: ModeSetting) => apply(next), []);
 
-  return { theme, setting, resolved, contextId, setTheme, setMode };
+  return { theme, setting, resolved, contextId, setMode };
 }

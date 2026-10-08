@@ -1,81 +1,106 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { FinishSample } from '@/components/finish-sample';
+import { connection } from 'next/server';
+import { OverviewExhibition } from '@/components/overview-exhibition';
+import { getQuietInstrumentStudy } from '@/lib/style-studies';
+import { allTokens } from '@/lib/tokens';
 
-const shipped = [
-  [
-    'Tokens',
-    'W3C DTCG files with a resolver for Su and Yu in light and dark, built to CSS variables and JSON by Terrazzo.',
-  ],
-  [
-    'Palettes',
-    'Generated in OKLCH from a hue, a chroma and a few lightness anchors per finish. Run pnpm palette after changing them.',
-  ],
-  [
-    'Tailwind theme',
-    "Tailwind's defaults removed; only ZAO's colors, type roles, radii and materials compile.",
-  ],
-  [
-    'Fonts',
-    'Geist, Geist Mono and Newsreader, self-hosted with every OpenType feature and metric-matched fallbacks.',
-  ],
-  [
-    'Tests',
-    'Every finish is complete, structure never changes between finishes, and text meets its contrast minimums.',
-  ],
-];
+export const metadata: Metadata = {
+  description:
+    'ZAO explores the boundary between 2D clarity and 3D presence through quiet construction. One Su design system, refined in light and dark, for people and agents.',
+};
 
-export default function Home() {
+const foundationLinks = [
+  ['Color', '/foundations/color'],
+  ['Typography', '/foundations/typography'],
+  ['Space', '/foundations/space'],
+  ['Design notes', '/foundations/design'],
+] as const;
+
+const documentLink =
+  'inline-flex min-h-6 items-center type-caption text-muted underline underline-offset-2 outline-focus hover:text-default focus-visible:outline-2 focus-visible:outline-offset-2';
+
+export default async function Home() {
+  await connection();
+  const study = await getQuietInstrumentStudy();
+
   return (
-    <div className="flex flex-col gap-12">
-      <section className="flex max-w-2xl flex-col gap-4">
-        <p className="type-caption text-muted">v0.1 · Milestone 1, foundation</p>
+    <div className="flex flex-col gap-8">
+      <header className="flex max-w-2xl flex-col gap-3">
+        <p className="type-caption text-muted">v0.1 · Su 素 · In progress</p>
         <h1 className="type-display text-balance">ZAO is the foundation for how we build.</h1>
         <p className="type-body text-muted">
-          Inspired by the principles of Yingzao Fashi, it defines the shared materials, patterns,
-          and rules that help teams construct consistent digital experiences.
+          An experimental design system exploring 2D clarity and 3D presence through quiet
+          construction.
         </p>
-      </section>
+      </header>
 
-      <section className="flex flex-col gap-4">
-        <div className="flex max-w-2xl flex-col gap-1">
-          <h2 className="type-heading">Structure is shared, finish is chosen</h2>
-          <p className="type-body text-muted">
-            The same markup in both finishes. Spacing, control heights and type sizes come from the
-            structure set and never change. Color, radius, material and the title face come from the
-            finish. Each sample is an island: a finish applies to any element, not just the page.
-          </p>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <FinishSample theme="su" mode="light" label="Su 素 · plain · light" />
-          <FinishSample theme="yu" mode="dark" label="Yu 玉 · jade · dark" />
-        </div>
-      </section>
+      <OverviewExhibition
+        quietStudy={study ? { title: study.title, cssUrl: study.cssUrl } : null}
+      />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="type-heading">What exists today</h2>
-        <dl className="grid gap-x-8 gap-y-4 md:grid-cols-2">
-          {shipped.map(([term, detail]) => (
-            <div key={term} className="flex flex-col gap-1 border-t border-subtle pt-3">
-              <dt className="type-body font-medium">{term}</dt>
-              <dd className="m-0 type-body text-muted">{detail}</dd>
+      <section aria-labelledby="foundations-heading" className="flex min-w-0 flex-col gap-4">
+        <h2 id="foundations-heading" className="type-label text-muted">
+          Shared foundations
+        </h2>
+        <div className="grid min-w-0 gap-6 lg:grid-cols-3">
+          <div className="flex min-w-0 flex-col gap-4 border-t border-subtle pt-4">
+            <div className="flex flex-col gap-1">
+              <p className="type-heading">North workspace</p>
+              <p className="type-body text-muted">A place for your team.</p>
+              <p className="type-code figures-id text-muted">Workspace / 001</p>
             </div>
-          ))}
-        </dl>
+            <Link className={documentLink} href="/foundations/typography">
+              Type roles
+            </Link>
+          </div>
+          <div className="flex min-w-0 flex-col gap-4 border-t border-subtle pt-4">
+            <div className="flex flex-col items-end gap-1 type-body figures-tabular">
+              <span>12.00</span>
+              <span>68.00</span>
+              <span>100.00</span>
+            </div>
+            <Link className={documentLink} href="/foundations/typography">
+              Tabular figures
+            </Link>
+          </div>
+          <div className="flex min-w-0 flex-col gap-4 border-t border-subtle pt-4">
+            <dl className="flex flex-col gap-2 type-caption figures-tabular">
+              {[1, 2, 3].map((step) => {
+                const token = allTokens[`space.${step}`]!;
+                return (
+                  <div key={step} className="flex min-w-0 items-center justify-between gap-4">
+                    <dt>{step} fen</dt>
+                    <dd className="flex items-center gap-3 text-muted">
+                      <span
+                        aria-hidden="true"
+                        className="h-3 shrink-0 bg-accent"
+                        style={{ width: `var(${token.cssVar})` }}
+                      />
+                      <span>{String(token.value)}</span>
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
+            <Link className={documentLink} href="/foundations/space">
+              Fen spacing
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3 border-t border-subtle pt-4">
         <p className="type-body text-muted">
-          Start with{' '}
-          <Link className="text-accent underline underline-offset-2" href="/foundations/color">
-            color
-          </Link>
-          ,{' '}
-          <Link className="text-accent underline underline-offset-2" href="/foundations/typography">
-            typography
-          </Link>{' '}
-          and{' '}
-          <Link className="text-accent underline underline-offset-2" href="/foundations/space">
-            space
-          </Link>
-          . Components arrive in milestone 2.
+          Shared parts, semantic tokens, and clear guidance for people and agents.
         </p>
+        <nav aria-label="Explore foundations" className="flex flex-wrap gap-x-5 gap-y-1">
+          {foundationLinks.map(([label, href]) => (
+            <Link key={href} className={documentLink} href={href}>
+              {label}
+            </Link>
+          ))}
+        </nav>
       </section>
     </div>
   );

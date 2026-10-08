@@ -1,76 +1,48 @@
 'use client';
 
-import { useFinish, type ModeSetting, type Theme } from './use-finish';
-
-function Segment<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  value: T;
-  options: { value: T; label: string }[];
-  onChange: (v: T) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <div
-      role="radiogroup"
-      aria-label={label}
-      className="flex gap-0.5 rounded-action border border-subtle bg-sunken p-0.5"
-    >
-      {options.map((o) => {
-        const selected = o.value === value;
-        return (
-          <button
-            key={o.value}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            disabled={disabled && !selected}
-            onClick={() => onChange(o.value)}
-            className={[
-              'h-7 rounded-action px-3 type-label trim-label transition-colors duration-fast ease-standard',
-              selected ? 'bg-accent text-on-accent' : 'text-muted hover:text-default',
-              disabled && !selected
-                ? 'cursor-not-allowed text-disabled hover:text-disabled'
-                : 'cursor-pointer',
-            ].join(' ')}
-          >
-            {o.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+import { Tabs } from '@zao/react';
+import { useFinish, type ModeSetting } from './use-finish';
 
 export function FinishSwitcher() {
-  const { theme, setting, setTheme, setMode } = useFinish();
+  const { setting, setMode } = useFinish();
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Segment<Theme>
-        label="Finish"
-        value={theme}
-        onChange={setTheme}
-        options={[
-          { value: 'su', label: 'Su 素' },
-          { value: 'yu', label: 'Yu 玉' },
-        ]}
-      />
-      <Segment<ModeSetting>
-        label="Mode"
-        value={theme === 'yu' ? 'dark' : setting}
-        onChange={setMode}
-        disabled={theme === 'yu'}
-        options={[
-          { value: 'system', label: 'System' },
-          { value: 'light', label: 'Light' },
-          { value: 'dark', label: 'Dark' },
-        ]}
-      />
+      <Tabs.Root
+        className="shrink-0 [&>.tabs-viewport]:max-w-none"
+        value={setting}
+        onValueChange={(value) => {
+          if (value === 'system' || value === 'light' || value === 'dark') {
+            setMode(value satisfies ModeSetting);
+          }
+        }}
+      >
+        <Tabs.List variant="secondary" role="radiogroup" aria-label="Mode">
+          <Tabs.Tab
+            value="system"
+            role="radio"
+            aria-checked={setting === 'system'}
+            aria-selected={undefined}
+          >
+            System
+          </Tabs.Tab>
+          <Tabs.Tab
+            value="light"
+            role="radio"
+            aria-checked={setting === 'light'}
+            aria-selected={undefined}
+          >
+            Light
+          </Tabs.Tab>
+          <Tabs.Tab
+            value="dark"
+            role="radio"
+            aria-checked={setting === 'dark'}
+            aria-selected={undefined}
+          >
+            Dark
+          </Tabs.Tab>
+        </Tabs.List>
+      </Tabs.Root>
     </div>
   );
 }

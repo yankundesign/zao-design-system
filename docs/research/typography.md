@@ -1,5 +1,7 @@
 # Typography research
 
+> **Scope update, Oct 7, 2026:** Current work focuses on Su in light and dark. Yu and its display-face research below are deferred as possible phase 2 reference material.
+
 _ZAO · Sept 29, 2026 · Status: decided_
 
 Live comparison: [ZAO Type Lab](https://claude.ai/artifact/MaKy8YdS6t1LX9U7ymAKV9). It sets every option on the same agent-approval screen in Su and Yu and includes the tests described below.

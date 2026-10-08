@@ -10,8 +10,8 @@ export default function TypographyPage() {
         <h1 className="type-title">Typography</h1>
         <p className="type-body text-muted">
           Set type by role with <code className="type-code">type-*</code>, never by size or weight.
-          Geist carries all interface text in both finishes. Yu swaps in Newsreader for display and
-          title roles only, at the same size and line height, so nothing reflows between finishes.
+          Geist carries Su’s interface, display, and title roles. Geist Mono carries code and IDs.
+          Type sizes and line heights stay consistent in light and dark.
         </p>
       </header>
       <TypeRoles />

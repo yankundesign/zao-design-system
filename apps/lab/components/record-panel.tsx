@@ -184,8 +184,7 @@ export default function RecordPanel({
           errors?: { file: string; message: string }[];
           error?: string;
         } = await response.json();
-        if (!response.ok)
-          throw new Error(journalPayload.error ?? 'Could not load the journal.');
+        if (!response.ok) throw new Error(journalPayload.error ?? 'Could not load the journal.');
         if (!controller.signal.aborted) {
           setEntries(journalPayload.entries ?? []);
           setJournalErrors(journalPayload.errors ?? []);

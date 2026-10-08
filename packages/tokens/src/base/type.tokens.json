@@ -71,12 +71,22 @@
       }
     },
     "label": {
-      "$description": "Control labels: buttons, tabs, form labels, badges. Controls also trim the line box to cap height and baseline.",
+      "$description": "Control labels: tabs, form labels and badges. Controls also trim the line box to cap height and baseline. Button uses its own reference-defined type role.",
       "$value": {
         "fontFamily": "{font.family.text}",
         "fontSize": { "value": 13, "unit": "px" },
         "fontWeight": "{font.weight.medium}",
         "lineHeight": 1.2308,
+        "letterSpacing": { "value": 0, "unit": "px" }
+      }
+    },
+    "button": {
+      "$description": "Button action labels in every finish: 14px Geist medium with an 18px line box. Do not trim this role; the default Button adds 8px above and below the line box to match the approved Figma reference.",
+      "$value": {
+        "fontFamily": "{font.family.text}",
+        "fontSize": { "value": 14, "unit": "px" },
+        "fontWeight": 500,
+        "lineHeight": 1.2857142857142858,
         "letterSpacing": { "value": 0, "unit": "px" }
       }
     },

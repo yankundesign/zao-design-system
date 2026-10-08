@@ -13,6 +13,7 @@
     "lab": "pnpm build && node scripts/dev.ts lab",
     "lab:style": "node scripts/lab-style.ts",
     "lab:reference": "node scripts/lab-reference.ts",
+    "lab:journal": "node scripts/lab-journal.ts",
     "lab:check": "node scripts/lab-check.ts",
     "lab:snap": "node scripts/lab-snap.ts",
     "lab:promote": "node scripts/lab-promote.ts",
