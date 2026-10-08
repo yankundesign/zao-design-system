@@ -6,7 +6,7 @@ import { getQuietInstrumentStudy } from '@/lib/style-studies';
 export const metadata: Metadata = { title: 'Design notes' };
 
 export default async function DesignPage() {
-  await connection();
+  if (process.env.ZAO_DOCS_STATIC_EXPORT !== '1') await connection();
   const study = await getQuietInstrumentStudy();
 
   return (

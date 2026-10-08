@@ -417,7 +417,8 @@ export async function ComponentDetail({
   searchParams: ComponentSearchParams;
 }) {
   const definition = definitions[component];
-  const query = await searchParams;
+  // Export one shared Su preview; URL normalization stays in the client.
+  const query = process.env.ZAO_DOCS_STATIC_EXPORT === '1' ? {} : await searchParams;
   const quietStudy = await getQuietInstrumentStudy();
   const requestedStyle = first(query.style);
   const style =

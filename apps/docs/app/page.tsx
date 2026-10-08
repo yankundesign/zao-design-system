@@ -21,7 +21,7 @@ const documentLink =
   'inline-flex min-h-6 items-center type-caption text-muted underline underline-offset-2 outline-focus hover:text-default focus-visible:outline-2 focus-visible:outline-offset-2';
 
 export default async function Home() {
-  await connection();
+  if (process.env.ZAO_DOCS_STATIC_EXPORT !== '1') await connection();
   const study = await getQuietInstrumentStudy();
 
   return (

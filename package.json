@@ -17,7 +17,7 @@
     "lab:check": "node scripts/lab-check.ts",
     "lab:snap": "node scripts/lab-snap.ts",
     "lab:promote": "node scripts/lab-promote.ts",
-    "docs:build": "pnpm build && pnpm --filter @zao/docs build",
+    "docs:build": "pnpm build && ZAO_DOCS_STATIC_EXPORT=1 pnpm --filter @zao/docs build",
     "tokens": "pnpm --filter @zao/tokens run build",
     "palette": "pnpm --filter @zao/tokens run palette",
     "test": "pnpm -r run test",

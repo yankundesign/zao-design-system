@@ -2,6 +2,11 @@ import { getStyleStudyCss } from '@/lib/style-studies';
 
 export const runtime = 'nodejs';
 
+export function generateStaticParams() {
+  // Publish only the current Su study; other explorations remain local.
+  return process.env.ZAO_DOCS_STATIC_EXPORT === '1' ? [{ id: 'quiet-instrument' }] : [];
+}
+
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const css = await getStyleStudyCss(id);

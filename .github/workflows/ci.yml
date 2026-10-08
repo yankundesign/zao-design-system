@@ -27,7 +27,7 @@ jobs:
       - name: Test packages and components
         run: pnpm test
       - name: Build docs
-        run: pnpm --filter @zao/docs build
+        run: pnpm docs:build
       - name: Typecheck
         run: pnpm typecheck
       - name: Check formatting

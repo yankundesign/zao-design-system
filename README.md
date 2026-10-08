@@ -44,6 +44,7 @@ pnpm dev               # builds the packages and opens the docs at http://localh
 | `pnpm lab:snap`      | Capture saved styles and specimens as PNGs with a contact sheet                   |
 | `pnpm lab:promote`   | Promote a chosen style into token sources after Yankun's decision                 |
 | `pnpm build`         | Build `@zao/engine`, `@zao/tokens` and `@zao/react`                               |
+| `pnpm docs:build`    | Build packages and export the public docs to `apps/docs/out`                      |
 | `pnpm tokens`        | Rebuild tokens after editing `packages/tokens/src`                                |
 | `pnpm palette`       | Regenerate palettes after editing `packages/tokens/palette.config.ts`             |
 | `pnpm test`          | Token, engine, lab and component browser tests                                    |
@@ -52,6 +53,27 @@ pnpm dev               # builds the packages and opens the docs at http://localh
 | `pnpm changeset`     | Describe a change to a published package                                          |
 
 Use `pnpm lab:style compare <id1> <id2> [id3 id4] [--context su-dark]` to print parameter differences across 2–4 styles in one context. Use `pnpm lab:journal help` for filtered journal listing and file-based note writing.
+
+## Hosting the docs on Cloudflare Pages
+
+Run `pnpm docs:build` from the repository root. It enables Next.js static export
+and generates `apps/docs/out`, including the current Quiet instrument stylesheet.
+The exported `_headers` file gives that stylesheet route its CSS content type.
+Local development and component tests keep the Node.js server and read live study files.
+
+Use these Pages build settings:
+
+| Setting                | Value                                                              |
+| ---------------------- | ------------------------------------------------------------------ |
+| Root directory         | Repository root (leave blank)                                      |
+| Build command          | `pnpm docs:build`                                                  |
+| Build output directory | `apps/docs/out`                                                    |
+| Framework preset       | Next.js (Static HTML Export), with the command and directory above |
+| Node version           | 24, matching `.nvmrc`                                              |
+
+Choose a production branch that contains the current docs and static-export setup.
+After the first successful deployment, add `zaoui.dev` under the Pages project's
+custom domains.
 
 ## Packages
 

@@ -8,7 +8,7 @@ import { DesignNotes } from '@/components/design-notes';
 export const metadata: Metadata = { title: 'Data visualization' };
 
 export default async function DataVisualizationPage() {
-  await connection();
+  if (process.env.ZAO_DOCS_STATIC_EXPORT !== '1') await connection();
   const markdown = await readFile(
     resolve(process.cwd(), '../../docs/data-visualization.md'),
     'utf8',
