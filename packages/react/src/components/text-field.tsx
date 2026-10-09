@@ -55,9 +55,9 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         data-zao-disabled={disabled ? '' : undefined}
         className={[
           'w-full rounded-control border bg-canvas px-2 type-body text-default outline-focus placeholder:text-muted',
-          'transition-colors duration-fast disabled:cursor-not-allowed disabled:bg-sunken disabled:text-disabled',
-          'disabled:placeholder:text-disabled data-invalid:border-danger',
-          invalid ? 'border-danger' : 'border-default',
+          'transition-colors duration-fast disabled:cursor-not-allowed disabled:bg-field-disabled disabled:text-disabled',
+          'disabled:placeholder:text-disabled data-invalid:border-field-invalid',
+          invalid ? 'border-field-invalid' : 'border-field',
           !invalid && !disabled ? 'hover:border-strong' : null,
           heightClasses[size],
           className,

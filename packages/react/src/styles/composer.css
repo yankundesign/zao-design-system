@@ -1,9 +1,8 @@
 /* A quiet perimeter and one joined contact edge form a stationary raised writing tray. */
 [data-zao-component='composer'].composer-construction {
-  --composer-contact: calc(var(--zao-space-0-5) / 2);
   --composer-contact-color: var(--zao-color-border-default);
-  box-shadow: calc(-1 * var(--composer-contact)) var(--composer-contact) 0 0
-    var(--composer-contact-color);
+  box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--composer-contact-color);
   overflow: visible;
 }
 

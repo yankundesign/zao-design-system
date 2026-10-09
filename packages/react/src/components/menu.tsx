@@ -74,7 +74,7 @@ export function Menu({ trigger, items, disabled, size = 'default', className }: 
           >
             <BaseMenu.Popup
               data-zao-slot="popup"
-              className="material-overlay menu-construction text-default outline-focus"
+              className="construction-shading material-overlay menu-construction text-default outline-focus"
             >
               <div data-zao-slot="items" className="menu-content-construction overflow-y-auto p-1">
                 {items.map((item, index) =>

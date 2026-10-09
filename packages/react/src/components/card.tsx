@@ -6,7 +6,7 @@ export type CardProps = ComponentPropsWithRef<'div'>;
 export function Card({ className, ...props }: CardProps) {
   return (
     <div
-      className={`card-construction rounded-surface border border-subtle bg-surface p-4 text-default${className ? ` ${className}` : ''}`}
+      className={`card-shaded-construction construction-shading rounded-none border border-subtle bg-surface p-4 text-default${className ? ` ${className}` : ''}`}
       {...props}
       data-zao-component="card"
     />

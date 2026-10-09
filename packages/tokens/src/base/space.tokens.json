@@ -57,6 +57,13 @@
       }
     }
   },
+  "stroke": {
+    "$type": "dimension",
+    "hairline": {
+      "$value": { "value": 1, "unit": "px" },
+      "$description": "Shared width for fine borders, rules and ruler marks. Independent of finish depth so essential strokes and component geometry remain stable when paint offsets change."
+    }
+  },
   "radius": {
     "$type": "dimension",
     "none": { "$value": { "value": 0, "unit": "px" } },

@@ -147,7 +147,7 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
         onLostPointerCapture?.(event);
       }}
       className={[
-        'button-construction inline-flex min-w-7 shrink-0 rounded-none type-button outline-focus disabled:cursor-not-allowed',
+        'button-construction construction-shading inline-flex min-w-7 shrink-0 rounded-action type-button outline-focus disabled:cursor-not-allowed',
         className,
       ]
         .filter(Boolean)

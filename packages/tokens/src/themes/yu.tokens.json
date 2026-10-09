@@ -83,6 +83,30 @@
       "$description": "Menus, popovers, dialogs, toasts."
     }
   },
+  "depth": {
+    "$description": "Completeness entries copied from Su for shared token IDs, not Yu design work. Paint only; never use depth for layout dimensions, spacing, native hit areas or focus outlines.",
+    "contact": {
+      "$type": "dimension",
+      "$value": { "value": 1, "unit": "px" },
+      "$description": "Completeness entry copied from Su: painted contact distance that grounds a face on its fixed base. Independent of stroke width; never changes layout."
+    },
+    "lift": {
+      "$type": "dimension",
+      "$value": { "value": 2, "unit": "px" },
+      "$description": "Completeness entry copied from Su: painted face travel for approved lift interactions. Native hit areas, focus outlines and neighboring layout stay fixed."
+    },
+    "axis": {
+      "$type": "number",
+      "x": {
+        "$value": 1,
+        "$description": "Completeness entry copied from Su: unitless screen x multiplier for paint offsets toward the viewer. Positive points right."
+      },
+      "y": {
+        "$value": -1,
+        "$description": "Completeness entry copied from Su: unitless screen y multiplier for paint offsets toward the viewer. Negative points up."
+      }
+    }
+  },
   "material": {
     "$description": "Glass, on floating layers only. Content surfaces stay opaque so text contrast never depends on what is behind it.",
     "overlay": {

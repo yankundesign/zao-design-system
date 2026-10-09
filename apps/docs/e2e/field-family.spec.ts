@@ -185,7 +185,11 @@ for (const context of contexts.filter((item) => item.real)) {
         'border-color',
         await colorToken(
           frame,
-          context.mode === 'light' ? '--zao-color-border-default' : '--zao-color-border-subtle',
+          context.real
+            ? '--zao-color-border-field'
+            : context.mode === 'light'
+              ? '--zao-color-border-default'
+              : '--zao-color-border-subtle',
         ),
       );
       await frame.hover();
@@ -212,7 +216,10 @@ for (const context of contexts.filter((item) => item.real)) {
       }
       const specimen = page.locator(`[data-zao-specimen="${field}"]`);
       const invalid = specimen.locator('[data-zao-field-frame][data-zao-invalid]').first();
-      const errorColor = await colorToken(invalid, '--zao-color-danger-border');
+      const errorColor = await colorToken(
+        invalid,
+        context.real ? '--zao-color-border-field-invalid' : '--zao-color-danger-border',
+      );
       await invalid.hover();
       await expect(invalid).toHaveCSS('border-color', errorColor);
       const invalidTarget =
@@ -228,7 +235,10 @@ for (const context of contexts.filter((item) => item.real)) {
       const disabled = specimen.locator('[data-zao-field-frame][data-zao-disabled]').first();
       await expect(disabled).toHaveCSS(
         'background-color',
-        await colorToken(disabled, '--zao-color-bg-sunken'),
+        await colorToken(
+          disabled,
+          context.real ? '--zao-color-bg-field-disabled' : '--zao-color-bg-sunken',
+        ),
       );
       if (context.mode === 'light') {
         await expect(frame).not.toHaveCSS(

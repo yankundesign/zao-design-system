@@ -136,6 +136,7 @@ export function ComponentPreview({
             'combobox',
             'select',
             'card',
+            'dialog',
             'menu',
             'table',
             'tabs',

@@ -14,6 +14,7 @@ const sections = [
       { href: '/foundations/color', label: 'Color' },
       { href: '/foundations/typography', label: 'Typography' },
       { href: '/foundations/space', label: 'Space' },
+      { href: '/foundations/depth', label: 'Depth' },
       { href: '/foundations/design', label: 'Design notes' },
       { href: '/foundations/data-visualization', label: 'Data visualization' },
     ],

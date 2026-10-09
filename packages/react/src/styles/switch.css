@@ -1,23 +1,25 @@
 /* One fixed housing and one connected sliding face, shared by Su and Yu. */
 @layer components {
   .switch-construction {
-    --switch-contact: calc(var(--zao-space-0-5) / 2);
     --switch-travel: calc(var(--zao-space-10) - var(--zao-space-4) - 2 * var(--zao-space-1));
     --switch-position: 0px;
-    --switch-side: var(--zao-color-border-default);
+    --zao-construction-face: var(--switch-face-fill);
+    --switch-side: var(--zao-construction-side);
     --switch-face-fill: var(--zao-color-bg-surface);
     --switch-hover-fill: var(--zao-color-bg-hover);
     --switch-pressed-fill: var(--zao-color-bg-active);
     --switch-face-edge: var(--zao-color-border-default);
     position: relative;
     isolation: isolate;
-    border: var(--switch-contact) solid var(--zao-color-border-default);
+    border: var(--zao-stroke-hairline) solid var(--zao-color-border-default);
     padding: 0;
     cursor: pointer;
     background: var(--zao-color-bg-sunken);
     box-shadow:
-      inset 0 var(--switch-contact) 0 var(--zao-color-border-subtle),
-      0 var(--switch-contact) 0 var(--zao-color-border-subtle);
+      inset 0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+        var(--zao-color-border-subtle),
+      0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+        var(--zao-color-border-subtle);
     transition:
       background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
       border-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
@@ -36,7 +38,7 @@
   .switch-construction > [data-zao-slot='thumb'] {
     position: absolute;
     inset-block-start: var(--zao-space-1);
-    inset-inline-start: calc(var(--zao-space-1) - var(--switch-contact));
+    inset-inline-start: calc(var(--zao-space-1) - var(--zao-stroke-hairline));
     inline-size: var(--zao-space-4);
     block-size: var(--zao-space-4);
     pointer-events: none;
@@ -50,9 +52,9 @@
     display: block;
     inline-size: 100%;
     block-size: 100%;
-    border: var(--switch-contact) solid var(--switch-face-edge);
+    border: var(--zao-stroke-hairline) solid var(--switch-face-edge);
     background: var(--switch-face-fill);
-    transform: translateY(calc(-1 * var(--switch-contact)));
+    transform: translateY(calc(var(--zao-depth-axis-y) * var(--zao-depth-contact)));
     transition:
       transform var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
       background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
@@ -96,7 +98,7 @@
     .switch-construction:not([data-disabled], [data-readonly])[data-zao-pressed]
       > [data-zao-slot='thumb']
       > [data-zao-slot='face'] {
-      transform: translateY(calc(-1 * var(--switch-contact)));
+      transform: translateY(calc(var(--zao-depth-axis-y) * var(--zao-depth-contact)));
     }
   }
 

@@ -57,6 +57,9 @@
   --background-color-canvas: var(--zao-color-bg-canvas);
   --background-color-surface: var(--zao-color-bg-surface);
   --background-color-sunken: var(--zao-color-bg-sunken);
+  /* Shared field roles. Quiet instrument supplies its D6 values locally until
+   * color promotion; other finishes inherit their current semantic defaults. */
+  --background-color-field-disabled: var(--zao-color-bg-field-disabled, var(--zao-color-bg-sunken));
   --background-color-overlay: var(--zao-color-bg-overlay);
   --background-color-hover: var(--zao-color-bg-hover);
   --background-color-active: var(--zao-color-bg-active);
@@ -84,6 +87,11 @@
   /* Borders: border-subtle, border-default, ... */
   --border-color-subtle: var(--zao-color-border-subtle);
   --border-color-default: var(--zao-color-border-default);
+  --border-color-field: var(--zao-color-border-field, var(--zao-color-border-default));
+  --border-color-field-invalid: var(
+    --zao-color-border-field-invalid,
+    var(--zao-color-danger-border)
+  );
   --border-color-strong: var(--zao-color-border-strong);
   --border-color-accent: var(--zao-color-accent-border);
   --border-color-success: var(--zao-color-success-border);
@@ -111,6 +119,10 @@
   --radius-surface: var(--zao-radius-surface);
   --radius-overlay: var(--zao-radius-overlay);
   --radius-pill: var(--zao-radius-pill);
+
+  /* Finish depth is paint only. Components read --zao-depth-contact, --zao-depth-lift,
+   * and the unitless --zao-depth-axis-x/y imported from @zao/tokens.
+   * Border geometry reads the shared --zao-stroke-hairline independently. */
 
   /* Motion: ease-standard, duration-fast, duration-base */
   --ease-standard: var(--zao-motion-easing-standard);
@@ -196,10 +208,52 @@
   transition-duration: var(--zao-motion-duration-base);
 }
 
+/* D3, option A: one sRGB shade of the current semantic face. Black is the
+ * mathematical endpoint, not a new palette color. Button's dark surface faces
+ * use a semantic edge below so their construction separates from the backing. */
+@utility construction-shading {
+  --zao-construction-side: color-mix(in srgb, var(--zao-construction-face) 80%, black 20%);
+}
+
 /* A static contact edge grounds a content surface without moving its contents or actions. */
 @utility card-construction {
-  --card-contact: calc(var(--zao-space-0-5) / 2);
-  box-shadow: calc(-1 * var(--card-contact)) var(--card-contact) 0 0 var(--zao-color-border-subtle);
+  box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-color-border-subtle);
+}
+
+/* Card's single filled contact edge uses the shared shade without moving its content plane. */
+@utility card-shaded-construction {
+  --zao-construction-face: var(--zao-color-bg-surface);
+  box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-construction-side);
+}
+
+/* D7, option B: Card's stationary frame appears complete without a reveal. */
+@utility dialog-construction {
+  &[data-zao-slot='popup'] {
+    border-width: var(--zao-stroke-hairline);
+  }
+  opacity: 1;
+  transform: none;
+  transition: none;
+  animation: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* The approved semantic canvas veil sets the page back without tinting the face. */
+@utility dialog-backdrop-construction {
+  background-color: var(--zao-color-bg-canvas);
+  opacity: 0.8;
+  transition: none;
+  animation: none;
+
+  @media (prefers-reduced-transparency: reduce) {
+    opacity: 1;
+  }
+  :where([data-zao-transparency='reduced']) & {
+    opacity: 1;
+  }
 }
 
 /* Fine rules organize one reading plane; only semantic emphasis changes during use. */
@@ -323,17 +377,16 @@
   border: 0;
   padding: 0;
   background: transparent;
-  --button-contact: calc(var(--zao-space-0-5) / 2);
-  --button-lift: var(--zao-space-0-5);
   --button-x: 0px;
   --button-y: 0px;
   --button-fill: var(--zao-color-accent-solid);
   --button-hover-fill: var(--zao-color-accent-solid-hover);
   --button-pressed-fill: var(--zao-color-accent-solid-hover);
   --button-face-fill: var(--button-fill);
+  --zao-construction-face: var(--button-face-fill);
   --button-ink: var(--zao-color-fg-on-accent);
   --button-edge: var(--zao-color-accent-solid);
-  --button-side: var(--zao-color-accent-solid-hover);
+  --button-side: var(--zao-construction-side);
 
   &[data-zao-variant='secondary'] {
     --button-fill: var(--zao-color-bg-surface);
@@ -341,7 +394,8 @@
     --button-pressed-fill: var(--zao-color-bg-active);
     --button-ink: var(--zao-color-fg-default);
     --button-edge: var(--zao-color-border-default);
-    --button-side: var(--zao-color-border-default);
+    /* Dark surface faces need a lighter joined edge to separate from their backing. */
+    --button-side: light-dark(var(--zao-construction-side), var(--zao-color-border-subtle));
   }
 
   &[data-zao-variant='quiet'] {
@@ -360,7 +414,10 @@
     border-radius: inherit;
     z-index: -1;
     background: var(--button-side);
-    transform: translate(calc(-1 * var(--button-contact)), var(--button-contact));
+    transform: translate(
+      calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact)),
+      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact))
+    );
     content: '';
   }
 
@@ -371,15 +428,18 @@
     pointer-events: none;
     background: var(--button-side);
     /* Extend paint without enlarging the layout box or adding offset silhouettes. */
-    box-shadow: 0 0 0 var(--button-lift) var(--button-side);
+    box-shadow: 0 0 0 var(--zao-depth-lift) var(--button-side);
     /* One continuous side joins the moving face to the fixed seat at every pose. */
     clip-path: polygon(
       var(--button-x) var(--button-y),
       calc(100% + var(--button-x)) var(--button-y),
       calc(100% + var(--button-x)) calc(100% + var(--button-y)),
-      calc(100% - var(--button-contact)) calc(100% + var(--button-contact)),
-      calc(-1 * var(--button-contact)) calc(100% + var(--button-contact)),
-      calc(-1 * var(--button-contact)) var(--button-contact)
+      calc(100% - var(--zao-depth-axis-x) * var(--zao-depth-contact))
+        calc(100% - var(--zao-depth-axis-y) * var(--zao-depth-contact)),
+      calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+        calc(100% - var(--zao-depth-axis-y) * var(--zao-depth-contact)),
+      calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+        calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact))
     );
     transition:
       clip-path var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
@@ -419,34 +479,34 @@
 
   @media (hover: hover) and (pointer: fine) {
     &:enabled:hover {
-      --button-x: var(--button-lift);
-      --button-y: calc(-1 * var(--button-lift));
+      --button-x: calc(var(--zao-depth-axis-x) * var(--zao-depth-lift));
+      --button-y: calc(var(--zao-depth-axis-y) * var(--zao-depth-lift));
 
       &[data-zao-variant='quiet'] {
         --button-face-fill: var(--button-hover-fill);
-        --button-side: var(--zao-color-bg-sunken);
+        --button-side: light-dark(var(--zao-construction-side), var(--zao-color-border-subtle));
       }
     }
 
     /* Releasing or dragging outside lets native activation and hover decide the next pose. */
     &:enabled:active:hover {
-      --button-x: calc(-1 * var(--button-contact));
-      --button-y: var(--button-contact);
+      --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
+      --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
       --button-face-fill: var(--button-pressed-fill);
     }
   }
 
   @media (hover: none), (pointer: coarse) {
     &:enabled:active {
-      --button-x: calc(-1 * var(--button-contact));
-      --button-y: var(--button-contact);
+      --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
+      --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
       --button-face-fill: var(--button-pressed-fill);
     }
   }
 
   &:enabled[data-zao-pressed] {
-    --button-x: calc(-1 * var(--button-contact));
-    --button-y: var(--button-contact);
+    --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
+    --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
     --button-face-fill: var(--button-pressed-fill);
   }
 
@@ -497,8 +557,8 @@
 
 /* Uncover one full-size plane from its anchor; labels and selection targets stay fixed. */
 @utility menu-construction {
+  --zao-construction-face: var(--zao-material-overlay-fill);
   --zao-menu-reveal-progress: 1;
-  --menu-contact: calc(var(--zao-space-0-5) / 2);
   --menu-reveal-outset: calc(-1 * var(--zao-space-1));
   --menu-reveal-near: calc(-1 * var(--zao-menu-reveal-progress) * var(--zao-space-1));
   --menu-reveal-far: calc(
@@ -511,8 +571,8 @@
   max-height: var(--available-height);
   &[data-zao-slot='popup'] {
     border-color: var(--zao-color-border-subtle);
-    box-shadow: calc(-1 * var(--menu-contact)) var(--menu-contact) 0 0
-      var(--zao-color-border-default);
+    box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-construction-side);
   }
   opacity: 1;
   transform: none;
@@ -583,7 +643,9 @@
 
 @utility menu-reveal-edge {
   position: absolute;
-  inset: calc(-1 * var(--menu-contact));
+  /* The collision-owned reveal follows its actual joint; the static contact follows
+   * --zao-depth-axis-x/y. These logical edges are not a viewer-axis translation. */
+  inset: calc(-1 * var(--zao-depth-contact));
   pointer-events: none;
   transform: translateY(calc((var(--zao-menu-reveal-progress) - 1) * 100%));
 
@@ -591,7 +653,7 @@
     position: absolute;
     inset-inline: 0;
     bottom: 0;
-    height: var(--menu-contact);
+    height: var(--zao-depth-contact);
     background-color: var(--zao-color-border-default);
     content: '';
   }
@@ -608,7 +670,7 @@
       inset-block: 0;
       left: 0;
       right: auto;
-      width: var(--menu-contact);
+      width: var(--zao-depth-contact);
       height: auto;
     }
   }
@@ -618,7 +680,7 @@
       inset-block: 0;
       right: 0;
       left: auto;
-      width: var(--menu-contact);
+      width: var(--zao-depth-contact);
       height: auto;
     }
   }
@@ -633,7 +695,7 @@
     position: absolute;
     inset-block: var(--zao-space-2);
     inset-inline-start: var(--zao-space-1);
-    width: calc(var(--zao-space-0-5) / 2);
+    width: var(--zao-stroke-hairline);
     background-color: var(--zao-color-fg-default);
     pointer-events: none;
     content: '';

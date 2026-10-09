@@ -24,6 +24,13 @@
   --zao-color-border-subtle: var(--rule);
   --zao-color-border-default: var(--rule-strong);
   --zao-color-border-strong: var(--ink);
+  /* D6 option A: shared data-entry/selection roles, not general surface edges.
+   * Light rest keeps the existing default border. Light invalid is generated
+   * danger border step 7: hue 27, peak chroma .2, L .46, chroma share .72.
+   * The complete ramp and other semantic danger colors remain unpromoted. */
+  --zao-color-border-field: var(--zao-color-border-default);
+  --zao-color-border-field-invalid: oklch(0.46 0.144 27);
+  --zao-color-bg-field-disabled: var(--zao-color-bg-sunken);
   --zao-color-accent-solid: var(--accent);
   --zao-color-accent-solid-hover: var(--accent-hover);
   --zao-color-accent-subtle: var(--well);
@@ -31,11 +38,6 @@
   --zao-color-accent-border: var(--rule-strong);
   --zao-color-accent-text: var(--ink);
   --zao-color-focus-ring: var(--ink);
-  --zao-radius-action: 0px;
-  --zao-radius-control: 2px;
-  --zao-radius-surface: 2px;
-  --zao-radius-overlay: 2px;
-  --zao-motion-duration-fast: 80ms;
 }
 
 .study[data-study='quiet-instrument'][data-zao-mode='dark'] {
@@ -57,6 +59,11 @@
   --zao-color-success-border: #8cbba5;
   --zao-color-danger-text: #ffaaa3;
   --zao-color-danger-border: #e88982;
+  /* Generated achromatic border step 7 with dark L .54; no other neutral
+   * mapping changes. Invalid retains the study's existing danger border. */
+  --zao-color-border-field: oklch(0.54 0 0);
+  --zao-color-border-field-invalid: var(--zao-color-danger-border);
+  --zao-color-bg-field-disabled: var(--zao-color-bg-surface);
   color-scheme: dark;
 }
 
@@ -67,14 +74,13 @@
 .study[data-study='quiet-instrument'] [data-zao-field-frame] {
   border-radius: var(--zao-radius-none);
   background-color: var(--zao-color-bg-sunken);
-  border-color: var(--zao-color-border-subtle);
+  border-color: var(--zao-color-border-field);
 }
 
 /* Light fields use a clear value plane; the grey well identifies disabled controls. */
 .study[data-study='quiet-instrument']:where([data-zao-mode='light'])
   [data-zao-field-frame]:not([data-zao-disabled]) {
   background-color: var(--zao-color-bg-canvas);
-  border-color: var(--zao-color-border-default);
 }
 
 .study[data-study='quiet-instrument']
@@ -87,7 +93,16 @@
 
 .study[data-study='quiet-instrument']
   [data-zao-field-frame]:is([data-zao-invalid], [aria-invalid='true']) {
-  border-color: var(--zao-color-danger-border);
+  border-color: var(--zao-color-border-field-invalid);
+}
+
+.study[data-study='quiet-instrument'] [data-zao-field-frame][data-zao-disabled] {
+  background-color: var(--zao-color-bg-field-disabled);
+}
+
+.study[data-study='quiet-instrument']
+  [data-zao-field-frame][data-zao-disabled]:not([data-zao-invalid], [aria-invalid='true']) {
+  border-color: var(--zao-color-border-subtle);
 }
 
 /* The keyboard outline surrounds the group, including its auxiliary actions. */
@@ -110,8 +125,8 @@
 .study[data-study='quiet-instrument']
   :is([data-zao-component='combobox'], [data-zao-component='select']) {
   & [data-zao-slot='popup'] {
+    --zao-construction-face: var(--zao-material-overlay-fill);
     --zao-menu-reveal-progress: 1;
-    --field-contact: calc(var(--zao-space-0-5) / 2);
     --field-reveal-outset: calc(-1 * var(--zao-space-1));
     --field-reveal-near: calc(-1 * var(--zao-menu-reveal-progress) * var(--zao-space-1));
     --field-reveal-far: calc(
@@ -120,8 +135,8 @@
     );
     border-radius: var(--zao-radius-none);
     border-color: var(--zao-color-border-subtle);
-    box-shadow: calc(-1 * var(--field-contact)) var(--field-contact) 0 0
-      var(--zao-color-border-default);
+    box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-construction-side);
     opacity: 1;
     transform: none;
     clip-path: inset(
@@ -181,17 +196,19 @@
     overflow-wrap: anywhere;
   }
 
+  /* Collision placement owns the logical reveal; its static contact follows
+   * --zao-depth-axis-x/y. The moving edge stays on the actual popup joint. */
   /* The front edge is a sibling of the scroll viewport, never a scrolling row. */
   & [data-zao-slot='reveal-edge'] {
     position: absolute;
-    inset: calc(-1 * var(--field-contact));
+    inset: calc(-1 * var(--zao-depth-contact));
     pointer-events: none;
     transform: translateY(calc((var(--zao-menu-reveal-progress) - 1) * 100%));
     &::after {
       position: absolute;
       inset-inline: 0;
       bottom: 0;
-      height: var(--field-contact);
+      height: var(--zao-depth-contact);
       background-color: var(--zao-color-border-default);
       content: '';
     }
@@ -209,7 +226,7 @@
       inset-block: 0;
       left: 0;
       right: auto;
-      width: var(--field-contact);
+      width: var(--zao-depth-contact);
       height: auto;
     }
   }
@@ -219,7 +236,7 @@
       inset-block: 0;
       right: 0;
       left: auto;
-      width: var(--field-contact);
+      width: var(--zao-depth-contact);
       height: auto;
     }
   }
@@ -240,11 +257,6 @@
       --zao-menu-reveal-progress: 1;
     }
   }
-}
-
-/* Card: a quiet enclosure with a static contact edge. Readouts share its open content plane. */
-.study[data-study='quiet-instrument'] [data-zao-component='card'] {
-  border-color: var(--zao-color-border-subtle);
 }
 
 .study[data-study='quiet-instrument'] .card-foot {

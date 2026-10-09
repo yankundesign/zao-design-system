@@ -123,6 +123,10 @@ add('color.ramp.extra', 'color', 'enum', 'finish', undefined, '', 'palette.<name
 
 for (const radius of ['control', 'action', 'surface', 'overlay'])
   add(`radius.${radius}`, 'shape', 'number', 'finish', [0, radius === 'action' ? 9999 : 48], 'px');
+add('stroke.hairline', 'shape', 'number', 'structure', undefined, 'px');
+for (const distance of ['contact', 'lift'])
+  add(`depth.${distance}`, 'depth and material', 'number', 'finish', undefined, 'px');
+for (const axis of ['x', 'y']) add(`depth.axis.${axis}`, 'depth and material', 'number', 'finish');
 for (const key of ['fill', 'fill-solid', 'border', 'highlight'])
   add(`material.overlay.${key}`, 'depth and material', 'color', 'finish');
 add('material.overlay.blur', 'depth and material', 'number', 'finish', [0, 48], 'px');

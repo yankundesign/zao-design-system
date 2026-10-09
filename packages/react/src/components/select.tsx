@@ -100,8 +100,8 @@ export function Select({
           aria-invalid={invalid || undefined}
           className={[
             'inline-flex w-full items-center justify-between gap-2 rounded-control border bg-canvas px-2 type-body text-default outline-focus transition-colors duration-fast',
-            'data-disabled:cursor-not-allowed data-disabled:bg-sunken data-disabled:text-disabled',
-            invalid ? 'border-danger' : 'border-default',
+            'data-disabled:cursor-not-allowed data-disabled:bg-field-disabled data-disabled:text-disabled',
+            invalid ? 'border-field-invalid' : 'border-field',
             !invalid && !disabled ? 'hover:border-strong' : null,
             heightClasses[size],
           ]
@@ -131,7 +131,7 @@ export function Select({
           >
             <BaseSelect.Popup
               data-zao-slot="popup"
-              className="relative material-overlay min-w-0 text-default outline-focus"
+              className="construction-shading relative material-overlay min-w-0 text-default outline-focus"
               style={{ maxWidth: 'var(--available-width)', maxHeight: 'var(--available-height)' }}
             >
               <div

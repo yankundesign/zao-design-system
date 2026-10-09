@@ -115,6 +115,44 @@ describe('promotion planner', () => {
     expect(output.files[0]!.after.length - output.files[0]!.before.length).toBe(1);
   });
 
+  it('promotes depth into only the selected finish and gates the shared stroke separately', () => {
+    const candidate = style({
+      'depth.contact': 0,
+      'depth.lift': 4,
+      'depth.axis.x': -1,
+      'depth.axis.y': 1,
+      'stroke.hairline': 2,
+    });
+    const output = plan(candidate);
+    expect(output.unsupported).toEqual([]);
+    expect(output.skippedShared).toEqual(['stroke.hairline']);
+    expect(output.files.map((file) => file.path)).toEqual([
+      'packages/tokens/src/themes/su.tokens.json',
+    ]);
+    const theme = JSON.parse(output.files[0]!.after);
+    expect(theme.depth.contact.$value).toEqual({ value: 0, unit: 'px' });
+    expect(theme.depth.lift.$value).toEqual({ value: 4, unit: 'px' });
+    expect(theme.depth.axis.x.$value).toBe(-1);
+    expect(theme.depth.axis.y.$value).toBe(1);
+    expect(theme.depth.axis.$type).toBe('number');
+    expect(theme.depth.contact.$description).toBe(
+      JSON.parse(sources['packages/tokens/src/themes/su.tokens.json']).depth.contact.$description,
+    );
+    expect(output.sharedEffects).toEqual([]);
+
+    const shared = plan(candidate, true);
+    expect(shared.files.map((file) => file.path)).toEqual([
+      'packages/tokens/src/themes/su.tokens.json',
+      'packages/tokens/src/base/space.tokens.json',
+    ]);
+    const base = JSON.parse(shared.files[1]!.after);
+    expect(base.stroke.hairline.$value).toEqual({ value: 2, unit: 'px' });
+    expect(base.space['0-5'].$value).toEqual({ value: 2, unit: 'px' });
+    expect(shared.sharedEffects).toEqual([
+      { id: 'stroke.hairline', value: 2, contexts: ['yu-dark'] },
+    ]);
+  });
+
   it('skips shared values by default and maps them into both modes or base sources when included', () => {
     const candidate = style({
       'mode.canvas': { light: 3 },

@@ -114,8 +114,8 @@ export function Combobox({
           data-zao-invalid={invalid ? '' : undefined}
           data-zao-disabled={disabled ? '' : undefined}
           className={[
-            'flex w-full items-center rounded-control border bg-canvas transition-colors duration-fast data-disabled:bg-sunken',
-            invalid ? 'border-danger' : 'border-default',
+            'flex w-full items-center rounded-control border bg-canvas transition-colors duration-fast data-disabled:bg-field-disabled',
+            invalid ? 'border-field-invalid' : 'border-field',
             !invalid && !disabled ? 'hover:border-strong' : null,
             heightClasses[size],
           ]
@@ -128,7 +128,7 @@ export function Combobox({
             aria-describedby={describedBy || undefined}
             aria-invalid={invalid || undefined}
             placeholder={placeholder}
-            className="h-full min-w-0 flex-1 bg-canvas px-2 type-body text-default outline-focus placeholder:text-muted disabled:cursor-not-allowed disabled:bg-sunken disabled:text-disabled"
+            className="h-full min-w-0 flex-1 bg-canvas px-2 type-body text-default outline-focus placeholder:text-muted disabled:cursor-not-allowed disabled:bg-field-disabled disabled:text-disabled"
           />
           <span data-zao-slot="clear-space" className="inline-flex h-full w-7 shrink-0">
             <BaseCombobox.Clear
@@ -162,7 +162,7 @@ export function Combobox({
           >
             <BaseCombobox.Popup
               data-zao-slot="popup"
-              className="relative material-overlay min-w-0 text-default outline-focus"
+              className="construction-shading relative material-overlay min-w-0 text-default outline-focus"
               style={{ maxWidth: 'var(--available-width)', maxHeight: 'var(--available-height)' }}
             >
               <div

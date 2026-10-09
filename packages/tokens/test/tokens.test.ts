@@ -4,6 +4,7 @@
  * meets its stated contrast minimums in every shipped context.
  */
 import { beforeAll, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { wcagContrast, type Color } from 'culori';
 import type { TokenNormalized, TokenNormalizedSet } from '@terrazzo/parser';
 import { contexts } from '../contexts.ts';
@@ -49,7 +50,7 @@ describe('every finish is complete', () => {
 describe('structure is shared, finish is chosen', () => {
   // Anything that decides size or layout must be identical across finishes.
   const structural = (id: string) =>
-    /^(unit|space\.|size\.|radius\.(none|pill)|font\.family\.(text|mono)|font\.weight\.)/.test(
+    /^(unit|space\.|size\.|stroke\.|radius\.(none|pill)|font\.family\.(text|mono)|font\.weight\.)/.test(
       id,
     ) || /^type\.(heading|body|button|label|caption|code)$/.test(id);
 
@@ -72,6 +73,78 @@ describe('structure is shared, finish is chosen', () => {
         expect(b.fontSize, `${role} size in ${ctx.id}`).toEqual(a.fontSize);
         expect(b.lineHeight, `${role} line height in ${ctx.id}`).toEqual(a.lineHeight);
       }
+    }
+  });
+});
+
+describe('construction token contract', () => {
+  const depth = {
+    'depth.contact': { type: 'dimension', value: { value: 1, unit: 'px' } },
+    'depth.lift': { type: 'dimension', value: { value: 2, unit: 'px' } },
+    'depth.axis.x': { type: 'number', value: 1 },
+    'depth.axis.y': { type: 'number', value: -1 },
+  };
+
+  it('ships the existing construction distances and unitless screen axis in every context', () => {
+    for (const ctx of contexts) {
+      for (const [id, expected] of Object.entries(depth)) {
+        const token = resolved[ctx.id]![id];
+        expect(token?.$type, `${id} type in ${ctx.id}`).toBe(expected.type);
+        expect(token?.$value, `${id} value in ${ctx.id}`).toEqual(expected.value);
+        expect(token?.$description?.trim(), `${id} description in ${ctx.id}`).toBeTruthy();
+      }
+      expect(resolved[ctx.id]!['stroke.hairline']?.$value, ctx.id).toEqual({
+        value: 1,
+        unit: 'px',
+      });
+    }
+  });
+
+  it('keeps depth in finish sources and independent stroke width in structure', () => {
+    const source = (path: string) =>
+      JSON.parse(readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8'));
+    const base = source('base/space.tokens.json');
+    expect(base.depth).toBeUndefined();
+    expect(base.stroke.hairline.$description.trim()).toBeTruthy();
+    for (const finish of ['su', 'yu']) {
+      const theme = source(`themes/${finish}.tokens.json`);
+      expect(theme.stroke).toBeUndefined();
+      expect(theme.depth.$description).toMatch(/paint only/i);
+      if (finish === 'yu') {
+        for (const path of ['contact', 'lift'])
+          expect(theme.depth[path].$description).toMatch(/completeness entry/i);
+        for (const axis of ['x', 'y'])
+          expect(theme.depth.axis[axis].$description).toMatch(/completeness entry/i);
+      }
+    }
+  });
+});
+
+describe('approved Quiet instrument finish values', () => {
+  it('resolves the promoted Su radius and fast motion subset in both modes', () => {
+    for (const mode of ['light', 'dark']) {
+      const set = resolved[`su-${mode}`]!;
+      for (const [role, value] of Object.entries({
+        action: 0,
+        control: 2,
+        surface: 2,
+        overlay: 2,
+      })) {
+        expect(set[`radius.${role}`]?.$type, `${role} type in Su ${mode}`).toBe('dimension');
+        expect(set[`radius.${role}`]?.$value, `${role} in Su ${mode}`).toEqual({
+          value,
+          unit: 'px',
+        });
+      }
+      expect(set['motion.duration.fast']?.$value, `fast duration in Su ${mode}`).toEqual({
+        value: 80,
+        unit: 'ms',
+      });
+      expect(set['motion.duration.base']?.$value, `base duration in Su ${mode}`).toEqual({
+        value: 160,
+        unit: 'ms',
+      });
+      expect(set['motion.easing.standard']?.$value, `easing in Su ${mode}`).toEqual([0.2, 0, 0, 1]);
     }
   });
 });

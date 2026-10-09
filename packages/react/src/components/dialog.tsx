@@ -13,6 +13,8 @@ import type {
   DialogViewportProps as BaseDialogViewportProps,
 } from '@base-ui/react/dialog';
 import { forwardRef } from 'react';
+import { Button } from './button.js';
+import type { ButtonProps } from './button.js';
 
 export type DialogRootProps = BaseDialogRootProps;
 export type DialogPortalProps = BaseDialogPortalProps;
@@ -22,20 +24,22 @@ type StyledPartProps<T> = Omit<T, 'className' | 'render' | 'style'> & {
   className?: string;
 };
 
-export type DialogTriggerProps = StyledPartProps<BaseDialogTriggerProps>;
+type StyledButtonPartProps<T> = StyledPartProps<T> & Pick<ButtonProps, 'size' | 'variant'>;
+
+export type DialogTriggerProps = StyledButtonPartProps<BaseDialogTriggerProps>;
 export type DialogBackdropProps = StyledPartProps<BaseDialogBackdropProps>;
 export type DialogViewportProps = StyledPartProps<BaseDialogViewportProps>;
 export type DialogPopupProps = StyledPartProps<BaseDialogPopupProps>;
 export type DialogTitleProps = StyledPartProps<BaseDialogTitleProps>;
 export type DialogDescriptionProps = StyledPartProps<BaseDialogDescriptionProps>;
-export type DialogCloseProps = StyledPartProps<BaseDialogCloseProps>;
+export type DialogCloseProps = StyledButtonPartProps<BaseDialogCloseProps>;
 
 function classes(base: string, extra?: string) {
   return extra ? `${base} ${extra}` : base;
 }
 
 const Trigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(function DialogTrigger(
-  { className, ...props },
+  { className, size = 'default', variant = 'secondary', ...props },
   ref,
 ) {
   return (
@@ -43,10 +47,8 @@ const Trigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(function Dialo
       {...props}
       ref={ref}
       data-zao-slot="trigger"
-      className={classes(
-        'inline-flex h-8 min-w-7 items-center justify-center gap-2 rounded-action border border-default bg-surface px-3 type-label trim-label font-medium text-default outline-focus transition-colors duration-fast hover:bg-hover',
-        className,
-      )}
+      render={<Button variant={variant} size={size} />}
+      className={className}
     />
   );
 });
@@ -60,7 +62,7 @@ const Backdrop = forwardRef<HTMLDivElement, DialogBackdropProps>(function Dialog
       {...props}
       ref={ref}
       data-zao-slot="backdrop"
-      className={classes('fixed inset-0 z-40', className)}
+      className={classes('dialog-backdrop-construction fixed inset-0 z-40', className)}
     />
   );
 });
@@ -93,7 +95,7 @@ const Popup = forwardRef<HTMLDivElement, DialogPopupProps>(function DialogPopup(
       data-zao-component="dialog"
       data-zao-slot="popup"
       className={classes(
-        'material-overlay pointer-events-auto relative w-full max-w-lg p-4 text-default outline-focus',
+        'dialog-construction card-shaded-construction construction-shading pointer-events-auto relative w-full max-w-lg rounded-none border border-subtle bg-surface p-4 text-default outline-focus',
         className,
       )}
     />
@@ -128,7 +130,7 @@ const Description = forwardRef<HTMLParagraphElement, DialogDescriptionProps>(
 );
 
 const Close = forwardRef<HTMLButtonElement, DialogCloseProps>(function DialogClose(
-  { className, ...props },
+  { className, size = 'default', variant = 'quiet', ...props },
   ref,
 ) {
   return (
@@ -136,10 +138,8 @@ const Close = forwardRef<HTMLButtonElement, DialogCloseProps>(function DialogClo
       {...props}
       ref={ref}
       data-zao-slot="close"
-      className={classes(
-        'inline-flex h-8 min-w-7 items-center justify-center rounded-action px-3 type-label trim-label font-medium text-default outline-focus transition-colors duration-fast hover:bg-hover',
-        className,
-      )}
+      render={<Button variant={variant} size={size} />}
+      className={className}
     />
   );
 });

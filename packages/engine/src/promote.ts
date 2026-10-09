@@ -57,7 +57,7 @@ export function promotionMapping(id: string): PromotionMapping {
   if (id === 'color.contrast' || /^color\.(neutral|accent|success|warning|danger)\./.test(id))
     return { kind: 'palette' };
   if (
-    /^(radius\.|material\.overlay\.|motion\.|font\.family\.display$|type\.(display|title)\.(weight|tracking)$)/.test(
+    /^(depth\.|radius\.|material\.overlay\.|motion\.|font\.family\.display$|type\.(display|title)\.(weight|tracking)$)/.test(
       id,
     )
   )
@@ -65,7 +65,8 @@ export function promotionMapping(id: string): PromotionMapping {
   if (id.startsWith('mode.') || /^shadow\.(soft|strong)$/.test(id)) return { kind: 'mode' };
   if (/^(font\.family\.(text|mono)$|font\.weight\.|type\..*\.(size|tracking)$)/.test(id))
     return { kind: 'base-type' };
-  if (id === 'space.unit' || id.startsWith('size.control.')) return { kind: 'base-space' };
+  if (id === 'space.unit' || id === 'stroke.hairline' || id.startsWith('size.control.'))
+    return { kind: 'base-space' };
   return { kind: 'unsupported', reason: 'No token-source mapping exists for this parameter.' };
 }
 
@@ -172,6 +173,13 @@ function applyPaletteParam(finish: FinishInput, id: string, value: unknown) {
 }
 
 function applyThemeParam(theme: JsonObject, baseType: JsonObject, id: string, value: unknown) {
+  if (id.startsWith('depth.'))
+    return setToken(
+      theme,
+      id.split('.'),
+      id.startsWith('depth.axis.') ? value : dimension(value, 'px'),
+      'theme',
+    );
   if (id.startsWith('radius.'))
     return setToken(theme, id.split('.'), dimension(value, 'px'), 'theme');
   if (id.startsWith('material.overlay.')) {
@@ -252,6 +260,8 @@ function applyBaseTypeParam(base: JsonObject, id: string, value: unknown) {
 }
 
 function applyBaseSpaceParam(base: JsonObject, id: string, value: unknown) {
+  if (id === 'stroke.hairline')
+    return setToken(base, id.split('.'), dimension(value, 'px'), 'base space');
   if (id === 'space.unit') {
     let changed = setToken(base, ['unit'], dimension(value, 'px'), 'base space');
     for (const step of [

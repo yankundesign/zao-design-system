@@ -1,10 +1,10 @@
 # Su / Quiet instrument
 
-**Status:** Current local Su study, selected on Oct 4, 2026. This is a working style guide for the [scoped CSS study](style.css), not a promoted token theme. Yankun still chooses the final palette and finish values.
+**Status:** Current local Su study, selected on Oct 4, 2026. The approved Oct 8 radius and fast-motion subset now inherits published Su tokens: action radius 0px, control/surface/overlay radii 2px, and fast duration 80ms. The remaining [scoped CSS](style.css) records local palette and component treatments. Yankun still chooses their promotion.
 
 **Direction update, Oct 6, 2026:** [Quiet construction](../../../BRIEF.md#current-design-direction-quiet-construction) is the current design direction across ZAO. It explores the boundary of 2D clarity and 3D presence through clean, measured, coherent physical construction and a quiet responsive feeling. Yingzao Fashi informs proportion, parts, assembly, and finish. Current work focuses on Su in light and dark; Yu is deferred as a possible phase 2. Rest may already be a designed spatial composition.
 
-This direction is not a third finish or a rename of Quiet instrument. The study ID and finish timing remain unchanged; palette refinements are recorded below. Yankun defines individual component interactions one by one; Button, Card, and Menu follow their specific approvals below. The remaining principles and recipes record the current study, not instructions for new interactions or system-wide motion commitments. Usability benefits remain hypotheses that need evidence.
+This direction is not a third finish or a rename of Quiet instrument. The study ID and finish timing remain unchanged; palette refinements are recorded below. Yankun defines individual component interactions one by one; Button, Card, Menu, and Dialog follow their specific approvals below. The remaining principles and recipes record the current study, not instructions for new interactions or system-wide motion commitments. Usability benefits remain hypotheses that need evidence.
 
 ## Current study character
 
@@ -30,17 +30,17 @@ These describe the study's intended character. Their usability claims still need
 
 ## What is already in the CSS
 
-The study applies to the real `@zao/react` Button, field family, Card, and Menu inside `.study[data-study='quiet-instrument']`. The existing `/components` previews discover it automatically. Light and dark modes use the same grammar with different trial colors.
+The study applies to the real `@zao/react` Button, field family, Card, Menu, and Dialog inside `.study[data-study='quiet-instrument']`. The existing `/components` previews discover it automatically. Light and dark modes use the same grammar with different trial colors.
 
-| Layer              | Current treatment                                                                                                      | Reason                                                                                     |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Canvas and surface | Achromatic, opaque planes; the card is slightly distinct from the canvas                                               | Keep the work area and its records easy to separate                                        |
-| Recessed well      | Deeper value field with a single perimeter line                                                                        | Signal where a value is entered                                                            |
-| Card data          | Open, unfilled radial gauge or ruled stat columns                                                                      | Let markings and alignment organize readings without a nested filled panel                 |
-| Borders            | Firm perimeter, finer internal divisions                                                                               | Establish hierarchy without multiple shadows                                               |
-| Corners            | Buttons: `0px`. Fields: `0px`; cards: trial `2px`; choice-study overlays: `0px`                                        | Square actions and fields share deliberate construction; cards retain their current finish |
-| Accent             | High-contrast neutral action, not a colorful brand wash                                                                | Let meaning and state carry the hierarchy                                                  |
-| Motion             | Existing trial `80ms` finish duration; Button hover lifts its face `2px` up and right, with same-axis contact on press | Explore quiet physical feedback while keeping the native hit area stable                   |
+| Layer              | Current treatment                                                                                                  | Reason                                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Canvas and surface | Achromatic, opaque planes; the card is slightly distinct from the canvas                                           | Keep the work area and its records easy to separate                                                                |
+| Recessed well      | Deeper value field with a single perimeter line                                                                    | Signal where a value is entered                                                                                    |
+| Card data          | Open, unfilled radial gauge or ruled stat columns                                                                  | Let markings and alignment organize readings without a nested filled panel                                         |
+| Borders            | Firm perimeter, finer internal divisions                                                                           | Establish hierarchy without multiple shadows                                                                       |
+| Corners            | Buttons: published Su `0px`. Fields: `0px`; Card and Dialog: approved square `0px`; choice-study overlays: `0px`   | Square corners follow Card's Oct 8 refinement and Dialog's Oct 9 B approval; other surfaces retain Su's 2px radius |
+| Accent             | High-contrast neutral action, not a colorful brand wash                                                            | Let meaning and state carry the hierarchy                                                                          |
+| Motion             | Published Su `80ms` fast duration; Button hover lifts its face `2px` up and right, with same-axis contact on press | Explore quiet physical feedback while keeping the native hit area stable                                           |
 
 The private `--surface`, `--well`, dark-only `--canvas`, and related variables in [style.css](style.css) are study values. Light canvas already inherits ZAO's published semantic mapping; other published colors must eventually come from ZAO's palette generator and semantic mode mappings.
 
@@ -62,6 +62,8 @@ The descriptions below record the current implementation and its study intent. F
 
 **Approved simplification, Oct 7:** One face, one continuous joined side, and one fixed base replace the three visible offset shadow copies. The states below retain their approved geometry, 2px upward-and-right lift, press axis, and finish duration. The native hit area, focus outline, and neighboring layout remain stationary; variants, disabled behavior, and reduced-motion feedback stay intact.
 
+**Requested dark side refinement, Oct 8:** Dark secondary and filled quiet Buttons use the existing `border-subtle` semantic color for the joined side and fixed base. This lighter edge separates the construction from near-black surface backing. Light mode and primary Buttons retain the shared face shade; geometry and interaction stay unchanged.
+
 - **Primary:** The most luminous/solid key in a group, intended to emphasize one action.
 - **Secondary:** Framed key on a surface, intended to keep its label and border legible in both modes.
 - **Quiet:** A text-forward control whose face gains a surface on hover, with a full pointer target and a visible focus outline.
@@ -76,8 +78,9 @@ The descriptions below record the current implementation and its study intent. F
 
 **Requested working study, Oct 7:** One consistent field family in the existing component previews. The shared sizes are 28px, 34px, and 40px; the 34px default reuses the existing base value while the general control token stays 32px.
 
-- **Rest:** Square stationary enclosure, one value plane, and one fine perimeter. In light mode, enabled fields use the semantic canvas fill and `border-default`, making availability clearer beside the disabled grey `bg-sunken` fill and quieter perimeter. Dark mode retains its recessed fill and fine border. Keep shared type roles, label spacing, and `px-2` content inset.
+- **Rest, approved A (Oct 8, D6):** Square stationary enclosure, one value plane, and one fine `border-field` perimeter. Light keeps the existing resting edge; dark uses the generated restrained edge. Both meet at least 3:1 against canvas and surface. Light invalid uses the generated red `border-field-invalid`; dark invalid retains the semantic danger border. Invalid is no weaker than the normal edge at rest. Disabled fields use a subtle border and `bg-field-disabled`: the grey well in light and the surface fill in dark. Keep shared type roles, label spacing, and `px-2` content inset. These values remain local pending color promotion; the published utility fallbacks retain the existing palette mappings.
 - **Hover and focus:** Enabled fields strengthen the perimeter without moving. Keyboard focus retains the outside outline around the full enclosure, including Combobox's auxiliary controls. Invalid borders remain semantic error borders during hover and focus; disabled fields remain readable and inactive.
+- **Disabled and invalid together:** Retain the invalid edge and use the disabled fill. Disabling a field does not erase its existing error indication.
 - **Parts:** TextField accepts native editable text and preserves read-only inputs. Combobox filters predefined choices and reserves clear-action space. Select opens a fixed choice list. No new public props or free-form Combobox values are added.
 - **Choice panels:** One stationary floating frame owns a separate scroll viewport and a decorative front lip. The local Pocket study reuses Menu's progress, contact geometry, placement direction, `duration-base` opening, and `duration-fast` closing. Labels and option targets do not scale, translate, or stagger. Reduced motion displays the complete frame immediately; Base UI instant paths remain instant.
 - **Options:** Value text aligns with field text. Long labels wrap. Reserved checkmark space identifies the committed value independently of the highlighted navigation row. Preserve the last highlighted row's paint while closing.
@@ -87,7 +90,7 @@ The descriptions below record the current implementation and its study intent. F
 
 **Approved construction and specimen, Oct 6:** The Card is a grounded reading surface with explicit actions, using existing fen proportions, type roles, and semantic colors. This approval does not establish interactions for other components.
 
-- **Rest:** A static frame and contact edge ground one content plane. The core Card remains passive, with no hover motion. Its construction stays readable without implying that the whole enclosure is a button.
+- **Rest:** Following the Oct 8 refinement, one square static frame with a subtle semantic perimeter and A's filled shaded contact edge ground one content plane. The core Card remains passive, with no hover motion. Its construction stays readable without implying that the whole enclosure is a button.
 - **Hierarchy:** The title leads the record. Supporting metadata, status, and readings remain subordinate; aligned values use tabular figures where they update.
 - **Data region:** Optional open, unfilled regions organize measurements within the content plane. Stacked uses ruled stat columns instead of a nested filled panel. Data remains in semantic colors, with no invented waveform, motion, or glow.
 - **Storage gauge:** Split uses 100 fine graduated radial marks and restrained concentric inner rings. One specimen storage value determines the 68 active marks and the single 68% readout. The complete gauge remains fully visible, with a readable label; reusable styles do not encode a sample measurement or imply an unsupported capacity.
@@ -113,6 +116,17 @@ The descriptions below record the current implementation and its study intent. F
 - **Rows:** Keep the approved semantic hover and keyboard emphasis, meaningful separators, and readable disabled items. During closing, the current row emphasis stays steady until the panel disappears. Motion on neighboring rows and new press treatments remain open.
 - **Behavior:** Preserve Base UI keyboard navigation, dismissal, focus behavior, and collision flip/shift. Reduced motion shows the completed frame immediately while retaining readable states and the panel's relationship to its trigger.
 - **Open review questions:** Is the trigger's open state clear, and does the frame still feel attached when positioning flips or shifts? Can repeated pointer and keyboard choices proceed without distracting row motion?
+
+### Dialog
+
+**Approved B, Oct 9 (D7, WP 2.2 and WP 3.5):** Yankun selected a square static frame, a page veil, and instant entry and exit. The Oct 8 WP 2.2 step 1 established shared Button actions; D7 chooses Dialog's own construction, backdrop, and entry/exit.
+
+- **Frame:** Reuse Card's square stationary `bg-surface` content plane, `stroke.hairline` subtle semantic border, and shaded contact edge from the existing depth tokens. Labels, actions, and the frame stay stationary. Use no blur or soft shadow.
+- **Page veil:** Paint the semantic canvas at 80% opacity over the page. The existing reduced-transparency preference and opt-in use an opaque veil; the popup is always opaque. The same treatment applies in Su light and dark through semantic inheritance.
+- **Entry and exit:** Show and remove the completed frame and veil immediately. Reduced motion is also immediate; no reveal lip or content translation is part of B.
+- **Actions:** Trigger and Close reuse Button's primary, secondary, and quiet variants at small 28px, default 34px, and large 40px sizes. Trigger defaults to secondary and Close to quiet. Use a real primary Button for the principal specimen action and preserve each action's approved feedback and outside focus outline.
+- **Access:** Base UI owns initial focus, focus trapping, Escape and outside-press dismissal, focus return, scroll locking, and accessible title/description relationships. Include a visible close action. Portal content must inherit the trigger's finish island.
+- **Scope:** This individual approval adds no global tokens or interactions. The private alternatives record the decision process; other component interactions and remaining color promotion retain their own gates.
 
 ### Tabs
 
@@ -165,7 +179,7 @@ The first three are the strongest historical anchors. TX–6 and Live show how i
 ## Decisions still open
 
 1. **Value separation:** With the base palette now achromatic, are canvas, surface, and well distinct enough? Is the dark canvas too near black?
-2. **Edge family:** Keep the trial `2px` passive radius, or make every enclosure square?
+2. **Edge family:** Su's surface radius is `2px`; the Oct 8 Card refinement and Oct 9 Dialog B approval use square corners. Other fully square enclosures need their own component decision.
 3. **Primary key:** Should dark mode use a pale key, or a restrained chromatic signal?
 4. **Field depth:** Does the recessed fill still read clearly with a single border in both modes?
 5. **Card data region:** Do the open gauge and ruled columns support reading without crowding the title or bottom actions? Judge the approved complete storage gauge alongside cards without a chart.

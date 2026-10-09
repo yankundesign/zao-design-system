@@ -11,7 +11,7 @@ import {
   validateStyle,
   vary,
 } from '../src/style.ts';
-import { parameterRegistry } from '../src/registry/index.ts';
+import { parameterRegistry, registryById } from '../src/registry/index.ts';
 import { baseVariablesFromTokens, baselineParameterValues } from '../src/baseline.ts';
 import { evaluateContrast } from '../src/contrast.ts';
 import type { StyleFile } from '../src/types.ts';
@@ -41,6 +41,39 @@ describe('style engine', () => {
     expect(new Set(parameterRegistry.map((parameter) => parameter.id)).size).toBe(
       parameterRegistry.length,
     );
+  });
+
+  it('maps depth as finish paint and keeps shared geometry and stroke variables intact', () => {
+    const source = style('depth-study', {
+      'depth.contact': 0,
+      'depth.lift': 6,
+      'depth.axis.x': -1,
+      'depth.axis.y': 1,
+    });
+    const baseVariables = {
+      '--zao-space-3': '12px',
+      '--zao-size-control-md': '32px',
+      '--zao-stroke-hairline': '1px',
+    };
+    const vars = toCssVars(source, { theme: 'su', mode: 'light', baseVariables });
+    expect(vars).toEqual({
+      ...baseVariables,
+      '--zao-depth-contact': '0px',
+      '--zao-depth-lift': '6px',
+      '--zao-depth-axis-x': '-1',
+      '--zao-depth-axis-y': '1',
+    });
+    expect(baseVariables).toEqual({
+      '--zao-space-3': '12px',
+      '--zao-size-control-md': '32px',
+      '--zao-stroke-hairline': '1px',
+    });
+    for (const id of Object.keys(source.params)) {
+      expect(registryById.get(id)?.layer, id).toBe('finish');
+      expect(registryById.get(id)?.range, id).toBeUndefined();
+    }
+    expect(registryById.get('stroke.hairline')?.layer).toBe('structure');
+    expect(() => validateStyle(source)).not.toThrow();
   });
 
   it('resolves inheritance, reports parameter diffs and mixes groups with provenance', () => {
@@ -374,6 +407,11 @@ describe('style engine', () => {
         },
       },
       'radius.action': { type: 'dimension', cssVar: '--zao-radius-action', value: '6px' },
+      'depth.contact': { type: 'dimension', cssVar: '--zao-depth-contact', value: '1px' },
+      'depth.lift': { type: 'dimension', cssVar: '--zao-depth-lift', value: '2px' },
+      'depth.axis.x': { type: 'number', cssVar: '--zao-depth-axis-x', value: 1 },
+      'depth.axis.y': { type: 'number', cssVar: '--zao-depth-axis-y', value: -1 },
+      'stroke.hairline': { type: 'dimension', cssVar: '--zao-stroke-hairline', value: '1px' },
       unit: { type: 'dimension', cssVar: '--zao-unit', value: '4px' },
     });
     expect(variables['--zao-type-display-font-size']).toBe('36px');
@@ -390,6 +428,11 @@ describe('style engine', () => {
       variables,
     );
     expect(baseline['radius.action']).toBe(6);
+    expect(baseline['depth.contact']).toBe(1);
+    expect(baseline['depth.lift']).toBe(2);
+    expect(baseline['depth.axis.x']).toBe(1);
+    expect(baseline['depth.axis.y']).toBe(-1);
+    expect(baseline['stroke.hairline']).toBe(1);
     expect(baseline['space.unit']).toBe(4);
     expect(baseline['color.neutral.curve.lightness.light']).toHaveLength(12);
   });

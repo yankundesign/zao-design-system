@@ -60,7 +60,12 @@ const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(
       >
         {variant === 'primary' && <span aria-hidden="true" data-zao-slot="rail" />}
         {children}
-        <BaseTabs.Indicator data-zao-slot="indicator" className="tabs-indicator">
+        <BaseTabs.Indicator
+          data-zao-slot="indicator"
+          className={
+            variant === 'secondary' ? 'tabs-indicator construction-shading' : 'tabs-indicator'
+          }
+        >
           {variant === 'primary' && <span data-zao-slot="selection-line" />}
         </BaseTabs.Indicator>
       </BaseTabs.List>

@@ -246,18 +246,30 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
     usage: [
       'Use a dialog when the decision must be made before returning to the page.',
       'Give it a concise title and an explicit close action. Keep the main action inside the dialog.',
+      'Its square stationary frame has a fine border and crisp contact edge. A page veil mutes the background; opening and closing are immediate.',
+      'Trigger and Close share Button’s primary, secondary, and quiet variants and 28px, 34px, and 40px sizes. Trigger defaults to secondary and Close to quiet.',
       'When the trigger is inside a finish island, pass an element in that island to Portal container.',
     ],
     accessibility:
-      'Dialog uses Base UI to move focus into the open surface, keep focus there, close on Escape, and restore focus to its trigger. Title and description label the dialog.',
+      'Base UI moves focus into the dialog immediately, keeps focus inside, locks page scrolling, closes on Escape or outside press, and returns focus to the trigger. Title and description label the dialog. Opening and closing remain immediate with reduced motion. Reduced transparency uses an opaque page veil; the dialog surface is always opaque.',
     example: `import { Dialog } from '@zao/react';\n\n<Dialog.Root>\n  <Dialog.Trigger>Review changes</Dialog.Trigger>\n  <Dialog.Portal>\n    <Dialog.Backdrop />\n    <Dialog.Viewport>\n      <Dialog.Popup>\n        <Dialog.Title>Review changes</Dialog.Title>\n        <Dialog.Description>Check these settings before saving.</Dialog.Description>\n        <Dialog.Close>Cancel</Dialog.Close>\n      </Dialog.Popup>\n    </Dialog.Viewport>\n  </Dialog.Portal>\n</Dialog.Root>`,
     props: [
       { name: 'Root', values: 'open, defaultOpen, onOpenChange', defaultValue: 'closed' },
-      { name: 'Trigger', values: 'button props', defaultValue: '—' },
+      {
+        name: 'Trigger',
+        values: 'button props, variant, size',
+        defaultValue: 'secondary, default',
+      },
+      { name: 'Trigger / Close variant', values: 'primary, secondary, quiet', defaultValue: '—' },
+      {
+        name: 'Trigger / Close size',
+        values: 'small (28px), default (34px), large (40px)',
+        defaultValue: 'default',
+      },
       { name: 'Portal', values: 'container', defaultValue: 'document body' },
       { name: 'Viewport / Popup', values: 'dialog layout and content props', defaultValue: '—' },
       { name: 'Title / Description', values: 'content', defaultValue: '—' },
-      { name: 'Close', values: 'button props', defaultValue: '—' },
+      { name: 'Close', values: 'button props, variant, size', defaultValue: 'quiet, default' },
     ],
   },
   menu: {

@@ -14,7 +14,7 @@
   }
 
   .tabs-list {
-    --tabs-hairline: calc(var(--zao-space-0-5) / 2);
+    --tabs-stroke: var(--zao-stroke-hairline);
     position: relative;
     isolation: isolate;
     display: flex;
@@ -47,9 +47,9 @@
     /* Small end stops share the guide's centerline. */
     background:
       linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) left center /
-        var(--tabs-hairline) var(--zao-space-1) no-repeat,
+        var(--tabs-stroke) var(--zao-space-1) no-repeat,
       linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) right center /
-        var(--tabs-hairline) var(--zao-space-1) no-repeat;
+        var(--tabs-stroke) var(--zao-space-1) no-repeat;
   }
 
   .tabs-list > [data-zao-slot='rail']::before,
@@ -61,19 +61,19 @@
   }
 
   .tabs-list > [data-zao-slot='rail']::before {
-    block-size: var(--tabs-hairline);
+    block-size: var(--tabs-stroke);
     background: var(--zao-color-border-subtle);
     transform: translateY(-50%);
   }
 
   .tabs-list > [data-zao-slot='rail']::after {
-    margin-block-start: var(--tabs-hairline);
+    margin-block-start: var(--tabs-stroke);
     block-size: var(--zao-space-0-5);
     opacity: 0.5;
     background: repeating-linear-gradient(
       to right,
-      var(--zao-color-border-subtle) 0 var(--tabs-hairline),
-      transparent var(--tabs-hairline) var(--zao-space-4)
+      var(--zao-color-border-subtle) 0 var(--tabs-stroke),
+      transparent var(--tabs-stroke) var(--zao-space-4)
     );
   }
 
@@ -81,7 +81,7 @@
     position: absolute;
     inset-inline-start: 50%;
     inset-block-start: calc(100% + var(--zao-space-1));
-    inline-size: var(--tabs-hairline);
+    inline-size: var(--tabs-stroke);
     block-size: var(--zao-space-1);
     background: var(--zao-color-border-subtle);
     transform: translate(-50%, -50%);
@@ -127,7 +127,7 @@
     position: absolute;
     inset-inline-start: 50%;
     inset-block-start: 50%;
-    inline-size: var(--tabs-hairline);
+    inline-size: var(--tabs-stroke);
     block-size: var(--zao-space-2);
     background: inherit;
     transform: translate(-50%, -50%);
@@ -136,16 +136,17 @@
   .tabs-list:has(> .tabs-tab[data-active]:is(:active, [data-zao-pressed]))
     > .tabs-indicator
     > [data-zao-slot='selection-line'] {
-    block-size: var(--tabs-hairline);
+    block-size: var(--tabs-stroke);
   }
 
   /* The secondary face follows the active cell, including consumer-supplied grids. */
   .tabs-list[data-zao-variant='secondary'] {
     gap: var(--zao-space-0-5);
     padding: var(--zao-space-0-5);
-    border: var(--tabs-hairline) solid var(--zao-color-border-subtle);
+    border: var(--tabs-stroke) solid var(--zao-color-border-subtle);
     background: var(--zao-color-bg-sunken);
-    box-shadow: inset 0 var(--tabs-hairline) 0 var(--zao-color-border-subtle);
+    box-shadow: inset 0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+      var(--zao-color-border-subtle);
   }
 
   .tabs-list[data-zao-variant='secondary'] > .tabs-tab > [data-zao-slot='tick'] {
@@ -157,18 +158,20 @@
   }
 
   .tabs-list[data-zao-variant='secondary'] > .tabs-indicator {
-    background: var(--zao-color-bg-surface);
-    border: var(--tabs-hairline) solid var(--zao-color-border-default);
-    box-shadow: calc(-1 * var(--tabs-hairline)) var(--tabs-hairline) 0
-      var(--zao-color-border-default);
+    --zao-construction-face: var(--zao-color-bg-surface);
+    background: var(--zao-construction-face);
+    border: var(--tabs-stroke) solid var(--zao-color-border-default);
+    box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 var(--zao-construction-side);
   }
 
   .tabs-list[data-zao-variant='secondary']:has(
       > .tabs-tab[data-active]:is(:active, [data-zao-pressed])
     )
     > .tabs-indicator {
-    translate: 0 var(--tabs-hairline);
-    background: var(--zao-color-bg-hover);
+    /* Seating follows the vertical part of --zao-depth-axis-y; registration stays fixed. */
+    translate: 0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
+    --zao-construction-face: var(--zao-color-bg-hover);
     box-shadow: none;
   }
 
@@ -181,9 +184,9 @@
       block-size: auto;
       background:
         linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) center top /
-          var(--zao-space-1) var(--tabs-hairline) no-repeat,
+          var(--zao-space-1) var(--tabs-stroke) no-repeat,
         linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) center
-          bottom / var(--zao-space-1) var(--tabs-hairline) no-repeat;
+          bottom / var(--zao-space-1) var(--tabs-stroke) no-repeat;
 
       &::before,
       &::after {
@@ -192,20 +195,20 @@
       }
 
       &::before {
-        inline-size: var(--tabs-hairline);
+        inline-size: var(--tabs-stroke);
         block-size: auto;
         transform: translateX(-50%);
       }
 
       &::after {
         margin-block-start: 0;
-        margin-inline-start: var(--tabs-hairline);
+        margin-inline-start: var(--tabs-stroke);
         inline-size: var(--zao-space-0-5);
         block-size: auto;
         background: repeating-linear-gradient(
           to bottom,
-          var(--zao-color-border-subtle) 0 var(--tabs-hairline),
-          transparent var(--tabs-hairline) var(--zao-space-4)
+          var(--zao-color-border-subtle) 0 var(--tabs-stroke),
+          transparent var(--tabs-stroke) var(--zao-space-4)
         );
       }
     }
@@ -214,7 +217,7 @@
       inset-inline-start: calc(100% + var(--zao-space-1));
       inset-block-start: 50%;
       inline-size: var(--zao-space-1);
-      block-size: var(--tabs-hairline);
+      block-size: var(--tabs-stroke);
       transition:
         inline-size var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
         background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
@@ -222,7 +225,7 @@
 
     & > .tabs-tab:not([data-disabled]):is(:hover, :focus-visible) > [data-zao-slot='tick'] {
       inline-size: var(--zao-space-2);
-      block-size: var(--tabs-hairline);
+      block-size: var(--tabs-stroke);
     }
 
     & > .tabs-indicator > [data-zao-slot='selection-line'] {
@@ -236,14 +239,14 @@
 
       &::after {
         inline-size: var(--zao-space-2);
-        block-size: var(--tabs-hairline);
+        block-size: var(--tabs-stroke);
       }
     }
 
     &:has(> .tabs-tab[data-active]:is(:active, [data-zao-pressed]))
       > .tabs-indicator
       > [data-zao-slot='selection-line'] {
-      inline-size: var(--tabs-hairline);
+      inline-size: var(--tabs-stroke);
       block-size: auto;
     }
   }

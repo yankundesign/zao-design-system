@@ -131,7 +131,7 @@ export const Switch = forwardRef<HTMLElement, SwitchProps>(function Switch(
         onLostPointerCapture?.(event);
       }}
       className={[
-        'switch-construction inline-flex h-6 w-10 shrink-0 rounded-none align-middle outline-focus',
+        'switch-construction construction-shading inline-flex h-6 w-10 shrink-0 rounded-none align-middle outline-focus',
         className,
       ]
         .filter(Boolean)

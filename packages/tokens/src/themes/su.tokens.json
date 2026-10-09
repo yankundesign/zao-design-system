@@ -12,17 +12,41 @@
   "radius": {
     "$type": "dimension",
     "control": {
-      "$value": { "value": 6, "unit": "px" },
+      "$value": { "value": 2, "unit": "px" },
       "$description": "Inputs, selects, checkboxes."
     },
-    "action": { "$value": { "value": 6, "unit": "px" }, "$description": "Buttons." },
+    "action": { "$value": { "value": 0, "unit": "px" }, "$description": "Buttons." },
     "surface": {
-      "$value": { "value": 8, "unit": "px" },
+      "$value": { "value": 2, "unit": "px" },
       "$description": "Cards, panels, table wrappers."
     },
     "overlay": {
-      "$value": { "value": 10, "unit": "px" },
+      "$value": { "value": 2, "unit": "px" },
       "$description": "Menus, popovers, dialogs, toasts."
+    }
+  },
+  "depth": {
+    "$description": "Finish construction offsets for paint only. Never use these values for layout dimensions, spacing, native hit areas or focus outlines.",
+    "contact": {
+      "$type": "dimension",
+      "$value": { "value": 1, "unit": "px" },
+      "$description": "Painted contact distance that grounds a face on its fixed base. Independent of border stroke width; never changes a layout box."
+    },
+    "lift": {
+      "$type": "dimension",
+      "$value": { "value": 2, "unit": "px" },
+      "$description": "Painted face travel along the depth axis for approved lift interactions. Native hit areas, focus outlines and neighboring layout stay fixed."
+    },
+    "axis": {
+      "$type": "number",
+      "x": {
+        "$value": 1,
+        "$description": "Unitless screen x multiplier for paint offsets toward the viewer. Positive points right; multiply a depth distance by this value."
+      },
+      "y": {
+        "$value": -1,
+        "$description": "Unitless screen y multiplier for paint offsets toward the viewer. Negative points up; multiply a depth distance by this value."
+      }
     }
   },
   "material": {
@@ -65,7 +89,7 @@
   "motion": {
     "duration": {
       "$type": "duration",
-      "fast": { "$value": { "value": 100, "unit": "ms" }, "$description": "Hover, press, focus." },
+      "fast": { "$value": { "value": 80, "unit": "ms" }, "$description": "Hover, press, focus." },
       "base": {
         "$value": { "value": 160, "unit": "ms" },
         "$description": "Overlays opening and closing."
