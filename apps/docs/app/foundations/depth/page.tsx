@@ -62,7 +62,8 @@ export default async function DepthPage() {
           Filled sides share one shade of their current semantic face through the
           construction-shading utility. Dark secondary and filled quiet Buttons use the subtle
           semantic border color for their joined side and base so they stay visible against the
-          backing. Card keeps the shared contact shade beneath its square, stationary content plane.
+          backing. Card uses the same subtle semantic edge in dark mode and keeps the shared shade
+          in light mode beneath its square, stationary content plane.
         </p>
       </section>
     </div>

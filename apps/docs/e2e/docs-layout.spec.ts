@@ -131,7 +131,7 @@ for (const width of [1440, 1920, 768, 360]) {
     expect(headerBox.width).toBeCloseTo(available, 1);
     expect(available - mainBox.x - mainBox.width).toBeCloseTo(gutter, 1);
     const logo = await bounds(page.locator('body > header').getByRole('link', { name: 'ZAO 造' }));
-    expect(logo.x).toBeCloseTo(gutter, 1);
+    expect(logo.x).toBeCloseTo(gutter + (width >= 768 ? 12 : 0), 1);
 
     if (width >= 768) {
       const sidebar = await bounds(page.locator('.docs-nav-aside'));

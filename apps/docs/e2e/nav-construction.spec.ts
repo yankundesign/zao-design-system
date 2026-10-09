@@ -169,7 +169,7 @@ for (const finish of finishes) {
     const nav = await openDocs(page, finish);
     await expect(nav).toHaveCount(1);
     const sections = nav.locator('[data-nav-section]');
-    await expect(sections).toHaveCount(3);
+    await expect(sections).toHaveCount(4);
     for (const section of await sections.all()) {
       const figure = section.locator('svg.docs-nav-figure');
       await expect(figure).toHaveAttribute('aria-hidden', 'true');
@@ -365,7 +365,7 @@ for (const finish of finishes) {
       });
       for (const space of Object.values(clearance)) expect(space).toBeGreaterThanOrEqual(-0.5);
     }
-    await expect(links.last()).toHaveText('Tabs');
+    await expect(links.last()).toHaveText('Histogram');
     expect(await scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
     const aside = await page.locator('.docs-nav-aside').boundingBox();
     if (!aside) throw new Error('The desktop docs navigation must have visible bounds.');

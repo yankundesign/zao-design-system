@@ -209,7 +209,7 @@
 }
 
 /* D3, option A: one sRGB shade of the current semantic face. Black is the
- * mathematical endpoint, not a new palette color. Button's dark surface faces
+ * mathematical endpoint, not a new palette color. Button and Card's dark surface faces
  * use a semantic edge below so their construction separates from the backing. */
 @utility construction-shading {
   --zao-construction-side: color-mix(in srgb, var(--zao-construction-face) 80%, black 20%);
@@ -221,11 +221,15 @@
     calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-color-border-subtle);
 }
 
-/* Card's single filled contact edge uses the shared shade without moving its content plane. */
+/* Card's single contact edge stays visible against dark backing without moving its plane. */
 @utility card-shaded-construction {
   --zao-construction-face: var(--zao-color-bg-surface);
+  --card-contact-side: var(--zao-construction-side);
+  &[data-zao-component='card'] {
+    --card-contact-side: light-dark(var(--zao-construction-side), var(--zao-color-border-subtle));
+  }
   box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-construction-side);
+    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--card-contact-side);
 }
 
 /* D7, option B: Card's stationary frame appears complete without a reveal. */
@@ -370,6 +374,52 @@
   }
 }
 
+/* Decorative Button visuals share the existing IconButton dimensions. */
+@utility button-visual {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: var(--button-icon-size);
+  height: var(--button-icon-size);
+
+  & > svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@keyframes zao-button-loading {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@utility button-loading-indicator {
+  animation: zao-button-loading var(--zao-motion-duration-loading) linear infinite;
+  stroke-width: var(--zao-stroke-hairline);
+
+  & > path {
+    vector-effect: non-scaling-stroke;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* A status sibling must not extend a scrolled container's document overflow. */
+@utility button-loading-announcement {
+  position: fixed;
+  top: 0;
+  inset-inline-start: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
 /* Button's face and connected side move together over a stationary seat and hit area. */
 @utility button-construction {
   position: relative;
@@ -387,8 +437,13 @@
   --button-ink: var(--zao-color-fg-on-accent);
   --button-edge: var(--zao-color-accent-solid);
   --button-side: var(--zao-construction-side);
+  --button-icon-size: var(--zao-size-icon-sm);
 
-  &[data-zao-variant='secondary'] {
+  &[data-zao-size='large'] {
+    --button-icon-size: var(--zao-size-icon-md);
+  }
+
+  &:is([data-zao-variant='secondary'], [data-zao-variant='danger']) {
     --button-fill: var(--zao-color-bg-surface);
     --button-hover-fill: var(--zao-color-bg-hover);
     --button-pressed-fill: var(--zao-color-bg-active);
@@ -396,6 +451,10 @@
     --button-edge: var(--zao-color-border-default);
     /* Dark surface faces need a lighter joined edge to separate from their backing. */
     --button-side: light-dark(var(--zao-construction-side), var(--zao-color-border-subtle));
+  }
+
+  &[data-zao-variant='danger'] {
+    --button-ink: var(--zao-color-danger-text);
   }
 
   &[data-zao-variant='quiet'] {
@@ -468,7 +527,7 @@
     --button-edge: transparent;
     --button-side: transparent;
 
-    &[data-zao-variant='secondary'] {
+    &:is([data-zao-variant='secondary'], [data-zao-variant='danger']) {
       --button-edge: var(--zao-color-border-subtle);
     }
 
@@ -478,7 +537,7 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    &:enabled:hover {
+    &:enabled:not([data-disabled]):hover {
       --button-x: calc(var(--zao-depth-axis-x) * var(--zao-depth-lift));
       --button-y: calc(var(--zao-depth-axis-y) * var(--zao-depth-lift));
 
@@ -489,7 +548,7 @@
     }
 
     /* Releasing or dragging outside lets native activation and hover decide the next pose. */
-    &:enabled:active:hover {
+    &:enabled:not([data-disabled]):active:hover {
       --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
       --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
       --button-face-fill: var(--button-pressed-fill);
@@ -497,14 +556,14 @@
   }
 
   @media (hover: none), (pointer: coarse) {
-    &:enabled:active {
+    &:enabled:not([data-disabled]):active {
       --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
       --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
       --button-face-fill: var(--button-pressed-fill);
     }
   }
 
-  &:enabled[data-zao-pressed] {
+  &:enabled:not([data-disabled])[data-zao-pressed] {
     --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
     --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
     --button-face-fill: var(--button-pressed-fill);
@@ -523,7 +582,7 @@
     }
 
     @media (hover: hover) and (pointer: fine) {
-      &:enabled:hover:not(:active):not([data-zao-pressed]) {
+      &:enabled:not([data-disabled]):hover:not(:active):not([data-zao-pressed]) {
         --button-face-fill: var(--button-hover-fill);
 
         &[data-zao-variant='primary'] {
@@ -608,19 +667,6 @@
   }
   &[data-ending-style] {
     transition-duration: var(--zao-motion-duration-fast);
-
-    & [data-zao-slot='items'] > [data-zao-slot='item'] {
-      background-color: transparent;
-      &::before {
-        opacity: 0;
-      }
-      &[data-zao-exit-highlighted]:not([data-disabled]) {
-        background-color: var(--zao-color-bg-hover);
-        &::before {
-          opacity: 1;
-        }
-      }
-    }
   }
   &[data-instant] {
     transition: none;
@@ -686,25 +732,21 @@
   }
 }
 
-/* Action rows remain still; the inset mark identifies the current navigation target. */
+/* D8, B: one fill identifies navigation across Menu, Select, and Combobox.
+ * Native keyboard focus and committed-value indicators remain independent. */
 @utility menu-item-construction {
   position: relative;
   overflow-wrap: anywhere;
+  background-color: transparent;
 
-  &::before {
-    position: absolute;
-    inset-block: var(--zao-space-2);
-    inset-inline-start: var(--zao-space-1);
-    width: var(--zao-stroke-hairline);
-    background-color: var(--zao-color-fg-default);
-    pointer-events: none;
-    content: '';
-    opacity: 0;
-  }
-  &[data-highlighted]:not([data-disabled]) {
+  [data-zao-slot='popup']:not([data-ending-style]) &[data-highlighted]:not([data-disabled]),
+  [data-zao-slot='popup'][data-ending-style] &[data-zao-exit-highlighted]:not([data-disabled]) {
     background-color: var(--zao-color-bg-hover);
-    &::before {
-      opacity: 1;
+    @media (forced-colors: active) {
+      background-color: Highlight;
+      color: HighlightText;
+      outline-color: Highlight;
+      forced-color-adjust: none;
     }
   }
 }

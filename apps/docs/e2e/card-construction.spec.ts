@@ -201,9 +201,12 @@ for (const study of studies) {
         }
         const copyBox = await bounds(card.locator('.card-copy'));
         const figureBox = await bounds(figure);
+        // Oct 9: the chart's mono series row leads the data column, level with the copy.
+        const studyBox = await bounds(card.locator('[data-zao-slot="storage-study"]'));
+        expectContained(figureBox, studyBox);
         if (width === 640) {
           expect(figureBox.x).toBeGreaterThan(copyBox.x + copyBox.width);
-          expect(figureBox.y).toBeCloseTo(copyBox.y, 2);
+          expect(studyBox.y).toBeCloseTo(copyBox.y, 2);
         } else {
           expect(figureBox.y).toBeGreaterThanOrEqual(copyBox.y + copyBox.height);
         }

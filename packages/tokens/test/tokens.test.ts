@@ -149,6 +149,26 @@ describe('approved Quiet instrument finish values', () => {
   });
 });
 
+describe('loading indicator timing', () => {
+  it('resolves one-second loading rotations with reduced-motion guidance in every context', () => {
+    for (const ctx of contexts) {
+      const token = resolved[ctx.id]!['motion.duration.loading'];
+      expect(token?.$type, `loading duration type in ${ctx.id}`).toBe('duration');
+      expect(token?.$value, `loading duration in ${ctx.id}`).toEqual({
+        value: 1000,
+        unit: 'ms',
+      });
+      expect(token?.$description, `loading usage in ${ctx.id}`).toMatch(
+        /linear.*loading|loading.*linear/i,
+      );
+      expect(token?.$description, `reduced-motion guidance in ${ctx.id}`).toMatch(
+        /reduced motion.*static/i,
+      );
+      if (ctx.theme === 'yu') expect(token?.$description).toMatch(/completeness entry.*deferred/i);
+    }
+  });
+});
+
 describe('contrast', () => {
   for (const ctx of contexts) {
     describe(ctx.id, () => {

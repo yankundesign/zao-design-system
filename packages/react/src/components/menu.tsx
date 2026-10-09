@@ -92,7 +92,7 @@ export function Menu({ trigger, items, disabled, size = 'default', className }: 
                       data-zao-slot="item"
                       data-zao-item-index={index}
                       data-zao-exit-highlighted={exitHighlight === index ? '' : undefined}
-                      className="menu-item-construction flex min-h-8 cursor-default items-center rounded-control px-3 py-1.5 type-body text-default outline-focus data-disabled:text-muted"
+                      className="menu-item-construction flex min-h-8 cursor-default items-center rounded-none px-3 py-1.5 type-body text-default outline-focus data-disabled:text-muted"
                     >
                       {item.label}
                     </BaseMenu.Item>

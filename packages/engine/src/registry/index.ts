@@ -130,7 +130,7 @@ for (const axis of ['x', 'y']) add(`depth.axis.${axis}`, 'depth and material', '
 for (const key of ['fill', 'fill-solid', 'border', 'highlight'])
   add(`material.overlay.${key}`, 'depth and material', 'color', 'finish');
 add('material.overlay.blur', 'depth and material', 'number', 'finish', [0, 48], 'px');
-for (const duration of ['fast', 'base'])
+for (const duration of ['fast', 'base', 'loading'])
   add(`motion.duration.${duration}`, 'motion', 'duration', 'finish', [0, 2000], 'ms');
 add('motion.easing.standard', 'motion', 'easing', 'finish');
 add('font.family.display', 'type', 'font', 'finish');

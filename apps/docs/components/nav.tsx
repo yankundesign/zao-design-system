@@ -39,6 +39,18 @@ const sections = [
       { href: '/components/tabs', label: 'Tabs' },
     ],
   },
+  {
+    id: 'charts',
+    title: 'Charts',
+    links: [
+      { href: '/charts', label: 'Overview' },
+      { href: '/charts/ring', label: 'Ring' },
+      { href: '/charts/bar', label: 'Bar' },
+      { href: '/charts/line', label: 'Line' },
+      { href: '/charts/heatmap', label: 'Heatmap' },
+      { href: '/charts/histogram', label: 'Histogram' },
+    ],
+  },
 ] as const;
 
 function NavItemLink({ href, label, current }: { href: string; label: string; current: boolean }) {

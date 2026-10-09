@@ -1,0 +1,50 @@
+/*
+ * Local data visualization study. Semantic colors only; the five rules live in
+ * docs/data-visualization.md. Stroke weights are study values pending DV4.
+ */
+.chart-plot {
+  position: relative;
+}
+
+.chart-plot svg {
+  display: block;
+  overflow: visible;
+}
+
+.chart-structure {
+  stroke-width: var(--zao-stroke-hairline, 1px);
+  fill: none;
+}
+
+.chart-datum-control {
+  pointer-events: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.chart-label {
+  stroke: none;
+}
+
+@media (forced-colors: active) {
+  .chart-plot [data-chart-ink='data'] {
+    stroke: CanvasText;
+  }
+  .chart-plot [data-chart-ink='muted'],
+  .chart-structure {
+    stroke: GrayText;
+  }
+  .chart-plot [data-chart-fill] {
+    fill: CanvasText;
+  }
+  .chart-accent {
+    fill: Highlight;
+  }
+  .chart-label {
+    fill: CanvasText;
+  }
+  .chart-label:not(.is-strong) {
+    fill: GrayText;
+  }
+}

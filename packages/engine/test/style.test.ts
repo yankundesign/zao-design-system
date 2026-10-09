@@ -76,6 +76,21 @@ describe('style engine', () => {
     expect(() => validateStyle(source)).not.toThrow();
   });
 
+  it('maps loading duration as finish timing and validates duration bounds', () => {
+    const source = style('loading-study', { 'motion.duration.loading': 1000 });
+    expect(registryById.get('motion.duration.loading')?.layer).toBe('finish');
+    expect(toCssVars(source, { theme: 'su', mode: 'light', baseVariables: {} })).toEqual({
+      '--zao-motion-duration-loading': '1000ms',
+    });
+    expect(() => validateStyle(source)).not.toThrow();
+    expect(() => validateStyle(style('loading-study', { 'motion.duration.loading': -1 }))).toThrow(
+      /within/,
+    );
+    expect(() =>
+      validateStyle(style('loading-study', { 'motion.duration.loading': 2001 })),
+    ).toThrow(/within/);
+  });
+
   it('resolves inheritance, reports parameter diffs and mixes groups with provenance', () => {
     const parent = style('su', { 'radius.action': 6 });
     const child = style('soft', { 'radius.surface': 10 });

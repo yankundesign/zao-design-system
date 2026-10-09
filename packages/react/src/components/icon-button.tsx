@@ -2,15 +2,22 @@
 
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 import { forwardRef, useRef } from 'react';
-import type { ComponentType, SVGProps } from 'react';
 import { Button } from './button.js';
-import type { ButtonProps } from './button.js';
+import type { ButtonIcon, ButtonProps } from './button.js';
 
-export type IconButtonIcon = ComponentType<SVGProps<SVGSVGElement>>;
+export type IconButtonIcon = ButtonIcon;
 
 export interface IconButtonProps extends Omit<
   ButtonProps,
-  'children' | 'aria-label' | 'aria-labelledby'
+  | 'children'
+  | 'aria-label'
+  | 'aria-labelledby'
+  | 'leadingIcon'
+  | 'trailingIcon'
+  | 'trailingAction'
+  | 'block'
+  | 'loading'
+  | 'loadingAnnouncement'
 > {
   /** An Iconoir icon component, such as Settings from iconoir-react. */
   icon: IconButtonIcon;

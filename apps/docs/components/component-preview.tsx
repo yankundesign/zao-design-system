@@ -63,6 +63,7 @@ export function ComponentPreview({
   const activeTitle = activeQuiet ? quietStudy.title : 'ZAO baseline';
   const isField = component === 'text-field' || component === 'combobox' || component === 'select';
   const hasPopup = [
+    'button',
     'composer',
     'conversation',
     'text-field',

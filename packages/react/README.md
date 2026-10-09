@@ -25,6 +25,29 @@ import { finish } from '@zao/react';
 
 **Construction refinement, Oct 7:** Button has one face, one continuous joined side, and one fixed base, replacing the three visible offset shadow copies. The approved 2px upward-and-right hover lift, same press axis, geometry, and finish duration remain unchanged. The native hit area, focus outline, and neighboring layout stay stationary; all variants, disabled behavior, and reduced-motion feedback are preserved.
 
+Use `primary` for the main action, `secondary` or `quiet` for supporting actions, and `danger` for destructive actions. Danger retains a neutral face and frame with semantic danger text. All four variants reuse the approved construction in Su light and dark, at `small` (28px), `default` (34px), and `large` (40px) sizes.
+
+Following [Primer's Button guidance](https://primer.style/product/components/button/), visible labels can include decorative SVG components in `leadingIcon`, `trailingIcon`, and `trailingAction`. Iconoir components fit these slots; icons use 16px, or 20px for a large Button. A trailing action icon indicates an affordance without adding a separate target or popup behavior. Use Menu when an action opens a choice list. Set `block` to fill the available width.
+
+```tsx
+import { Button } from '@zao/react';
+import { Copy, NavArrowRight, Plus, Trash } from 'iconoir-react';
+
+<Button leadingIcon={Plus}>Create workspace</Button>;
+<Button variant="danger" leadingIcon={Trash}>
+  Delete workspace
+</Button>;
+<Button variant="secondary" trailingAction={NavArrowRight}>
+  Read guide
+</Button>;
+<Button block>Continue setup</Button>;
+<Button leadingIcon={Copy} loading={saving} loadingAnnouncement="Saving draft.">
+  Save draft
+</Button>;
+```
+
+The host controls `loading` and announces completion or failure. For asynchronous actions, pass `loading={isPending}` from the initial render, including `false`, so the live region exists before its message changes. While loading, Button preserves its width and accessible action name, retains focus, exposes `aria-busy` and `aria-disabled`, and blocks pointer, keyboard, and click-driven form activation. The spinner replaces the first supplied slot in this order: leading icon, trailing icon, trailing action. With no icon slot, it overlays the visually hidden label while retaining that label's space and accessible name. Other icons stay in place. `loadingAnnouncement` supplies a polite status message and defaults to “Loading”. The approved spinner turns once per second through `motion.duration.loading`; reduced motion shows it still. Explicit `disabled` remains native, skips the tab order, and takes precedence over loading focusability.
+
 ## IconButton
 
 Use [Iconoir](https://iconoir.com/) for ZAO's icons. Install `iconoir-react` in the app that uses them and pass an icon component to IconButton:
@@ -38,7 +61,7 @@ import { Settings } from 'iconoir-react';
 
 The action label is required and also appears in a tooltip on hover or keyboard focus. Choose a recognizable icon; use Button when the action needs a visible text label. The tooltip can be hovered and dismissed with Escape.
 
-IconButton shares Button's construction and input feedback. Its square target is 28px for `small`, 34px for `default`, and 40px for `large`. Icons use the existing 16px size, or 20px for a large button. `variant` accepts `primary`, `secondary` (the default), and `quiet`. Disabled and reduced-motion behavior follow Button. Layout classes apply to the outer wrapper; the forwarded ref points to the native button.
+IconButton shares Button's construction and input feedback. Its square target is 28px for `small`, 34px for `default`, and 40px for `large`. Icons use the existing 16px size, or 20px for a large button. `variant` accepts `primary`, `secondary` (the default), `quiet`, and `danger`. Disabled and reduced-motion behavior follow Button. Layout classes apply to the outer wrapper; the forwarded ref points to the native button.
 
 ## Switch
 

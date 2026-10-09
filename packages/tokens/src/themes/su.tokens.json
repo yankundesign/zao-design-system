@@ -93,6 +93,10 @@
       "base": {
         "$value": { "value": 160, "unit": "ms" },
         "$description": "Overlays opening and closing."
+      },
+      "loading": {
+        "$value": { "value": 1000, "unit": "ms" },
+        "$description": "One complete linear rotation of a loading indicator during pending work. Reduced motion shows a static indicator."
       }
     },
     "easing": {

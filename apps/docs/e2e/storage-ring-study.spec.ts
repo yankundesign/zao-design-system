@@ -152,7 +152,7 @@ test('touch inspection works on a small screen and the guideline is reachable fr
       page.getByRole('heading', { level: 1, name: 'Data visualization', exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'First study: storage ring', exact: true }),
+      page.getByRole('heading', { name: 'Ring: one share of a whole', exact: true }),
     ).toBeVisible();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),

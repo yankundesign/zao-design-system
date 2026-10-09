@@ -79,7 +79,7 @@ test('Button supports keyboard activation and disabled state', async ({ page }) 
 
   const specimen = page.locator('[data-zao-specimen="button"]').first();
   const primary = specimen.getByRole('button', { name: 'Save changes' });
-  await expect(specimen.getByRole('button', { name: 'Unavailable' })).toBeDisabled();
+  await expect(specimen.getByRole('button', { name: 'Unavailable', exact: true })).toBeDisabled();
 
   await primary.evaluate((element) => {
     element.addEventListener('click', () => {
@@ -96,6 +96,12 @@ test('Button supports keyboard activation and disabled state', async ({ page }) 
   await expect(specimen.getByRole('button', { name: 'Review details' })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(specimen.getByRole('button', { name: 'Cancel' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(
+    specimen.getByRole('button', { name: 'Delete workspace', exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(specimen.getByRole('button', { name: 'Small', exact: true })).toBeFocused();
 });
 
 test('TextField shows guidance and errors, accepts editing, and disables input', async ({

@@ -173,6 +173,12 @@
   transition: transform var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
 }
 
+/* An exploded assembly opens evenly: each layer rises a share of the part's lift. */
+.docs-nav-figure-layer {
+  transform: translateY(calc(var(--docs-nav-figure-lift, 0px) * var(--docs-nav-figure-share, 1)));
+  transition: transform var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+}
+
 .docs-nav-section:has(a:focus-visible) {
   --docs-nav-figure-ink: var(--zao-color-fg-default);
   --docs-nav-figure-lift: calc(-1 * var(--zao-space-1));
@@ -205,6 +211,7 @@
 @media (prefers-reduced-motion: reduce) {
   .docs-nav-figure,
   .docs-nav-figure-part,
+  .docs-nav-figure-layer,
   .docs-nav-link,
   .docs-nav-paper,
   .docs-nav-paper::before {
@@ -212,6 +219,7 @@
   }
 
   .docs-nav-figure-part,
+  .docs-nav-figure-layer,
   .docs-nav-paper::before {
     transform: none;
   }

@@ -1,4 +1,6 @@
-export type NavSectionFigureKind = 'start' | 'foundations' | 'components';
+import type { CSSProperties, ReactNode } from 'react';
+
+export type NavSectionFigureKind = 'start' | 'foundations' | 'components' | 'charts';
 
 type Point = readonly [number, number];
 
@@ -47,134 +49,84 @@ function Solid({ outline, crease }: { outline: string; crease?: string }) {
   );
 }
 
+/** A rectangular solid: front face from x0 to x1, back edge at top, front edge at bottom. */
+function block(x0: number, x1: number, top: number, bottom: number) {
+  return {
+    outline: roundedOutline([
+      [x0, top + 2],
+      [x0 + 3, top],
+      [x1 + 3, top],
+      [x1 + 3, bottom - 2],
+      [x1, bottom],
+      [x0, bottom],
+    ]),
+    crease: `M${x0 + 1.2} ${top + 2.3}H${x1 - 0.2}L${x1 + 1.8} ${top + 1}`,
+  };
+}
+
+/** A layer of an exploded assembly rises a share of the part's lift, so its gaps open evenly. */
+function Layer({ share, children }: { share: number; children: ReactNode }) {
+  return (
+    <g
+      className="docs-nav-figure-layer"
+      style={{ '--docs-nav-figure-share': share } as CSSProperties}
+    >
+      {children}
+    </g>
+  );
+}
+
+/** The pavilion with its parts set apart: base, posts, beam and roof. */
 function StartFigure() {
   return (
     <>
-      <Solid
-        outline={roundedOutline([
-          [6, 34],
-          [9, 32],
-          [41, 32],
-          [41, 35],
-          [38, 37],
-          [6, 37],
-        ])}
-        crease="M7.2 34.3H37.8L39.8 33"
-      />
-      <Solid
-        outline={roundedOutline([
-          [11, 23],
-          [14, 21],
-          [18, 21],
-          [18, 32],
-          [15, 34],
-          [11, 34],
-        ])}
-        crease="M12.2 23.3H14.8L16.8 22"
-      />
-      <Solid
-        outline={roundedOutline([
-          [31, 23],
-          [34, 21],
-          [38, 21],
-          [38, 32],
-          [35, 34],
-          [31, 34],
-        ])}
-        crease="M32.2 23.3H34.8L36.8 22"
-      />
-      <Solid
-        outline={roundedOutline([
-          [9, 21],
-          [12, 19],
-          [39, 19],
-          [39, 22],
-          [36, 24],
-          [9, 24],
-        ])}
-        crease="M10.2 21.3H35.8L37.8 20"
-      />
+      <Solid {...block(6, 38, 33, 37)} />
+      <Layer share={1 / 3}>
+        <Solid {...block(11, 15, 21, 31)} />
+        <Solid {...block(31, 35, 21, 31)} />
+      </Layer>
+      <Layer share={2 / 3}>
+        <Solid {...block(9, 36, 14.5, 19)} />
+      </Layer>
       <g className="docs-nav-figure-part">
         <Solid
-          outline="M13.5 9.5Q13.8 9 14.5 8.8L16 7.8Q16.4 7.5 17.1 7.5H31.5Q32.1 7.5 32.5 8L34 9.5C35.5 13.5 39 17.5 44.5 17.5Q45.3 17.5 44.9 18.2L43.2 20.6Q42.9 21 42.1 21H5.9Q5.1 21 4.8 20.6L3.1 18.2Q2.7 17.5 3.5 17.5C9 17.5 12.5 13.5 13.5 9.5Z"
-          crease="M4.5 18.4Q9.5 19.7 15.5 19.2H32.5Q38.5 19.7 43.5 18.4"
+          outline="M13.5 6.11Q13.8 5.83 14.5 5.72L16 5.17Q16.4 5 17.1 5H31.5Q32.1 5 32.5 5.28L34 6.11C35.5 8.34 39 10.56 44.5 10.56Q45.3 10.56 44.9 10.95L43.2 12.28Q42.9 12.51 42.1 12.51H5.9Q5.1 12.51 4.8 12.28L3.1 10.95Q2.7 10.56 3.5 10.56C9 10.56 12.5 8.34 13.5 6.11Z"
+          crease="M4.5 11.06Q9.5 11.78 15.5 11.51H32.5Q38.5 11.78 43.5 11.06"
         />
       </g>
     </>
   );
 }
 
+// Bed joints run through every course; head joints shift half a brick from course to course.
+const BOND_JOINTS = [
+  'M5.6 21H29M5.6 26H40.4M5.6 31H40.4M41 26L44 24M41 31L44 29',
+  'M17 16.4V20.6M17 16L20 14',
+  'M11 21.4V25.6M23 21.4V25.6M35 21.4V25.6',
+  'M17 26.4V30.6M29 26.4V30.6',
+  'M11 31.4V35.6M23 31.4V35.6M35 31.4V35.6',
+].join('');
+
+/** Four courses of running bond; one brick lifts out of the top course. */
 function FoundationsFigure() {
   return (
     <>
       <Solid
         outline={roundedOutline([
-          [3, 28],
-          [6, 26],
-          [45, 26],
-          [45, 33],
-          [42, 35],
-          [3, 35],
+          [5, 16],
+          [8, 14],
+          [32, 14],
+          [32, 19],
+          [44, 19],
+          [44, 34],
+          [41, 36],
+          [5, 36],
         ])}
-        crease="M4.2 28.3H41.8L43.8 27"
-      />
-      <Solid
-        outline={roundedOutline([
-          [6, 21],
-          [9, 19],
-          [42, 19],
-          [42, 27],
-          [39, 29],
-          [6, 29],
-        ])}
-        crease="M7.2 21.3H38.8L40.8 20"
+        crease={`M6.2 16.3H28.8L30.8 15M29.2 21.3H40.8L42.8 20${BOND_JOINTS}`}
       />
       <g className="docs-nav-figure-part">
-        <Solid
-          outline={roundedOutline([
-            [4, 16],
-            [7, 14],
-            [44, 14],
-            [44, 19],
-            [41, 21],
-            [4, 21],
-          ])}
-          crease="M5.2 16.3H40.8L42.8 15"
-        />
+        <Solid {...block(29, 41, 14, 21)} />
       </g>
-      <Solid
-        outline={roundedOutline([
-          [21, 18],
-          [24, 16],
-          [36, 16],
-          [36, 21],
-          [33, 23],
-          [21, 23],
-        ])}
-        crease="M22.2 18.3H32.8L34.8 17"
-      />
-      <Solid
-        outline={roundedOutline([
-          [18, 25],
-          [21, 23],
-          [33, 23],
-          [33, 28],
-          [30, 30],
-          [18, 30],
-        ])}
-        crease="M19.2 25.3H29.8L31.8 24"
-      />
-      <Solid
-        outline={roundedOutline([
-          [15, 32],
-          [18, 30],
-          [32, 30],
-          [32, 35],
-          [29, 37],
-          [15, 37],
-        ])}
-        crease="M16.2 32.3H28.8L30.8 31"
-      />
     </>
   );
 }
@@ -270,6 +222,33 @@ function ComponentsFigure() {
   );
 }
 
+/** Posts of different heights on one plate: a bar chart built like timber. */
+function ChartsFigure() {
+  const first = block(9, 15, 21, 31);
+  const second = block(20, 26, 10, 31);
+  const third = block(31, 37, 16, 31);
+  return (
+    <>
+      <Solid
+        outline={roundedOutline([
+          [3, 31],
+          [6, 29],
+          [45, 29],
+          [45, 34],
+          [42, 36],
+          [3, 36],
+        ])}
+        crease="M4.2 31.3H41.8L43.8 30"
+      />
+      <Solid {...first} />
+      <g className="docs-nav-figure-part">
+        <Solid {...second} />
+      </g>
+      <Solid {...third} />
+    </>
+  );
+}
+
 export function NavSectionFigure({ kind }: { kind: NavSectionFigureKind }) {
   return (
     <svg
@@ -287,6 +266,8 @@ export function NavSectionFigure({ kind }: { kind: NavSectionFigureKind }) {
         <StartFigure />
       ) : kind === 'foundations' ? (
         <FoundationsFigure />
+      ) : kind === 'charts' ? (
+        <ChartsFigure />
       ) : (
         <ComponentsFigure />
       )}

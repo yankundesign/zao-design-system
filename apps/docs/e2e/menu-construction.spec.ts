@@ -426,7 +426,9 @@ for (const study of studies) {
         expect(await copy.evaluate((node) => getComputedStyle(node).backgroundColor)).not.toBe(
           copyFill,
         );
-        expect(await copy.evaluate((node) => getComputedStyle(node, '::before').opacity)).toBe('1');
+        expect(await copy.evaluate((node) => getComputedStyle(node, '::before').content)).toBe(
+          'none',
+        );
         await popup.press('Home');
         await expect(first).toBeFocused();
         await page.keyboard.press('ArrowDown');
@@ -447,8 +449,8 @@ for (const study of studies) {
         await expectPaintedPopup(popup);
         await expect(root).toHaveAttribute('data-action-clicks', '1');
         await expect(specimen.getByText('Copied workspace ID.', { exact: true })).toBeVisible();
-        expect(await disabled.evaluate((node) => getComputedStyle(node, '::before').opacity)).toBe(
-          '0',
+        expect(await disabled.evaluate((node) => getComputedStyle(node, '::before').content)).toBe(
+          'none',
         );
         await page.keyboard.press('Escape');
         await expect(popup).toHaveCount(0);
@@ -686,14 +688,14 @@ test('real Quiet instrument, dark: native selection closes without moving scroll
   await expect(copy).toBeFocused();
   const selectedPaint = await copy.evaluate((node) => ({
     fill: getComputedStyle(node).backgroundColor,
-    indicator: getComputedStyle(node, '::before').opacity,
+    markContent: getComputedStyle(node, '::before').content,
   }));
   const firstPaint = await first.evaluate((node) => ({
     fill: getComputedStyle(node).backgroundColor,
-    indicator: getComputedStyle(node, '::before').opacity,
+    markContent: getComputedStyle(node, '::before').content,
   }));
-  expect(selectedPaint.indicator).toBe('1');
-  expect(firstPaint.indicator).toBe('0');
+  expect(selectedPaint.markContent).toBe('none');
+  expect(firstPaint.markContent).toBe('none');
   expect(selectedPaint.fill).not.toBe(firstPaint.fill);
   const fixedFrame = (await pocketState(popup)).box;
   const fixedRows = await rowBounds(rows);
@@ -715,13 +717,13 @@ test('real Quiet instrument, dark: native selection closes without moving scroll
   expect(
     await copy.evaluate((node) => ({
       fill: getComputedStyle(node).backgroundColor,
-      indicator: getComputedStyle(node, '::before').opacity,
+      markContent: getComputedStyle(node, '::before').content,
     })),
   ).toEqual(selectedPaint);
   expect(
     await first.evaluate((node) => ({
       fill: getComputedStyle(node).backgroundColor,
-      indicator: getComputedStyle(node, '::before').opacity,
+      markContent: getComputedStyle(node, '::before').content,
     })),
   ).toEqual(firstPaint);
   await expectLeadingEdge(popup, 'bottom', closing);

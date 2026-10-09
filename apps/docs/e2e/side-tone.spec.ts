@@ -282,7 +282,7 @@ for (const study of studies) {
       expect(await documentBoxes(trigger)).toEqual(triggerBox);
     });
 
-    test(`${study.name}, ${mode}: Card keeps one shaded contact, square corners, and passive content at every contact depth`, async ({
+    test(`${study.name}, ${mode}: Card keeps one visible contact, square corners, and passive content at every contact depth`, async ({
       page,
     }) => {
       const island = await openSurface(page, 'card', study.realQuietInstrument, mode);
@@ -336,14 +336,33 @@ for (const study of studies) {
         expect(reading.transform).toBe('none');
         expect(reading.tabIndex).toBe(-1);
       };
+      const expectContactTone = async (description: string) => {
+        // Both fixed-width samples need a legible contact against the near-black face.
+        for (const sample of await panel.locator('[data-zao-component="card"]').all()) {
+          const reading = await paints(sample, null, 'shadow');
+          if (mode === 'light') {
+            expectShaded(reading, description);
+          } else {
+            expect(reading.side?.[3], `${description}: contact is opaque`).toBe(255);
+            expect(
+              contrast(reading.side!, reading.face),
+              `${description}: face separation`,
+            ).toBeGreaterThanOrEqual(1.4);
+            expect(
+              contrast(reading.side!, reading.surface),
+              `${description}: surface separation`,
+            ).toBeGreaterThan(contrast(reading.shared, reading.surface));
+          }
+        }
+      };
       const rest = await frame();
       expectShadedFrame(rest);
-      expectShaded(await paints(card, null, 'shadow'), 'Card rest contact');
+      await expectContactTone('Card rest contact');
       for (const state of ['hover', 'press'] as const) {
         try {
           await pose(page, card, panel, state);
           expect(await frame()).toEqual(rest);
-          expectShaded(await paints(card, null, 'shadow'), `Card ${state} contact`);
+          await expectContactTone(`Card ${state} contact`);
           expect(await documentBoxes(targets)).toEqual(layout);
         } finally {
           if (state === 'press') await page.mouse.up();
@@ -356,7 +375,7 @@ for (const study of studies) {
         }, contact);
         await settle(panel);
         expectShadedFrame(await frame());
-        expectShaded(await paints(card, null, 'shadow'), `Card ${contact}px contact`);
+        await expectContactTone(`Card ${contact}px contact`);
         expect(await documentBoxes(targets)).toEqual(layout);
       }
     });

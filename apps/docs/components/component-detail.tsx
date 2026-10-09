@@ -161,7 +161,11 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
     props: [
       { name: 'icon', values: 'Iconoir component', defaultValue: 'required' },
       { name: 'aria-label', values: 'string', defaultValue: 'required' },
-      { name: 'variant', values: 'primary | secondary | quiet', defaultValue: 'secondary' },
+      {
+        name: 'variant',
+        values: 'primary | secondary | quiet | danger',
+        defaultValue: 'secondary',
+      },
       { name: 'size', values: 'small | default | large', defaultValue: 'default' },
       { name: 'disabled', values: 'boolean', defaultValue: 'false' },
       { name: 'className', values: 'wrapper layout classes', defaultValue: '—' },
@@ -172,15 +176,23 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
     title: 'Button',
     description: 'A direct action with clear emphasis and a predictable result.',
     usage: [
-      'Use primary for the main action in a group. Use secondary or quiet for supporting actions.',
+      'Use primary for the main action in a group. Use secondary or quiet for supporting actions, and danger for destructive actions.',
       'Name the result of the action in the label, such as “Save changes”.',
+      'Leading and trailing icons support the visible label. A trailing action icon can indicate a dropdown; use Menu for its actual popup and keyboard behavior.',
+      'Use block to fill the available width. For asynchronous actions, pass loading={isPending} from the initial render, including false, so the live region exists before its message changes. Keep the label stable; the host controls completion and announces the result.',
     ],
     accessibility:
-      'Button uses a native button through Base UI. It is keyboard operable, has a visible focus outline, and skips the tab order when disabled.',
-    example: `import { Button } from '@zao/react';\n\n<Button variant="secondary">Review details</Button>`,
+      'Button uses a native button through Base UI, with keyboard activation and a stationary focus outline. Icons are decorative. Disabled buttons skip the tab order. Loading buttons remain focusable, expose busy and disabled semantics, and block repeat activation while preserving their accessible name and width. A polite status announces loading; reduced motion keeps the spinner still.',
+    example: `import { Button } from '@zao/react';\nimport { Copy } from 'iconoir-react';\n\n<Button leadingIcon={Copy} loading={saving} loadingAnnouncement="Saving draft.">\n  Save draft\n</Button>`,
     props: [
-      { name: 'variant', values: 'primary | secondary | quiet', defaultValue: 'primary' },
+      { name: 'variant', values: 'primary | secondary | quiet | danger', defaultValue: 'primary' },
       { name: 'size', values: 'small | default | large', defaultValue: 'default' },
+      { name: 'leadingIcon', values: 'SVG component (Iconoir-compatible)', defaultValue: '—' },
+      { name: 'trailingIcon', values: 'SVG component (Iconoir-compatible)', defaultValue: '—' },
+      { name: 'trailingAction', values: 'decorative SVG component', defaultValue: '—' },
+      { name: 'block', values: 'boolean', defaultValue: 'false' },
+      { name: 'loading', values: 'boolean', defaultValue: 'false' },
+      { name: 'loadingAnnouncement', values: 'string', defaultValue: 'Loading' },
       { name: 'type', values: 'button | submit | reset', defaultValue: 'button' },
       { name: 'disabled', values: 'boolean', defaultValue: 'false' },
     ],
@@ -227,9 +239,10 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
     usage: [
       'Use a combobox when the list is long enough that searching is faster than scanning.',
       'Give every option a distinct label. Use Select when the list is short and fixed.',
+      'A fill highlights the option being navigated. The checkmark identifies the selected value.',
     ],
     accessibility:
-      'Combobox connects its label, input, popup, and options through Base UI. Arrow keys move through results, Enter selects one, and Escape closes the list.',
+      'Combobox connects its label, input, popup, and options through Base UI. Arrow keys move through results, Enter selects one, and Escape closes the list. Focus stays on the input with its visible outline while the highlighted option is exposed to assistive technology. Disabled options remain inactive. Highlighting stays visible in forced colors and through closing; reduced motion shows the completed popup immediately.',
     example: `import { Combobox } from '@zao/react';\n\n<Combobox label="Workspace" options={[{ value: 'north', label: 'North' }]} />`,
     props: [
       { name: 'label', values: 'string', defaultValue: 'required' },
@@ -247,7 +260,7 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
       'Use a dialog when the decision must be made before returning to the page.',
       'Give it a concise title and an explicit close action. Keep the main action inside the dialog.',
       'Its square stationary frame has a fine border and crisp contact edge. A page veil mutes the background; opening and closing are immediate.',
-      'Trigger and Close share Button’s primary, secondary, and quiet variants and 28px, 34px, and 40px sizes. Trigger defaults to secondary and Close to quiet.',
+      'Trigger and Close share Button’s primary, secondary, quiet, and danger variants and 28px, 34px, and 40px sizes. Trigger defaults to secondary and Close to quiet.',
       'When the trigger is inside a finish island, pass an element in that island to Portal container.',
     ],
     accessibility:
@@ -260,7 +273,11 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
         values: 'button props, variant, size',
         defaultValue: 'secondary, default',
       },
-      { name: 'Trigger / Close variant', values: 'primary, secondary, quiet', defaultValue: '—' },
+      {
+        name: 'Trigger / Close variant',
+        values: 'primary, secondary, quiet, danger',
+        defaultValue: '—',
+      },
       {
         name: 'Trigger / Close size',
         values: 'small (28px), default (34px), large (40px)',
@@ -278,9 +295,10 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
     usage: [
       'Use a menu for related actions that would crowd the page when shown together.',
       'Use clear verbs for actions. Do not hide the main action in a menu.',
+      'A fill highlights the hovered or navigated action. Keyboard focus adds a visible outline.',
     ],
     accessibility:
-      'Menu uses Base UI menu semantics. Arrow keys move among enabled items, Enter or Space activates one, and Escape closes the popup and returns focus.',
+      'Menu uses Base UI menu semantics. Arrow keys move among enabled items, Enter or Space activates one, and Escape closes the popup and returns focus. Keep native keyboard focus outlines and readable disabled actions. Highlighting stays visible in forced colors and through closing; reduced motion shows the completed popup immediately.',
     example: `import { Menu } from '@zao/react';\n\n<Menu trigger="Workspace actions" items={[{ label: 'Rename', onSelect: rename }]} />`,
     props: [
       { name: 'trigger', values: 'string', defaultValue: 'required' },
@@ -324,9 +342,10 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
     usage: [
       'Use Select when the available choices can be scanned without searching.',
       'Keep option labels short and distinct. Use Combobox when people need to filter a longer list.',
+      'A fill highlights the option being navigated. The checkmark identifies the selected value.',
     ],
     accessibility:
-      'Select connects its label, trigger, list, and selected option through Base UI. Arrow keys navigate options, Enter selects, and Escape closes the list.',
+      'Select connects its label, trigger, list, and selected option through Base UI. Arrow keys navigate enabled options, Enter selects, and Escape closes the list. Native item keyboard focus keeps a visible outline, and disabled options remain inactive. Highlighting stays visible in forced colors and through closing; reduced motion shows the completed popup immediately.',
     example: `import { Select } from '@zao/react';\n\n<Select label="Region" options={[{ value: 'west', label: 'West' }]} />`,
     props: [
       { name: 'label', values: 'string', defaultValue: 'required' },

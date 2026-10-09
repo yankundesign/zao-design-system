@@ -170,12 +170,6 @@
     }
     &[data-ending-style] {
       transition-duration: var(--zao-motion-duration-fast);
-      & [data-zao-slot='item'] {
-        background-color: transparent;
-        &[data-zao-exit-highlighted]:not([data-disabled]) {
-          background-color: var(--zao-color-bg-hover);
-        }
-      }
     }
     &[data-instant] {
       transition: none;
@@ -186,7 +180,6 @@
     padding-inline: 0;
   }
   & [data-zao-slot='item'] {
-    border-radius: var(--zao-radius-none);
     padding-block: var(--zao-space-1);
   }
   & [data-zao-slot='item-text'] {

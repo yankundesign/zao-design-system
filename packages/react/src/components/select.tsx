@@ -150,7 +150,7 @@ export function Select({
                       data-zao-slot="item"
                       data-zao-option-value={option.value}
                       data-zao-exit-highlighted={exitHighlight === option.value ? '' : undefined}
-                      className="flex min-h-7 cursor-default items-center gap-2 rounded-control px-2 type-body text-default outline-focus data-highlighted:bg-hover data-disabled:text-disabled"
+                      className="menu-item-construction flex min-h-7 cursor-default items-center gap-2 rounded-none px-2 type-body text-default outline-focus data-disabled:text-disabled"
                     >
                       <BaseSelect.ItemText
                         data-zao-slot="item-text"

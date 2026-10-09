@@ -19,9 +19,10 @@ export default async function DataVisualizationPage() {
       <header className="flex max-w-2xl flex-col gap-3">
         <h1 className="type-title">Data visualization</h1>
         <p className="type-body text-muted">
-          Quiet instruments for reading, inspecting, and understanding change. Start with the{' '}
-          <Link href="/components/card" className="text-accent underline outline-focus">
-            storage ring in Card
+          Quiet instruments for reading, inspecting, and understanding change. See every chart in
+          the{' '}
+          <Link href="/charts" className="text-accent underline outline-focus">
+            Charts section
           </Link>
           .
         </p>

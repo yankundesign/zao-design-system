@@ -6,31 +6,42 @@ import './storage-ring-study.css';
 
 type CapacityRegion = 'used' | 'available';
 
-/** The graduated marks are percentage increments, not individual records. */
-const scaleMarks = Array.from({ length: 100 }, (_, index) => {
-  const angle = (((index + 0.5) * 3.6 - 90) * Math.PI) / 180;
-  const innerRadius = index % 10 === 0 ? 58 : index % 5 === 0 ? 62 : 66;
-  const coordinate = (radius: number, axis: 'x' | 'y') =>
-    Math.round((80 + radius * (axis === 'x' ? Math.cos(angle) : Math.sin(angle))) * 100) / 100;
-  return {
-    x1: coordinate(innerRadius, 'x'),
-    y1: coordinate(innerRadius, 'y'),
-    x2: coordinate(72, 'x'),
-    y2: coordinate(72, 'y'),
-  };
-});
+const center = 80;
+/** Shared inner radius: every mark starts on the same circle and radiates outward. */
+const markStart = 60;
+/** Used marks are long and available marks short, so the outline steps at the reading. */
+const markEnd = { used: 76, available: 67 } as const;
+/** Fine scale ring: structure, kept separate from the data marks. */
+const scaleRadius = 54;
 
-function inspectionArc(start: number, end: number) {
-  const point = (percent: number) => {
-    const angle = ((percent * 3.6 - 90) * Math.PI) / 180;
-    return [80 + 52 * Math.cos(angle), 80 + 52 * Math.sin(angle)];
+function polar(percent: number, radius: number) {
+  const angle = ((percent * 3.6 - 90) * Math.PI) / 180;
+  return {
+    x: Math.round((center + radius * Math.cos(angle)) * 100) / 100,
+    y: Math.round((center + radius * Math.sin(angle)) * 100) / 100,
   };
-  const [x1, y1] = point(start);
-  const [x2, y2] = point(end);
-  return `M ${x1} ${y1} A 52 52 0 ${end - start > 50 ? 1 : 0} 1 ${x2} ${y2}`;
 }
 
-/** First local chart study; no published chart API or finish values are selected here. */
+/** One mark per percentage point. The marks are parts of the whole, not individual records. */
+const markAngles = Array.from({ length: 100 }, (_, index) => index + 0.5);
+
+/** Graduations every 10% on the scale ring; zero carries a longer registration tick. */
+const graduations = Array.from({ length: 10 }, (_, index) => ({
+  from: polar(index * 10, scaleRadius),
+  to: polar(index * 10, index === 0 ? scaleRadius - 7 : scaleRadius - 3),
+  registration: index === 0,
+}));
+
+function inspectionArc(start: number, end: number) {
+  const from = polar(start, scaleRadius);
+  const to = polar(end, scaleRadius);
+  return `M ${from.x} ${from.y} A ${scaleRadius} ${scaleRadius} 0 ${end - start > 50 ? 1 : 0} 1 ${to.x} ${to.y}`;
+}
+
+/**
+ * Capacity ring, refined Oct 9 with the five data visualization rules: hairline marks,
+ * structure separate from data, four slots, and one accent square. Docs-local study.
+ */
 export function StorageRingStudy() {
   const detailId = useId();
   const used = 68;
@@ -47,7 +58,7 @@ export function StorageRingStudy() {
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = ((event.clientX - bounds.left) / bounds.width) * 160 - 80;
     const y = ((event.clientY - bounds.top) / bounds.height) * 160 - 80;
-    if (Math.hypot(x, y) < 52 || Math.hypot(x, y) > 80) {
+    if (Math.hypot(x, y) < 50 || Math.hypot(x, y) > 80) {
       setHovered(null);
       return;
     }
@@ -68,6 +79,13 @@ export function StorageRingStudy() {
       }}
     >
       <div
+        data-zao-slot="chart-head"
+        className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 font-mono type-caption text-muted"
+      >
+        <span>storage.used</span>
+        <span>1 mark = 1 part</span>
+      </div>
+      <div
         className="flex min-w-0 flex-wrap items-center justify-center gap-4"
         role="img"
         aria-label={`Storage use at ${used} percent`}
@@ -86,28 +104,49 @@ export function StorageRingStudy() {
             setHovered(null);
           }}
         >
-          <g strokeWidth="1.5">
-            {scaleMarks.map(({ x1, y1, x2, y2 }, index) => (
+          <g data-zao-slot="storage-scale" fill="none" strokeWidth="1">
+            <circle
+              cx={center}
+              cy={center}
+              r={scaleRadius}
+              stroke="var(--zao-color-border-subtle)"
+              vectorEffect="non-scaling-stroke"
+            />
+            {graduations.map(({ from, to, registration }) => (
               <line
-                key={index}
-                data-zao-slot="storage-mark"
-                data-state={index < used ? 'used' : 'available'}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
+                key={`${from.x}-${from.y}`}
+                x1={from.x}
+                y1={from.y}
+                x2={to.x}
+                y2={to.y}
+                stroke={
+                  registration
+                    ? 'var(--zao-color-border-strong)'
+                    : 'var(--zao-color-border-default)'
+                }
+                vectorEffect="non-scaling-stroke"
               />
             ))}
           </g>
-          <circle
-            cx="80"
-            cy="80"
-            r="52"
-            fill="none"
-            stroke="var(--zao-color-border-subtle)"
-            strokeWidth="1"
-            strokeDasharray="2 3"
-          />
+          <g strokeWidth="1">
+            {markAngles.map((percent, index) => {
+              const state = index < used ? 'used' : 'available';
+              const from = polar(percent, markStart);
+              const to = polar(percent, markEnd[state]);
+              return (
+                <line
+                  key={index}
+                  data-zao-slot="storage-mark"
+                  data-state={state}
+                  x1={from.x}
+                  y1={from.y}
+                  x2={to.x}
+                  y2={to.y}
+                  vectorEffect="non-scaling-stroke"
+                />
+              );
+            })}
+          </g>
           {activeRegion ? (
             <path
               key={activeRegion}
@@ -122,17 +161,26 @@ export function StorageRingStudy() {
               strokeWidth="1"
               pathLength="1"
               strokeDasharray="1"
+              vectorEffect="non-scaling-stroke"
             />
           ) : null}
           <circle
-            cx="80"
-            cy="80"
+            cx={center}
+            cy={center}
             r="24"
             fill="none"
             stroke="var(--zao-color-border-subtle)"
             strokeWidth="1"
+            vectorEffect="non-scaling-stroke"
           />
-          <rect x="77" y="77" width="6" height="6" fill="var(--zao-color-accent-solid)" />
+          <rect
+            data-zao-slot="chart-accent"
+            x="77"
+            y="77"
+            width="6"
+            height="6"
+            fill="var(--zao-color-accent-solid)"
+          />
         </svg>
         <div className="figure-mark flex min-w-0 flex-col gap-1">
           <span className="type-heading figures-tabular">{used}%</span>
@@ -184,15 +232,17 @@ export function StorageRingStudy() {
           </button>
         ))}
       </div>
-      <p
-        id={detailId}
-        data-zao-slot="storage-detail"
-        className="text-center type-caption figures-tabular text-muted"
+      <div
+        data-zao-slot="chart-foot"
+        className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-subtle pt-2 font-mono type-caption figures-tabular"
       >
-        {activeRegion
-          ? `${activeRegion === 'used' ? 'Used' : 'Available'} capacity: ${activeRegion === 'used' ? used : available} of 100 parts.`
-          : 'Total capacity: 100 parts.'}
-      </p>
+        <p id={detailId} data-zao-slot="storage-detail">
+          {activeRegion
+            ? `${activeRegion === 'used' ? 'Used' : 'Available'} capacity: ${activeRegion === 'used' ? used : available} of 100 parts.`
+            : 'Total capacity: 100 parts.'}
+        </p>
+        <span className="text-muted">parts</span>
+      </div>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {announcement}
       </span>

@@ -6,7 +6,7 @@
  */
 
 export { Button } from './components/button.js';
-export type { ButtonProps, ButtonSize, ButtonVariant } from './components/button.js';
+export type { ButtonIcon, ButtonProps, ButtonSize, ButtonVariant } from './components/button.js';
 export { IconButton } from './components/icon-button.js';
 export type { IconButtonProps, IconButtonIcon } from './components/icon-button.js';
 export { Card } from './components/card.js';

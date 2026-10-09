@@ -7,7 +7,7 @@ import type {
   TabsRootProps as BaseTabsRootProps,
   TabsTabProps as BaseTabsTabProps,
 } from '@base-ui/react/tabs';
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 
 type StyledPartProps<T> = Omit<T, 'className' | 'render' | 'style'> & {
@@ -44,6 +44,94 @@ const Root = forwardRef<HTMLDivElement, TabsRootProps>(function TabsRoot(
   );
 });
 
+function PrimaryRail() {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [graduations, setGraduations] = useState<number[]>([]);
+
+  useLayoutEffect(() => {
+    const rail = ref.current;
+    const list = rail?.parentElement;
+    if (!rail || !list) return;
+    let tabs: HTMLElement[] = [];
+
+    const measure = () => {
+      const positions: number[] = [];
+      if (list.dataset.orientation === 'vertical') {
+        const railBounds = rail.getBoundingClientRect();
+        const railHeight = Number.parseFloat(getComputedStyle(rail).height);
+        const scale = railBounds.height / railHeight || 1;
+        const bounds = tabs
+          .filter((tab) => getComputedStyle(tab).visibility !== 'hidden')
+          .map((tab) => tab.getBoundingClientRect())
+          .filter((box) => box.width > 0 && box.height > 0)
+          .sort((a, b) => a.top - b.top);
+        for (let index = 1; index < bounds.length; index++) {
+          positions.push(
+            ((bounds[index - 1]!.bottom + bounds[index]!.top) / 2 - railBounds.top) / scale,
+          );
+        }
+      }
+      setGraduations((current) =>
+        current.length === positions.length &&
+        current.every((position, index) => position === positions[index])
+          ? current
+          : positions,
+      );
+    };
+
+    const resize = new ResizeObserver(measure);
+    const refresh = () => {
+      tabs = Array.from(list.children).filter(
+        (node): node is HTMLElement =>
+          node instanceof HTMLElement && node.dataset.zaoSlot === 'tab',
+      );
+      resize.disconnect();
+      resize.observe(list);
+      resize.observe(rail);
+      for (const tab of tabs) resize.observe(tab);
+      measure();
+    };
+    const mutations = new MutationObserver((records) => {
+      // Ignore our own decorative spans and interaction-state attributes.
+      if (
+        records.some(
+          ({ target }) =>
+            target === list ||
+            tabs.some((tab) => tab === target || tab.contains(target)) ||
+            (target instanceof Element && target.contains(list)),
+        )
+      ) {
+        refresh();
+      }
+    });
+    const attributes = ['class', 'style', 'hidden', 'dir', 'data-orientation'];
+    mutations.observe(list, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: attributes,
+    });
+    for (let ancestor = list.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      mutations.observe(ancestor, { attributes: true, attributeFilter: attributes });
+    }
+    refresh();
+    window.addEventListener('resize', measure);
+    return () => {
+      resize.disconnect();
+      mutations.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
+
+  return (
+    <span ref={ref} aria-hidden="true" data-zao-slot="rail">
+      {graduations.map((position, index) => (
+        <span key={index} data-zao-slot="graduation" style={{ insetBlockStart: position }} />
+      ))}
+    </span>
+  );
+}
+
 const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(
   { className, children, variant = 'primary', activateOnFocus = true, ...props },
   ref,
@@ -58,7 +146,7 @@ const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(
         data-zao-variant={variant}
         className={['tabs-list', className].filter(Boolean).join(' ')}
       >
-        {variant === 'primary' && <span aria-hidden="true" data-zao-slot="rail" />}
+        {variant === 'primary' && <PrimaryRail />}
         {children}
         <BaseTabs.Indicator
           data-zao-slot="indicator"
@@ -185,7 +273,7 @@ const Tab = forwardRef<HTMLElement, TabsTabProps>(function TabsTab(
         onLostPointerCapture?.(event);
       }}
       className={[
-        'tabs-tab inline-flex h-8 min-w-7 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-none px-3 type-label trim-label font-medium',
+        'tabs-tab inline-flex h-8 min-w-7 shrink-0 items-center gap-2 whitespace-nowrap rounded-none px-3 type-label trim-label font-medium',
         'text-muted outline-focus transition-colors duration-fast hover:text-default data-active:text-default',
         'data-disabled:cursor-not-allowed data-disabled:text-disabled',
         className,

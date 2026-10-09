@@ -209,6 +209,10 @@
           "unit": "ms"
         },
         "$description": "Overlays opening and closing."
+      },
+      "loading": {
+        "$value": { "value": 1000, "unit": "ms" },
+        "$description": "Completeness entry for the deferred Yu finish: one complete linear loading rotation during pending work. Reduced motion shows a static indicator."
       }
     },
     "easing": {

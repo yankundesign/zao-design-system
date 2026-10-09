@@ -335,6 +335,7 @@
         "material.overlay.blur": { "type": "number", "minimum": 0, "maximum": 48 },
         "motion.duration.fast": { "type": "number", "minimum": 0, "maximum": 2000 },
         "motion.duration.base": { "type": "number", "minimum": 0, "maximum": 2000 },
+        "motion.duration.loading": { "type": "number", "minimum": 0, "maximum": 2000 },
         "motion.easing.standard": {
           "type": "array",
           "minItems": 4,

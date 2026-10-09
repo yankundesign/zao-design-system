@@ -6,18 +6,28 @@ const variants = [
   { variant: 'primary', label: 'Save changes' },
   { variant: 'secondary', label: 'Review details' },
   { variant: 'quiet', label: 'Cancel' },
+  { variant: 'danger', label: 'Delete workspace' },
 ] as const;
 
 const studies = [
-  { name: 'ZAO baseline', realQuietInstrument: false },
-  { name: 'real Quiet instrument', realQuietInstrument: true },
+  { name: 'ZAO baseline light', realQuietInstrument: false, mode: 'light' },
+  { name: 'ZAO baseline dark', realQuietInstrument: false, mode: 'dark' },
+  { name: 'real Quiet instrument light', realQuietInstrument: true, mode: 'light' },
+  { name: 'real Quiet instrument dark', realQuietInstrument: true, mode: 'dark' },
 ] as const;
 
-async function openButtonPage(page: Page, realQuietInstrument: boolean) {
+async function openButtonPage(page: Page, realQuietInstrument: boolean, mode: 'light' | 'dark') {
+  await page.route('**/api/style-studies/quiet-instrument/css*', (route) =>
+    route.fulfill({ status: 200, contentType: 'text/css', body: '' }),
+  );
   await page.goto(
     realQuietInstrument ? '/components/button?style=quiet-instrument' : '/components/button',
   );
   await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+  await page
+    .getByRole('radiogroup', { name: 'Mode' })
+    .getByRole('radio', { name: mode === 'light' ? 'Light' : 'Dark', exact: true })
+    .click();
   if (realQuietInstrument) {
     // The configured E2E study fixture only identifies the study. Exercise its real overrides too.
     const css = await readFile(
@@ -175,7 +185,7 @@ for (const study of studies) {
   test(`${study.name}: Button keeps its reference geometry and a stable edge hit area`, async ({
     page,
   }) => {
-    const specimen = await openButtonPage(page, study.realQuietInstrument);
+    const specimen = await openButtonPage(page, study.realQuietInstrument, study.mode);
 
     for (const [index, { label }] of variants.entries()) {
       const button = specimen.getByRole('button', { name: label, exact: true });
@@ -274,7 +284,7 @@ for (const study of studies) {
   test(`${study.name}: releasing a pointer press outside cancels the action and restores rest`, async ({
     page,
   }) => {
-    const specimen = await openButtonPage(page, study.realQuietInstrument);
+    const specimen = await openButtonPage(page, study.realQuietInstrument, study.mode);
 
     for (const { label } of variants) {
       const button = specimen.getByRole('button', { name: label, exact: true });
@@ -308,8 +318,8 @@ for (const study of studies) {
   });
 
   test(`${study.name}: disabled Button faces stay still and cannot activate`, async ({ page }) => {
-    const specimen = await openButtonPage(page, study.realQuietInstrument);
-    await expect(specimen.getByRole('button', { name: 'Unavailable' })).toBeDisabled();
+    const specimen = await openButtonPage(page, study.realQuietInstrument, study.mode);
+    await expect(specimen.getByRole('button', { name: 'Unavailable', exact: true })).toBeDisabled();
 
     for (const { label } of variants) {
       const button = specimen.getByRole('button', { name: label, exact: true });
@@ -345,7 +355,7 @@ for (const study of studies) {
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    const specimen = await openButtonPage(page, study.realQuietInstrument);
+    const specimen = await openButtonPage(page, study.realQuietInstrument, study.mode);
 
     for (const { label } of variants) {
       const button = specimen.getByRole('button', { name: label, exact: true });
@@ -409,7 +419,7 @@ for (const study of studies) {
   test(`${study.name}: all Button variants retain keyboard activation and visible focus`, async ({
     page,
   }) => {
-    const specimen = await openButtonPage(page, study.realQuietInstrument);
+    const specimen = await openButtonPage(page, study.realQuietInstrument, study.mode);
     await page.keyboard.press('Tab');
 
     for (const { label } of variants) {
@@ -474,7 +484,7 @@ for (const study of studies) {
     test('a held touch seats the face; release activates once and cancellation restores rest', async ({
       page,
     }) => {
-      const specimen = await openButtonPage(page, study.realQuietInstrument);
+      const specimen = await openButtonPage(page, study.realQuietInstrument, study.mode);
       expect(await page.evaluate(() => matchMedia('(hover: none)').matches)).toBe(true);
       const touch = await page.context().newCDPSession(page);
 

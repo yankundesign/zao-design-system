@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-dvh flex-col bg-canvas text-default">
         <header className="sticky top-0 z-10 border-b border-subtle bg-canvas">
           <div className="docs-shell flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
-            <Link href="/" className="flex items-baseline gap-2">
+            <Link href="/" className="flex items-baseline gap-2 md:ml-3">
               <span className="type-heading">ZAO</span>
               <span className="type-heading font-display text-muted">造</span>
             </Link>

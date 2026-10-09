@@ -1,11 +1,12 @@
-/* Local data study: semantic ink and existing finish motion, with fixed quantitative geometry. */
+/* Local data study: semantic ink and existing finish motion, with fixed quantitative geometry.
+ * Oct 9: used marks are data ink; available marks are short structure-weight strokes. */
 .storage-ring-study [data-zao-slot='storage-mark'] {
-  stroke: var(--zao-color-border-subtle);
+  stroke: var(--zao-color-border-default);
   transition: stroke var(--zao-motion-duration-base) var(--zao-motion-easing-standard);
 }
 
 .storage-ring-study [data-zao-slot='storage-mark'][data-state='used'] {
-  stroke: var(--zao-color-accent-solid);
+  stroke: var(--zao-color-fg-default);
 }
 
 .storage-ring-study[data-inspection='available']
@@ -48,6 +49,12 @@
 }
 
 @media (forced-colors: active) {
+  .storage-ring-study [data-zao-slot='chart-accent'] {
+    fill: Highlight;
+  }
+  .storage-ring-study [data-zao-slot='storage-scale'] * {
+    stroke: GrayText;
+  }
   .storage-ring-study [data-zao-slot='storage-mark'][data-state='used'],
   .storage-ring-study .storage-inspection-guide {
     stroke: CanvasText;
