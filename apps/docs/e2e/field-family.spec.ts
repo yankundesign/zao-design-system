@@ -41,6 +41,12 @@ async function openPage(page: Page, field: Field, context: Context) {
     });
   }
   await page.evaluate(() => document.fonts.ready);
+  if (field === 'text-field') {
+    await expect(page.locator('[data-anatomy-kind="text-field"]')).toHaveAttribute(
+      'data-anatomy-ready',
+      'true',
+    );
+  }
   await page.mouse.move(0, 0);
   return study;
 }
@@ -106,7 +112,7 @@ async function scrub(root: Locator, phase: 'open' | 'close') {
     const popup = node.querySelector<HTMLElement>('[data-zao-slot="popup"]')!;
     const css = getComputedStyle(popup);
     const durationToken = css.getPropertyValue(
-      nextPhase === 'open' ? '--zao-motion-duration-base' : '--zao-motion-duration-fast',
+      nextPhase === 'open' ? '--zao-motion-duration-reveal' : '--zao-motion-duration-reveal-exit',
     );
     return {
       duration,

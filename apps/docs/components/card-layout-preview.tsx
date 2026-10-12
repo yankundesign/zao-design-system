@@ -47,7 +47,7 @@ export function CardLayoutPreview() {
         The storage ring is the first chart study.{' '}
         <Link
           href="/foundations/data-visualization"
-          className="text-accent underline outline-focus"
+          className="text-default underline outline-focus"
         >
           Read the data visualization guideline
         </Link>

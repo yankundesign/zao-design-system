@@ -2,7 +2,7 @@
 
 _For coding agents working in `yankundesign/zao-design-system`. Written Oct 9, 2026. Owner and decision-maker: Yankun._
 
-**Status: direction approved Oct 9.** Yankun chose to keep the docs sidebar, use the bracket set as the hero figure, put the Construction section on a dark band, and redesign the landing page before the section overviews. The open decisions below are ⛔ gates. Build their option sheets and stop. Do not pick a value for him.
+**Status: WP 1–3, 7 and 8 built; the hero became the exploded workspace on Oct 11 (finish plan V9, V10); L12 and L13 open.** Yankun chose to keep the docs sidebar, use the bracket set as the hero figure, put the Construction section on a dark band, and redesign the landing page before the section overviews (Oct 9). On Oct 10 he chose the split hero at 56px with the redrawn bracket set (L5–L7), asked for the bracket set to answer the pointer like Hairline's exploded figures with a 6 fen maximum gap (L14), replaced the thin Construction section with a working workspace and assistant built from ZAO (L15), and dropped the Button close-up (L16). He then chose the showcase stage in the main column (L8), the showcase in the page's own light or dark mode (L9, replacing L3's dark band) and ghosted parts for the bracket set (L17). With no options left, the review panel is retired. Notes are in `explorations/snapshots/private/landing-options-20261009/review.md`. Do not pick a value for him.
 
 This plan only covers `/` (Start → Overview). Overview pages for Foundations, Components and Charts get a separate plan later.
 
@@ -12,6 +12,32 @@ This plan only covers `/` (Start → Overview). Overview pages for Foundations, 
 2. The Quiet construction direction in `BRIEF.md`.
 3. `docs/plans/2026-10-improvement/README.md`, for its rules, option sheets and definition of done. They apply here unchanged.
 4. This file, to the end.
+
+## Progress, Oct 11: the exploded hero (finish plan V9, V10)
+
+- **The hero is the workspace taken apart.** [The finish plan](../2026-10-finish/README.md) WP 3.2: the copy sits above (headline left, sentence and actions right), then one Parts/Built control with a caption cell, then the stage. It rests on **Parts** (V9). `components/exploded-stage.tsx` hides the live window and shows static copies of it, one per layer: canvas, surface, cards, controls, overlay and focus. Pointer height or Up and Down pick a layer, which rises a little further while the others ghost (as L17); Escape clears. The caption names the picked layer, its grade and its depth. **Built** puts the working window back together, and it works as before.
+- **The showcase merged into the hero.** `components/landing/showcase.tsx` now exports `ShowcaseWindow`, the window alone. Its section copy and the dashed "Show parts" switch are retired; the depth scale and "Reset example" sit under the stage.
+- **The bracket set moved to Explore** (V10), beside the line about 营造法式, and it still opens on the pointer and keyboard (L14).
+- **Later on Oct 11, Yankun brought it back to the top (A, split).** It stands beside the headline at 256px (64 fen) from 64rem, aligned with the eyebrow, and follows the actions on narrow screens. The room its opened courses need hangs above the drawing (a negative top margin of the reserve), so it adds no space above the copy; the highest opened part stays below the sticky header. Explore keeps the 营造法式 caption under the tiles.
+- **Nothing plays on its own.** The first pose is applied without motion; only the Parts/Built control, the pick and the keyboard move anything. Reduced motion switches poses instantly.
+- Layers come from the published components' `data-zao-component` names, read by the docs stage, so no published attribute was added.
+
+## Progress, Oct 10
+
+- **L5–L7 applied.** The hero is split from 64rem, the headline is 56px from 48rem, and the hero figure is the redrawn bracket set with a hairline. The 56px size lives in `landing.css`; it is not a published `type-hero` role (see WP 4).
+- **WP 7 built: the bracket set answers.** `components/landing/bracket-instrument.tsx`. Details under "The page, in order".
+- **WP 8 built: the showcase.** `components/landing/showcase.tsx` replaces `construction-band.tsx`, `anatomy-figure.tsx` and `depth-section.tsx`. Those three files are kept, unused, in `explorations/snapshots/private/landing-options-20261009/retired/` as a starting point for improvement WP 4.1.
+- **Seat and Scrub are retired** with the Button close-up, and L10 and L11 with them. The hero no longer animates on load.
+- `table-specimen.tsx` now exports its `requests` and `RequestStatus`, so the Table page and the showcase read the same records and status glyphs.
+- **L8, L9 and L17 applied (later Oct 10).** The showcase is a stage in the main column, ruled by hairlines, in the page's own mode: it sets no finish or mode of its own and inherits the landing island's, so it is right before first paint. Parts not picked take the rule ink. `landing-options.ts` and the review panel moved to the private `retired/` folder.
+- **Tab strip fix.** In the showcase bar, Tabs' viewport is capped at its container's width while it reaches 1 fen past each side for focus room, so it scrolled by 2 fen and showed a scrollbar. `landing.css` lifts the cap for this strip and hides its scrollbar; on phones it still pans by touch and arrow keys. The same cap affects any Tabs inside a shrink-to-fit container; fixing it in `@zao/react` is a published change and needs its own go-ahead.
+
+## Progress, Oct 9
+
+- **WP 1 done.** The nav drawings live in `apps/docs/components/figures/`. Nav screenshots are byte-identical to the previous build at 2×, light and dark, at rest, hover and keyboard focus.
+- **WP 2 done.** `app/page.tsx` renders the five sections from `components/landing/`. `OverviewExhibition` and its spec are retired. Foundations → Depth shares `components/depth-scale.tsx` with the landing page; its markup is unchanged. `lib/docs-sections.ts` feeds both the nav and the Explore counts.
+- **WP 3 built.** A docs-only review panel at `/?review=landing` switches L5–L11 on the real page and writes them to the link. L7 B (the bracket set redrawn in fen) and both L10 drawings exist so they can be compared. L11's three presets drive both Seat and Scrub. L12 A (`components/landing/button-link.tsx`) is the hero's link implementation.
+- **Changes from the plan.** The anatomy has four parts, not five: Button's code has a base, one joined side, a face and a label, and the contact edge is the side at rest. The motion sheet is live in the panel, with recordings as backup. The landing page is one Quiet instrument island whose mode is set before first paint by an inline script, so dark-mode readers never see a light hero.
 
 ## Why the landing page changes
 
@@ -27,7 +53,7 @@ Review of the Oct 9 build at 1440×900 and 390×844, in Su light and dark.
 
 ## The idea
 
-**Show the whole building, then its parts.** An Apple product page gives each screen one idea and makes the product the hero image. Scrolling shows how the product is built, and the page ends with the lineup. ZAO's product is a way of building, so the hero object is something built: the bracket set (斗拱), drawn with the same pen as the nav figures. The Construction section then takes one Button apart along the depth axis, using the shared part names.
+**Show the way of building, then something built with it.** An Apple product page gives each screen one idea and makes the product the hero image, and the page ends with the lineup. ZAO's product is a way of building, so the hero object is the bracket set (斗拱), drawn with the same pen as the nav figures, and it comes apart under the pointer to show its standard parts. The next screen shows what those rules make: a working workspace and its assistant, built only from ZAO components, with a switch that names every part.
 
 ## The page, in order
 
@@ -50,32 +76,42 @@ Every section follows the same hierarchy rules:
 | Figure   | The bracket set (L2, L7), an inline SVG with `aria-hidden`, standing on a fen ruler: a hairline baseline with end stops and graduations, drawn like the Tabs and chart rulers.                                         |
 | Caption  | Proposed (L13): "斗拱 Bracket set. Standard parts, assembled by rule." (`type-caption text-muted`)                                                                                                                     |
 
-Composition is L5. At 1440×900 the first viewport shows everything from the eyebrow to the ruler. Below `md`, the hero stacks, the headline falls back to `type-display`, and the figure scales to the column width.
+Composition is L5 B: copy left, figure right, from 64rem. At 1440×900 the first viewport shows the whole hero and the showcase window's tab bar and first row. Below 64rem the hero stacks; below 48rem the headline falls back to `type-display` and the figure scales to the column width.
 
-### 2. Construction (dark band)
+**The bracket set answers (L14, WP 7).** Based on Hairline's exploded figures; the rest pose is the picture.
 
-- **Band (L3, L8, L9).** A Su dark-mode island: a `.study` element with `data-study="quiet-instrument"`, `finish('su', 'dark')` and the study stylesheet loaded. Quiet instrument already maps `.study[data-zao-mode='dark']`. Add no new colors and no new tokens.
-- **Copy.** Eyebrow "Construction". Heading "Every part has a job." (`type-title`). Body: "A Button is a face, a side and a base. Only the face moves. The hit area and focus outline stay fixed."
-- **Figure (L10).** One Button pulled apart along the depth axis (right and up) into five parts, using the names from the improvement plan: Base (hit area and focus outline, dashed), Contact edge, Side, Face, Label. Labels are real HTML text with leader lines, not SVG text.
-- **Real part.** Below the figure, a real primary Button in the dark island. "Press the real one." is optional copy (L13).
-- **Scrub.** On `md` and wider, with motion allowed and scroll-driven animation supported, the stage pins with `position: sticky` and scroll position drives how far apart the parts are (L11). Otherwise the figure renders already exploded, with labels visible.
+- **Pointer.** Moving across the drawing opens every gap between courses by the same amount, from closed at the left to 6 fen at the right: course _k_ rises _k_ × the gap, the share rule of the nav's exploded figures. Moving up and down picks the course nearest the pointer. The picked course, and everything resting on it, lifts half a step (3 fen) further; it keeps full ink while the others are ghosted in `border-subtle` (L17 B).
+- **Measure.** The ruler becomes a dimension line: a 2px selection line with end ticks, as on Tabs, under each part of the picked course. The caption names the part and its size in fen, for example "慢栱 Long arm · 92 × 15 fen". All captions share one grid cell, so naming a part never moves the page.
+- **Leaving** settles the parts back with the seat role (standard easing, no overshoot). While the pointer moves, parts follow with the lift role. Pointer input is coalesced to one style write per animation frame; there is no running loop and no library.
+- **Room.** The space above the drawing holds the opened courses (33 fen). It overlaps the hero gap on narrow screens and the page's top padding beside the copy, so the hero is no taller than before.
+- **Keyboard.** The drawing is one focusable group. Up and Down pick a course, Left and Right open and close by 1 fen, Home and End close and fully open, and Escape returns it to rest. A polite live region reads the part and size, or how far the set is open. Blur rests it.
+- **Touch.** A press picks by height and a horizontal drag opens; vertical drags still scroll the page. Lifting the finger settles it.
+- **Reduced motion.** The parts stay seated; the pick, the dimension line and the readout still answer.
 
-This figure is also the first anatomy figure from improvement WP 4.1. L10 and D13 share one answer.
+### 2. Showcase (L15, WP 8)
 
-### 3. Depth
+- **Stage (L8 A, L9).** A square stage in the main column, ruled by a subtle hairline, in the page's own mode: light on a light page, dark on a dark page. It inherits the landing island's finish and mode instead of setting its own. No new colors or tokens.
+- **Copy.** Eyebrow "Built with ZAO". Heading "One workspace, built from shared parts." Sentence: "A working workspace and its assistant, made from 11 ZAO components. Approve the waiting requests, then show the parts." The count comes from the same list that labels the parts. From 64rem the heading and sentence sit side by side, so the window starts high.
+- **Window.** One Card-built frame (`card-shaded-construction`, subtle border, `bg-surface`). The bar holds the workspace name, primary Tabs (Overview, Requests, Members, Settings), a View Menu and a settings IconButton; Menu and IconButton switch views or reset the example.
+- **Overview.** A Storage Card with the 68% ring, a Seats Card with Progress (48 of 60), a short reading list and an Email updates Switch, and the six requests in a Table with D10's status glyphs. Other views take the overview's height, so switching tabs never resizes the window.
+- **Assistant.** A Conversation with two exchanges. Its last Message offers "Approve 2 requests"; approving sets both requests to Ready in every table and replies "Approved 2 requests. …". The same Button then reads "Reopen 2 requests", so focus stays on it. The Composer accepts a written request: one that asks to approve does the same; anything else gets a short reply that the preview answers from local sample data.
+- **Show parts.** A Switch below the window outlines each component with a dashed hairline and names it on the outline, like a fieldset legend. Nothing moves or resizes.
+- **Depth.** The shared `DepthScaleControl` scales contact and lift on the window only.
+- **Phones.** One column: the assistant follows the workspace with a 320px transcript, Tabs scroll in their own viewport and the Table in its scroll region.
+- **Components used (11):** Tabs, Menu, IconButton, Card, Progress, Switch, Table, Button, Conversation, Message, Composer. The storage ring is the docs-local chart study.
 
-- **Copy.** Heading "Turn the depth." One sentence: "One control moves the same painted distances in every part. Layout never moves."
-- **Sample.** A slider plus Button, Card and Switch only. Extract the depth math from `components/depth-demo.tsx` into a shared hook or component, so the landing page and Foundations → Depth use one source. Foundations → Depth must look and behave exactly as it does now.
-- The range, reset and readout follow `DepthDemo`. The landing version adds no new controls.
+### Retired: Construction close-up and Depth (Oct 10, L16)
 
-### 4. Two readers
+The Button anatomy band and the standalone Depth section are gone. The depth control moved into the showcase; Foundations → Depth keeps the full demonstration.
+
+### 3. Two readers
 
 - **Heading.** "Written for two readers."
 - **For people.** A real Card with its approved bottom-row Buttons.
 - **For agents.** The same component's usage rules in `type-code`, read from the `button` entry in `components/component-detail.tsx`. Do not copy the prose into the page.
 - **Status line** (`type-caption text-muted`): "Component manifests and a validator are planned for v0.1." Make no claims beyond what exists today.
 
-### 5. Explore
+### 4. Explore
 
 - Three tiles: Foundations, Components and Charts. Each has its nav drawing at a larger size, a title and one line. The whole tile is one link with an accessible name.
 - Link to `/foundations/color`, `/components/button` and `/charts` until the overview pages exist.
@@ -86,33 +122,65 @@ This figure is also the first anatomy figure from improvement WP 4.1. L10 and D1
 
 - `OverviewExhibition`, the "Shared foundations" row and the trailing foundation links. Keep `CardSpecimen` and `StorageRingStudy`, because component pages use them.
 
-## Motion: three moves, each based on one already approved
+## Motion: two moves, each based on one already approved
 
-| Move  | When                    | What                                                                                                                                              | Based on                  |
-| ----- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| Seat  | Hero load, once         | Bracket-set parts travel along the depth axis onto their seats, bottom to top, in sequence.                                                       | Button press seating      |
-| Scrub | Construction, on scroll | Scroll position sets how far apart the Button's parts are. There is no duration or easing, it reverses with scroll, and nothing plays on its own. | Lift along the depth axis |
-| Lift  | Explore tiles           | Hover or focus lifts one part of the drawing.                                                                                                     | Nav section figures       |
+| Move   | When                      | What                                                                                   | Based on                       |
+| ------ | ------------------------- | -------------------------------------------------------------------------------------- | ------------------------------ |
+| Answer | Hero, pointer or keyboard | The bracket set's courses open evenly and one course lifts; leaving settles them back. | Nav exploded figures; Hairline |
+| Lift   | Explore tiles             | Hover or focus lifts one part of the drawing.                                          | Nav section figures            |
 
 Rules:
 
+- **Oct 11:** the hero's moves are the Parts/Built change, the layer pick and the keyboard (finish plan V9). They read the grade 1 duration and the 举折 curves.
 - Only drawings and controls move. Text never animates. Do not add fade-up-on-scroll, parallax, loops, autoplay or smooth-scroll hijacking.
-- **Seat** uses CSS keyframes and a `--part-index` per part. The finished figure is the default state, so no part is hidden before CSS loads. With reduced motion, the figure is simply assembled.
-- **Scrub** is progressive enhancement: use `@supports (animation-timeline: view())` with `@media (prefers-reduced-motion: no-preference) and (min-width: 48rem)`. Use no JavaScript scroll listeners and no libraries. Without support, show the exploded state with labels.
-- Reuse `duration-base` and `easing-standard` where a duration or curve is needed. Stagger, travel distance and pinned length are new values (L11).
+- Nothing plays on its own. The resting state is complete before any script runs.
+- Reuse the finish's lift, seat and slide roles; add no durations or curves.
+- **Retired Oct 10:** Seat (load-in assembly) and Scrub (scroll-driven explode of the Button anatomy), with L10 and L11.
 
 ## Decisions
 
 ### Decided Oct 9
 
-| #   | Decision                    | Outcome                                                                                                              |
-| --- | --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| L1  | Docs sidebar on the landing | **Keep it.** The landing page uses the existing docs layout; header and nav are unchanged.                           |
-| L2  | Hero object                 | **The bracket set 斗拱**, drawn in the nav figures' language.                                                        |
-| L3  | Construction background     | **A dark band, Apple-style**: a Su dark-mode island with Quiet instrument's existing dark mapping and no new colors. |
-| L4  | Scope                       | **Landing page first.** Overviews for Foundations, Components and Charts come in a later plan.                       |
+| #   | Decision                    | Outcome                                                                                                                                       |
+| --- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| L1  | Docs sidebar on the landing | **Keep it.** The landing page uses the existing docs layout; header and nav are unchanged.                                                    |
+| L2  | Hero object                 | **The bracket set 斗拱**, drawn in the nav figures' language.                                                                                 |
+| L3  | Construction background     | **A dark band, Apple-style**: a Su dark-mode island with Quiet instrument's existing dark mapping and no new colors. Superseded Oct 10 by L9. |
+| L4  | Scope                       | **Landing page first.** Overviews for Foundations, Components and Charts come in a later plan.                                                |
 
-### Open: build option sheets and stop
+### Decided Oct 10
+
+| #   | Decision                      | Outcome                                                                                                                                          |
+| --- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| L5  | Hero composition              | **B, split.** Copy left, figure right, from 64rem, so the content and the example show without scrolling.                                        |
+| L6  | Hero type size                | **56px (14 fen)**, line height plus one fen, −0.025em. Applied in `landing.css`; a published `type-hero` role is a separate token change (WP 4). |
+| L7  | Bracket set                   | **B, redrawn in fen, with a hairline.**                                                                                                          |
+| L10 | Anatomy drawing               | **Retired** with the Button close-up (L16).                                                                                                      |
+| L11 | Motion values                 | **Retired.** Seat and Scrub are gone; the bracket set's answer reuses existing roles.                                                            |
+| L14 | Bracket set answer            | **Hairline's exploded-figure behavior, with a 6 fen maximum gap** between courses.                                                               |
+| L15 | First impression after hero   | **A working workspace plus assistant**, built from ZAO components, replacing the Construction section.                                           |
+| L16 | Button close-up               | **Dropped now**, with the standalone Depth section.                                                                                              |
+| L8  | Showcase extent               | **A, a stage in the main column.**                                                                                                               |
+| L9  | Showcase mode                 | **Follows the page:** light on a light page, dark on a dark page. Replaces L3's dark band.                                                       |
+| L17 | Bracket set, parts not picked | **B, ghosted** in `border-subtle`; the picked part keeps full ink.                                                                               |
+
+### Decided Oct 11 (finish plan)
+
+| #   | Decision                   | Outcome                                                                                                                                                                                               |
+| --- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V9  | Hero rest pose             | **Parts.** The exploded workspace is the first image; Built restores the working window. Supersedes L2 (bracket set as hero) and L5 (split hero).                                                     |
+| V10 | Bracket set                | **Beside the headline (A, Oct 11, later).** First moved to Explore and the nav; Yankun then put it back at the top, smaller (256px), split beside the copy. It keeps L14's answer and L17's ghosting. |
+| —   | Showcase                   | **Merged into the hero.** Supersedes L15's separate section; the window, its components and its sample data are unchanged. L8 (stage in the main column) and L9 stay.                                 |
+| —   | Motion on the landing page | The hero's moves are the Parts/Built change (grade 1, 举折 enter and exit curves), the pick and the keyboard. The bracket set keeps its own answer beside the headline.                               |
+
+### Still open
+
+| #   | Decision              | Options                                                                                              | Agent suggestion   |
+| --- | --------------------- | ---------------------------------------------------------------------------------------------------- | ------------------ |
+| L12 | Hero actions as links | A: docs-local `ButtonLink` (current). B: link rendering in `@zao/react` Button, a public API change. | A for now.         |
+| L13 | Copy                  | The strings in this plan, including the showcase copy and assistant lines.                           | Yankun edits them. |
+
+### Open on Oct 9 (history)
 
 | #   | Decision                               | Options to compare                                                                                                                                                                                                  | Reviewer's lean                                                                 |
 | --- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -152,20 +220,27 @@ Build the hero, band and motion sheets. Stop until Yankun chooses.
 
 ### WP 4: Apply the chosen values
 
-- If L6 adds `type-hero`, put it in `base/type.tokens.json` with a `$description`, add a `type-hero` utility to `theme.css` and a changeset, and update the type table in `AGENTS.md`. Every finish shares structural tokens, and the existing test fails if a finish overrides one.
-- Draw the chosen bracket set (L7) and anatomy figure (L10).
-- Apply the band extent and dark-page behavior (L8, L9).
+- **Done Oct 10:** L5–L9 and L17 are the page's values; the review panel is retired.
+- **Waiting for a go-ahead:** publishing L6 as a `type-hero` role. Put it in `base/type.tokens.json` with a `$description`, add a `type-hero` utility to `theme.css` and a changeset, and update the type table in `AGENTS.md`. Every finish shares structural tokens, and the existing test fails if a finish overrides one. Until then the 56px value stays in `landing.css`.
 - Build the actions as links (L12).
 
-### WP 5: Motion
+### WP 5: Motion (superseded Oct 10)
 
-Implement Seat, Scrub and Lift with the L11 values and the rules above.
+Seat and Scrub were retired with the Button close-up. WP 7 replaces them.
+
+### WP 7: The bracket set answers (built Oct 10)
+
+Implements L14 as described under the hero. Covered by `e2e/landing.spec.ts`: rest pose, even opening to 6 fen, the half-step lift, the 92-fen dimension line for the long arm, settling on leave, keyboard picking, opening, Escape and announcements, and reduced motion.
+
+### WP 8: The showcase (built Oct 10)
+
+Implements L15 and L16 as described under section 2. Covered by `e2e/landing.spec.ts`: approval through the Button and through the Composer, Reopen keeping focus, views switching without resizing, Show parts naming 11 components without moving anything, depth changing paint but not layout, and no sideways scroll at 390 with parts shown.
 
 ### WP 6: Verify and polish
 
-- **Screenshots:** 1440×900, 1024×768 and 390×844, in Su light and dark, at rest and mid-scrub. Attach them to the PR.
-- **Reduced motion:** the hero is assembled, the Construction figure is exploded with labels, and nothing moves.
-- **Keyboard order:** hero actions → band Button → depth slider → Card actions → Explore tiles. The pinned stage never traps focus or scrolling.
+- **Screenshots:** 1440×900, 1024×768 and 390×844, in Su light and dark, at rest, with the bracket set open, and with Show parts on. Attach them to the PR.
+- **Reduced motion:** the bracket set stays seated while its pick, measure and readout answer.
+- **Keyboard order:** hero actions → bracket set → Parts/Built → stage → depth slider → Explore tiles.
 - **Other states:** forced colors keep every figure visible; axe is clean in light and dark; nothing scrolls horizontally at 390; there is one `h1`.
 - **Static export:** `pnpm docs:build` succeeds.
 - **Dependencies:** none added.
@@ -173,14 +248,14 @@ Implement Seat, Scrub and Lift with the L11 values and the rules above.
 ## Tests
 
 - Retire `e2e/overview-exhibition.spec.ts`, because its UI is removed, not because a test was weakened. Say so in the PR.
-- Add `e2e/landing.spec.ts`. It covers:
-  - section order and headings;
-  - the hero actions' destinations;
-  - the band carrying `data-zao-mode="dark"` in both page modes, or following L9;
-  - reduced-motion final states;
-  - the keyboard order;
-  - axe;
-  - no horizontal scroll at 390.
+- `e2e/landing.spec.ts` (18 cases) covers:
+  - section order and headings, and that the retired sections are gone;
+  - the hero actions' destinations and hover;
+  - the bracket set's pointer and keyboard behavior, and reduced motion;
+  - the showcase following the page's mode, including before hydration;
+  - the workspace: approval, Reopen focus, views, Show parts and depth;
+  - the window's tab strip fitting without a scrollbar at 1440, 1280 and 1024, and panning without one at 390;
+  - the keyboard order, axe in light and dark, and no horizontal scroll at 390.
 - Keep the `components.spec.ts` check that `/` loads Su with no Yu controls.
 - Add an assertion to `nav-construction.spec.ts` that WP 1 left the nav unchanged.
 

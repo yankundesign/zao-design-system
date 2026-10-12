@@ -11,19 +11,23 @@
         "$value": "{palette.neutral.light.1}"
       },
       "sunken": {
-        "$value": "{palette.neutral.light.3}",
-        "$description": "Wells: table headers, code, count chips."
+        "$value": "{palette.neutral.light.4}",
+        "$description": "Wells: recessed tracks, table headers, code, count chips, disabled fields. A step below the surface fills, so a recess reads below the page."
       },
       "overlay": {
         "$value": "{palette.neutral.light.1}",
         "$description": "Floating layers. Pair with material.overlay.*."
       },
       "hover": {
-        "$value": "{palette.neutral.light.4}"
+        "$value": "{palette.neutral.light.3}"
       },
       "active": {
         "$value": "{palette.neutral.light.5}",
         "$description": "Pressed and selected rows."
+      },
+      "field-disabled": {
+        "$value": "{color.bg.sunken}",
+        "$description": "Disabled TextField, Select and Combobox value planes. Differs from the enabled value plane beyond text."
       }
     },
     "fg": {
@@ -40,7 +44,7 @@
         "$description": "Disabled labels only. Exempt from contrast minimums, so never use it for readable text."
       },
       "on-accent": {
-        "$value": "{palette.accent.light.contrast}",
+        "$value": "{color.seal.ink.on}",
         "$description": "Text and icons on color.accent.solid."
       }
     },
@@ -56,35 +60,102 @@
       "strong": {
         "$value": "{palette.neutral.light.8}",
         "$description": "Hovered borders."
+      },
+      "field": {
+        "$value": "{palette.neutral.light.9}",
+        "$description": "Resting edge of TextField, Select and Combobox. At least 3:1 on canvas and surface."
+      },
+      "field-invalid": {
+        "$value": "{palette.danger.light.11}",
+        "$description": "Invalid field edge, never weaker than the resting edge. At least 3:1 on canvas and surface."
+      }
+    },
+    "seal": {
+      "$description": "Su has one seal: a single color used only for the primary action and the current selection. Ink 墨 is the default; azurite 青 is the alternative, chosen with data-zao-seal=\"azurite\". The accent roles alias the ink seal; theme.css swaps them for an azurite island.",
+      "ink": {
+        "solid": {
+          "$value": "{palette.accent.light.9}",
+          "$description": "The seal: the primary action, the current selection and focus marks that use the seal. Nothing else."
+        },
+        "solid-hover": {
+          "$value": "{palette.accent.light.10}"
+        },
+        "subtle": {
+          "$value": "{palette.accent.light.3}",
+          "$description": "Tinted backgrounds for the current selection."
+        },
+        "subtle-hover": {
+          "$value": "{palette.accent.light.4}"
+        },
+        "border": {
+          "$value": "{palette.accent.light.10}",
+          "$description": "The edge of a filled seal part, such as an on Switch housing or a Progress face."
+        },
+        "text": {
+          "$value": "{palette.accent.light.12}",
+          "$description": "Seal text and links. At least 4.5:1 on canvas and surface."
+        },
+        "on": {
+          "$value": "{palette.accent.light.contrast}",
+          "$description": "Text and icons on the seal solid. At least 4.5:1."
+        }
+      },
+      "azurite": {
+        "solid": {
+          "$value": "{palette.azurite.light.9}",
+          "$description": "The seal: the primary action, the current selection and focus marks that use the seal. Nothing else."
+        },
+        "solid-hover": {
+          "$value": "{palette.azurite.light.10}"
+        },
+        "subtle": {
+          "$value": "{palette.azurite.light.3}",
+          "$description": "Tinted backgrounds for the current selection."
+        },
+        "subtle-hover": {
+          "$value": "{palette.azurite.light.4}"
+        },
+        "border": {
+          "$value": "{palette.azurite.light.10}",
+          "$description": "The edge of a filled seal part, such as an on Switch housing or a Progress face."
+        },
+        "text": {
+          "$value": "{palette.azurite.light.11}",
+          "$description": "Seal text and links. At least 4.5:1 on canvas and surface."
+        },
+        "on": {
+          "$value": "{palette.azurite.light.contrast}",
+          "$description": "Text and icons on the seal solid. At least 4.5:1."
+        }
       }
     },
     "accent": {
       "solid": {
-        "$value": "{palette.accent.light.9}",
-        "$description": "Primary buttons, selected indicators."
+        "$value": "{color.seal.ink.solid}",
+        "$description": "The seal solid: primary buttons and selected indicators. Aliases the active seal."
       },
       "solid-hover": {
-        "$value": "{palette.accent.light.10}"
+        "$value": "{color.seal.ink.solid-hover}"
       },
       "subtle": {
-        "$value": "{palette.accent.light.3}",
+        "$value": "{color.seal.ink.subtle}",
         "$description": "Tinted backgrounds for selected or highlighted items."
       },
       "subtle-hover": {
-        "$value": "{palette.accent.light.4}"
+        "$value": "{color.seal.ink.subtle-hover}"
       },
       "border": {
-        "$value": "{palette.accent.light.7}"
+        "$value": "{color.seal.ink.border}"
       },
       "text": {
-        "$value": "{palette.accent.light.11}",
+        "$value": "{color.seal.ink.text}",
         "$description": "Links and accent text. At least 4.5:1 on canvas and surface."
       }
     },
     "focus": {
       "ring": {
-        "$value": "{palette.accent.light.9}",
-        "$description": "Focus rings. At least 3:1 against canvas and surface."
+        "$value": "{palette.neutral.light.12}",
+        "$description": "Focus brackets and outlines, in ink (V1c). At least 3:1 against canvas and surface."
       }
     },
     "success": {

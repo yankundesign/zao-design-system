@@ -32,7 +32,7 @@ export function StyleSelect({
         <Select.Label className="type-caption text-muted">Style</Select.Label>
         <Select.Trigger
           data-style-select-trigger
-          className="flex h-8 w-full items-center justify-between gap-2 rounded-control border border-default bg-canvas pl-2 pr-3 type-body text-default outline-focus"
+          className="flex h-control w-full items-center justify-between gap-2 rounded-control border border-default bg-canvas pl-2 pr-3 type-body text-default outline-focus"
         >
           <Select.Value className="min-w-0 truncate" />
           <Select.Icon className="shrink-0 text-muted">

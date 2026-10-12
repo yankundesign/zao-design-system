@@ -27,7 +27,7 @@ const rules = [
   {
     name: 'One accent square',
     detail:
-      'The value that matters most: the latest, the current, the selected, or the single reading.',
+      'The value that matters most: the latest, the current, the selected, or the single reading. It is drawn in full-strength ink; data never carries the seal.',
   },
   {
     name: 'Motion only from data',
@@ -49,7 +49,7 @@ export default async function ChartsOverviewPage() {
           the same five rules from the{' '}
           <Link
             href="/foundations/data-visualization"
-            className="text-accent underline outline-focus"
+            className="text-default underline outline-focus"
           >
             data visualization guideline
           </Link>

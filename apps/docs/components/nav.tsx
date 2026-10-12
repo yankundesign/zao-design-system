@@ -3,55 +3,10 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { docsSections } from '@/lib/docs-sections';
 import { NavSectionFigure } from './nav-section-figure';
 
-const sections = [
-  { id: 'start', title: 'Start', links: [{ href: '/', label: 'Overview' }] },
-  {
-    id: 'foundations',
-    title: 'Foundations',
-    links: [
-      { href: '/foundations/color', label: 'Color' },
-      { href: '/foundations/typography', label: 'Typography' },
-      { href: '/foundations/space', label: 'Space' },
-      { href: '/foundations/depth', label: 'Depth' },
-      { href: '/foundations/design', label: 'Design notes' },
-      { href: '/foundations/data-visualization', label: 'Data visualization' },
-    ],
-  },
-  {
-    id: 'components',
-    title: 'Components',
-    links: [
-      { href: '/components/button', label: 'Button' },
-      { href: '/components/icon-button', label: 'IconButton' },
-      { href: '/components/text-field', label: 'TextField' },
-      { href: '/components/composer', label: 'Composer' },
-      { href: '/components/conversation', label: 'Conversation' },
-      { href: '/components/card', label: 'Card' },
-      { href: '/components/combobox', label: 'Combobox' },
-      { href: '/components/dialog', label: 'Dialog' },
-      { href: '/components/menu', label: 'Menu' },
-      { href: '/components/progress', label: 'Progress' },
-      { href: '/components/select', label: 'Select' },
-      { href: '/components/switch', label: 'Switch' },
-      { href: '/components/table', label: 'Table' },
-      { href: '/components/tabs', label: 'Tabs' },
-    ],
-  },
-  {
-    id: 'charts',
-    title: 'Charts',
-    links: [
-      { href: '/charts', label: 'Overview' },
-      { href: '/charts/ring', label: 'Ring' },
-      { href: '/charts/bar', label: 'Bar' },
-      { href: '/charts/line', label: 'Line' },
-      { href: '/charts/heatmap', label: 'Heatmap' },
-      { href: '/charts/histogram', label: 'Histogram' },
-    ],
-  },
-] as const;
+const sections = docsSections;
 
 function NavItemLink({ href, label, current }: { href: string; label: string; current: boolean }) {
   const [pressedPointer, setPressedPointer] = useState<number | null>(null);
@@ -123,7 +78,7 @@ export function Nav() {
   return (
     <>
       <details key={pathname} className="md:hidden">
-        <summary className="min-h-8 cursor-pointer rounded-control border border-default bg-surface px-3 py-2 type-label text-default outline-focus focus-visible:outline-2 focus-visible:outline-offset-2">
+        <summary className="min-h-control cursor-pointer rounded-control border border-default bg-surface px-3 py-2 type-label text-default outline-focus focus-visible:outline-2 focus-visible:outline-offset-2">
           Browse docs · {currentSection?.title ?? 'Start'} / {currentPage ?? 'Overview'}
         </summary>
         <nav aria-label="Docs" className="mt-3 flex flex-col gap-6 p-1">

@@ -1447,6 +1447,300 @@
           "$description": "Text and icons on step 9. Chosen for the higher contrast of white or the darkest neutral."
         }
       }
+    },
+    "azurite": {
+      "light": {
+        "1": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.9912,
+              0.0057,
+              223.44
+            ],
+            "hex": "#f8fdff"
+          }
+        },
+        "2": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.9778,
+              0.0117,
+              240.06
+            ],
+            "hex": "#f1f9ff"
+          }
+        },
+        "3": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.9527,
+              0.0233,
+              250.82
+            ],
+            "hex": "#e4f1ff"
+          }
+        },
+        "4": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.9281,
+              0.0349,
+              255.77
+            ],
+            "hex": "#d8e9ff"
+          }
+        },
+        "5": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.8992,
+              0.049,
+              259.48
+            ],
+            "hex": "#cbdfff"
+          }
+        },
+        "6": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.865,
+              0.062,
+              261
+            ],
+            "hex": "#bcd4fc"
+          }
+        },
+        "7": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.815,
+              0.072,
+              261
+            ],
+            "hex": "#a8c4f2"
+          }
+        },
+        "8": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.745,
+              0.086,
+              261
+            ],
+            "hex": "#8eade3"
+          }
+        },
+        "9": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.42,
+              0.1,
+              261
+            ],
+            "hex": "#2c4c83"
+          }
+        },
+        "10": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.38,
+              0.1,
+              261
+            ],
+            "hex": "#224077"
+          }
+        },
+        "11": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.5,
+              0.09,
+              261
+            ],
+            "hex": "#456396"
+          }
+        },
+        "12": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.3,
+              0.05,
+              261
+            ],
+            "hex": "#1f2e47"
+          }
+        },
+        "contrast": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              1,
+              0,
+              0
+            ],
+            "hex": "#ffffff"
+          },
+          "$description": "Text and icons on step 9. Chosen for the higher contrast of white or the darkest neutral."
+        }
+      },
+      "dark": {
+        "1": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.175,
+              0.012,
+              261
+            ],
+            "hex": "#0e1116"
+          }
+        },
+        "2": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.205,
+              0.02,
+              261
+            ],
+            "hex": "#121720"
+          }
+        },
+        "3": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.26,
+              0.032,
+              261
+            ],
+            "hex": "#1b2434"
+          }
+        },
+        "4": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.3,
+              0.042,
+              261
+            ],
+            "hex": "#222e43"
+          }
+        },
+        "5": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.34,
+              0.052,
+              261
+            ],
+            "hex": "#283853"
+          }
+        },
+        "6": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.385,
+              0.062,
+              261
+            ],
+            "hex": "#314465"
+          }
+        },
+        "7": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.445,
+              0.072,
+              261
+            ],
+            "hex": "#3d547c"
+          }
+        },
+        "8": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.525,
+              0.086,
+              261
+            ],
+            "hex": "#4e6a9c"
+          }
+        },
+        "9": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.75,
+              0.1,
+              261
+            ],
+            "hex": "#8aafee"
+          }
+        },
+        "10": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.79,
+              0.1,
+              261
+            ],
+            "hex": "#96bbfb"
+          }
+        },
+        "11": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.8,
+              0.09,
+              261
+            ],
+            "hex": "#9dbff8"
+          }
+        },
+        "12": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.9263,
+              0.0366,
+              251.29
+            ],
+            "hex": "#d5e9ff"
+          }
+        },
+        "contrast": {
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [
+              0.245,
+              0,
+              0
+            ],
+            "hex": "#202020"
+          },
+          "$description": "Text and icons on step 9. Chosen for the higher contrast of white or the darkest neutral."
+        }
+      }
     }
   }
 }

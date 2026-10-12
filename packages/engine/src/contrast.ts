@@ -9,13 +9,23 @@ export const contrastPromises = {
     'color.warning.text': 4.5,
     'color.danger.text': 4.5,
   },
+  /** Both seals promise readable seal text (finish plan V1, Oct 11). */
+  sealText: { 'color.seal.ink.text': 4.5, 'color.seal.azurite.text': 4.5 },
+  /** Field edges identify the control: WCAG 1.4.11 non-text contrast. */
+  nonText: { 'color.border.field': 3, 'color.border.field-invalid': 3 },
   focus: { token: 'color.focus.ring', minimum: 3 },
   onAccent: { foreground: 'color.fg.on-accent', background: 'color.accent.solid', minimum: 4.5 },
+  onSeal: [
+    { foreground: 'color.seal.ink.on', background: 'color.seal.ink.solid', minimum: 4.5 },
+    { foreground: 'color.seal.azurite.on', background: 'color.seal.azurite.solid', minimum: 4.5 },
+  ],
 } as const;
 
 export const contrastCases = [
   ...Object.entries(contrastPromises.text),
   ...Object.entries(contrastPromises.semanticText),
+  ...Object.entries(contrastPromises.sealText),
+  ...Object.entries(contrastPromises.nonText),
   [contrastPromises.focus.token, contrastPromises.focus.minimum],
 ] as const;
 
@@ -47,5 +57,6 @@ export function evaluateContrast(variables: Record<string, string>): ContrastRes
     contrastPromises.onAccent.background,
     contrastPromises.onAccent.minimum,
   );
+  for (const pair of contrastPromises.onSeal) check(pair.foreground, pair.background, pair.minimum);
   return results;
 }

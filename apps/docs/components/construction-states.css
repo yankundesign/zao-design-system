@@ -1,0 +1,191 @@
+/* Drawn → built (finish plan V8). Docs-local; the Card itself is unchanged. */
+.construction-states-stage {
+  padding: var(--zao-space-8) var(--zao-space-6) var(--zao-space-6) var(--zao-space-10);
+  border: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--zao-color-border-default), transparent 50%) 0.75px,
+    transparent 1.25px
+  );
+  background-size: var(--zao-space-4) var(--zao-space-4);
+}
+
+.construction-states-frame {
+  position: relative;
+  inline-size: min(100%, 22.5rem);
+  block-size: 14.75rem;
+}
+
+.construction-states-drawing {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.construction-states-line {
+  fill: none;
+  stroke: var(--zao-color-fg-default);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.construction-states-placeholder {
+  stroke: var(--zao-color-border-default);
+}
+
+.construction-states-solid {
+  position: absolute;
+  inset: 0;
+}
+
+.construction-states-solid [data-zao-component='card'] {
+  block-size: 100%;
+}
+
+.construction-states-bar {
+  block-size: var(--zao-space-2);
+  background: var(--zao-color-bg-sunken);
+  box-shadow: inset calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+    color-mix(in oklch, var(--zao-color-bg-sunken), black 18%);
+}
+
+.construction-states-bar > span {
+  display: block;
+  inline-size: 68%;
+  block-size: 100%;
+  background: var(--zao-color-fg-default);
+}
+
+.construction-states-dimensions > span {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--zao-color-fg-muted);
+  opacity: 0;
+  transition: opacity var(--zao-motion-duration-fast) linear;
+}
+
+/* Dimension lines: a hairline with end ticks, outside the drawing. */
+.construction-states-width {
+  inset-inline: 0;
+  inset-block-start: calc(-1 * var(--zao-space-6));
+  block-size: var(--zao-space-4);
+  border-inline: var(--zao-stroke-hairline) solid var(--zao-color-fg-muted);
+  background: linear-gradient(var(--zao-color-fg-muted), var(--zao-color-fg-muted)) center / 100%
+    var(--zao-stroke-hairline) no-repeat;
+}
+
+.construction-states-width,
+.construction-states-height {
+  font-variant-numeric: tabular-nums;
+}
+
+.construction-states-height {
+  /* Physical sides: the label is set vertically, so logical sides would turn with it. */
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--zao-space-8));
+  width: var(--zao-space-4);
+  border-top: var(--zao-stroke-hairline) solid var(--zao-color-fg-muted);
+  border-bottom: var(--zao-stroke-hairline) solid var(--zao-color-fg-muted);
+  background: linear-gradient(var(--zao-color-fg-muted), var(--zao-color-fg-muted)) center /
+    var(--zao-stroke-hairline) 100% no-repeat;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* Keep the label legible over its own line: a canvas-colored gap around the text. */
+.construction-states-width,
+.construction-states-height {
+  line-height: 1;
+}
+
+.construction-states-label {
+  padding: 0 var(--zao-space-1);
+  background: var(--zao-color-bg-canvas);
+}
+
+/* Built: the lines are drawn, the faces fill in, then the Card rises to its rest depth. */
+.construction-states[data-phase='built'] {
+  .construction-states-line {
+    stroke-dashoffset: 0;
+    opacity: 0;
+    transition:
+      stroke-dashoffset var(--zao-motion-duration-grade-3) var(--zao-motion-easing-fold-enter),
+      opacity var(--zao-motion-duration-fast) linear calc(var(--zao-motion-duration-grade-3) * 2);
+  }
+  .construction-states-solid {
+    opacity: 1;
+    transition: opacity var(--zao-motion-duration-grade-3) var(--zao-motion-easing-fold-enter)
+      var(--zao-motion-duration-grade-3);
+  }
+  .construction-states-solid [data-zao-component='card'] {
+    --zao-plane-rest: var(--zao-depth-rest-surface);
+    transition: --zao-plane-rest var(--zao-motion-duration-grade-3)
+      var(--zao-motion-easing-fold-enter) calc(var(--zao-motion-duration-grade-3) * 1.5);
+  }
+}
+
+/* Removed: the Card sinks onto its base, returns to its drawing, then the lines withdraw. */
+.construction-states[data-phase='removed'] {
+  .construction-states-line {
+    stroke-dashoffset: 1;
+    opacity: 1;
+    transition:
+      opacity 0s,
+      stroke-dashoffset var(--zao-motion-duration-grade-3) var(--zao-motion-easing-fold-exit)
+        var(--zao-motion-duration-grade-3);
+  }
+  .construction-states-solid {
+    opacity: 0;
+    transition: opacity var(--zao-motion-duration-grade-3) var(--zao-motion-easing-fold-exit)
+      calc(var(--zao-motion-duration-grade-3) / 2);
+  }
+  .construction-states-solid [data-zao-component='card'] {
+    --zao-plane-rest: 0px;
+    transition: --zao-plane-rest var(--zao-motion-duration-grade-3)
+      var(--zao-motion-easing-fold-exit);
+  }
+}
+
+/* Loading: the drawing, still, with its dimensions; no idle motion while it waits. */
+.construction-states[data-phase='loading'] {
+  .construction-states-line {
+    stroke-dashoffset: 0;
+    opacity: 1;
+    transition:
+      opacity 0s,
+      stroke-dashoffset var(--zao-motion-duration-grade-3) var(--zao-motion-easing-fold-enter);
+  }
+  .construction-states-solid {
+    opacity: 0;
+    transition: opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-fold-exit);
+  }
+  .construction-states-solid [data-zao-component='card'] {
+    --zao-plane-rest: 0px;
+  }
+  .construction-states-dimensions > span {
+    opacity: 1;
+    transition-delay: var(--zao-motion-duration-grade-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .construction-states *,
+  .construction-states *::before,
+  .construction-states *::after {
+    transition: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .construction-states-line {
+    stroke: CanvasText;
+  }
+}

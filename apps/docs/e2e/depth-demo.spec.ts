@@ -127,37 +127,34 @@ async function paint(part: Locator, name: Part) {
       kind === 'field' ? '[data-zao-component="select"]' : `[data-zao-component="${kind}"]`,
     )!;
     const style = (node: Element, pseudo?: string) => getComputedStyle(node, pseudo);
-    const matrix = (value: string) => {
-      const transform = new DOMMatrixReadOnly(value);
-      return [transform.m41, transform.m42];
-    };
     const shadow = (value: string) =>
       [...value.matchAll(/(-?\d*\.?\d+)px/g)].map((match) => Number(match[1]));
     const distance = parseFloat(style(target).getPropertyValue('--zao-depth-contact'));
+    // A part with planes rests its face a rest depth above its base, along the axis.
+    const rest = (node: Element) => {
+      const css = style(node);
+      const depth = parseFloat(css.getPropertyValue('--zao-plane-rest'));
+      return [
+        -Number(css.getPropertyValue('--zao-depth-axis-x')) * depth || 0,
+        -Number(css.getPropertyValue('--zao-depth-axis-y')) * depth || 0,
+      ];
+    };
     let offset: number[];
-    if (kind === 'button') {
-      offset = matrix(style(target, '::before').transform);
-    } else if (kind === 'card') {
-      offset = shadow(style(target).boxShadow).slice(0, 2);
+    if (kind === 'button' || kind === 'card') {
+      offset = rest(target);
     } else if (kind === 'switch') {
-      offset = matrix(style(target.querySelector('[data-zao-slot="face"]')!).transform);
+      offset = rest(target.querySelector('[data-zao-slot="thumb"]')!);
     } else if (kind === 'tabs') {
-      offset = shadow(style(target.querySelector('[data-zao-slot="indicator"]')!).boxShadow).slice(
-        0,
-        2,
-      );
+      offset = rest(target.querySelector('[data-zao-slot="indicator"]')!);
     } else if (kind === 'progress') {
-      offset = shadow(style(target.querySelector('[data-zao-slot="track"]')!).boxShadow).slice(
-        0,
-        2,
-      );
+      // The track's frame (::before) carries the stepped well walls.
+      offset = shadow(
+        style(target.querySelector('[data-zao-slot="track"]')!, '::before').boxShadow,
+      ).slice(0, 2);
     } else if (kind === 'composer') {
       offset = shadow(style(target).boxShadow).slice(0, 2);
     } else {
-      offset = shadow(style(target.querySelector('[data-zao-slot="popup"]')!).boxShadow).slice(
-        0,
-        2,
-      );
+      offset = rest(target.querySelector('[data-zao-slot="popup"]')!);
     }
     return { distance, offset };
   }, name);

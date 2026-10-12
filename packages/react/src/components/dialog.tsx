@@ -95,7 +95,7 @@ const Popup = forwardRef<HTMLDivElement, DialogPopupProps>(function DialogPopup(
       data-zao-component="dialog"
       data-zao-slot="popup"
       className={classes(
-        'dialog-construction card-shaded-construction construction-shading pointer-events-auto relative w-full max-w-lg rounded-none border border-subtle bg-surface p-4 text-default outline-focus',
+        'dialog-construction card-shaded-construction construction-shading construction-planes pointer-events-auto relative w-full max-w-lg border border-subtle bg-surface p-4 text-default outline-focus',
         className,
       )}
     />

@@ -22,7 +22,7 @@ export default function StatesSpecimen() {
         </p>
         <button
           type="button"
-          className="mt-4 h-8 self-start rounded-action bg-accent px-3 type-label trim-label text-on-accent"
+          className="mt-4 h-control self-start rounded-action bg-accent px-3 type-label trim-label text-on-accent"
         >
           Create a request
         </button>
@@ -41,7 +41,7 @@ export default function StatesSpecimen() {
         </p>
         <button
           type="button"
-          className="mt-4 h-8 self-start rounded-action border border-danger bg-surface px-3 type-label trim-label text-danger"
+          className="mt-4 h-control self-start rounded-action border border-danger bg-surface px-3 type-label trim-label text-danger"
         >
           Load reports again
         </button>

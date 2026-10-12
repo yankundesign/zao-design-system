@@ -131,9 +131,14 @@ test('Menu supports arrow navigation, action activation, Escape, and disabled it
   page,
 }) => {
   await page.goto('/components/menu');
+  await expect(page.locator('[data-anatomy-kind="menu"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
   const preview = specimen(page, 'menu');
   const root = preview.locator('[data-zao-component="menu"]');
   const trigger = root.getByRole('button', { name: 'Workspace actions' });
+  await trigger.scrollIntoViewIfNeeded();
   await trigger.focus();
   await page.keyboard.press('Enter');
   const popup = root.locator('[data-zao-slot="popup"]');
@@ -257,6 +262,12 @@ test('choice popups remain visible at the bottom edge in each finish', async ({ 
     for (const slug of ['combobox', 'select', 'menu']) {
       await page.goto(`/components/${slug}`);
       await chooseFinish(page, finish.theme, finish.mode);
+      if (slug === 'menu') {
+        await expect(page.locator('[data-anatomy-kind="menu"]')).toHaveAttribute(
+          'data-anatomy-ready',
+          'true',
+        );
+      }
       const root = specimen(page, slug);
       const trigger = root.locator('[data-zao-slot="trigger"]').first();
       await trigger.evaluate((element) => {

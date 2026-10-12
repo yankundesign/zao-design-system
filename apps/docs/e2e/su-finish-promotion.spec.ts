@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { expectFocusBrackets } from './focus-mark';
 
 const modes = ['light', 'dark'] as const;
 const paints = ['published Su', 'real Quiet instrument'] as const;
@@ -40,7 +41,11 @@ async function openPreview(
     await page.addStyleTag({ content: css });
   }
   await page.evaluate(() => document.fonts.ready);
-  return page.locator('.study').first();
+  const anatomy = page.locator(`[data-anatomy-kind="${component}"]`);
+  if (await anatomy.count()) await expect(anatomy).toHaveAttribute('data-anatomy-ready', 'true');
+  const island = page.locator('[data-preview-style] .study').first();
+  await island.scrollIntoViewIfNeeded();
+  return island;
 }
 
 for (const mode of modes) {
@@ -64,17 +69,14 @@ for (const mode of modes) {
         return {
           rootRadius: getComputedStyle(node).borderRadius,
           faceRadius: face.borderRadius,
-          baseRadius: getComputedStyle(node, '::before').borderRadius,
-          sideRadius: getComputedStyle(node, '::after').borderRadius,
           durations: face.transitionDuration.split(',').map((duration) => duration.trim()),
         };
       });
+      // The face keeps the square action radius with one faceted leading corner (V4).
       expect(construction).toEqual({
         rootRadius: '0px',
-        faceRadius: '0px',
-        baseRadius: '0px',
-        sideRadius: '0px',
-        durations: ['0.08s', '0.08s', '0.08s'],
+        faceRadius: '0px 5px 0px 0px',
+        durations: ['0.08s', '0.08s'],
       });
 
       island = await openPreview(page, 'card', mode, paint);
@@ -83,9 +85,12 @@ for (const mode of modes) {
         await card.evaluate((node) => ({
           surfaceToken: getComputedStyle(node).getPropertyValue('--zao-radius-surface').trim(),
           face: getComputedStyle(node).borderRadius,
-          rearContent: getComputedStyle(node, '::before').content,
+          planes: [
+            getComputedStyle(node, '::before').content,
+            getComputedStyle(node, '::after').content,
+          ],
         })),
-      ).toEqual({ surfaceToken: '2px', face: '0px', rearContent: 'none' });
+      ).toEqual({ surfaceToken: '2px', face: '0px 5px 0px 0px', planes: ['""', '""'] });
     });
   }
 
@@ -94,6 +99,7 @@ for (const mode of modes) {
   }) => {
     const island = await openPreview(page, 'button', mode, 'published Su');
     const button = island.getByRole('button', { name: 'Save changes', exact: true });
+    await button.scrollIntoViewIfNeeded();
     const before = await button.boundingBox();
     // Reuse another approved radius to prove the component reads its finish token.
     await island.evaluate((node) => {
@@ -103,14 +109,13 @@ for (const mode of modes) {
       await button.evaluate((node) => [
         getComputedStyle(node).borderRadius,
         getComputedStyle(node.querySelector('[data-zao-slot="face"]')!).borderRadius,
-        getComputedStyle(node, '::before').borderRadius,
       ]),
-    ).toEqual(['2px', '2px', '2px']);
+    ).toEqual(['2px', '2px 5px 2px 2px']);
     expect(await button.boundingBox()).toEqual(before);
     await button.focus();
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');
     await expect(button).toBeFocused();
-    expect(await button.evaluate((node) => getComputedStyle(node).outlineStyle)).toBe('solid');
+    await expectFocusBrackets(button);
   });
 }

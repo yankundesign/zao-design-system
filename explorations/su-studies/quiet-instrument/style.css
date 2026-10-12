@@ -1,74 +1,9 @@
 /* Su study: achromatic planes, legible controls, and recessed readings. */
-.study[data-study='quiet-instrument'] {
-  --surface: #f7f7f7;
-  --well: #e1e1e1;
-  --ink: #262626;
-  --muted: #626262;
-  --disabled: #727272;
-  --rule: #bababa;
-  --rule-strong: #575757;
-  --accent: #292929;
-  --accent-hover: #434343;
-  --on-accent: #fff;
-  --hover: #dbdbdb;
+/* Colors were promoted on Oct 11 (finish plan V1, V1b, V1c): warm ink neutrals, the ink and
+ * azurite seals, ink focus and the field roles now come from @zao/tokens through the palette
+ * generator and the mode mapping. This study keeps only its component treatments. */
 
-  --zao-color-bg-surface: var(--surface);
-  --zao-color-bg-sunken: var(--well);
-  --zao-color-bg-overlay: var(--surface);
-  --zao-color-bg-hover: var(--hover);
-  --zao-color-bg-active: var(--well);
-  --zao-color-fg-default: var(--ink);
-  --zao-color-fg-muted: var(--muted);
-  --zao-color-fg-disabled: var(--disabled);
-  --zao-color-fg-on-accent: var(--on-accent);
-  --zao-color-border-subtle: var(--rule);
-  --zao-color-border-default: var(--rule-strong);
-  --zao-color-border-strong: var(--ink);
-  /* D6 option A: shared data-entry/selection roles, not general surface edges.
-   * Light rest keeps the existing default border. Light invalid is generated
-   * danger border step 7: hue 27, peak chroma .2, L .46, chroma share .72.
-   * The complete ramp and other semantic danger colors remain unpromoted. */
-  --zao-color-border-field: var(--zao-color-border-default);
-  --zao-color-border-field-invalid: oklch(0.46 0.144 27);
-  --zao-color-bg-field-disabled: var(--zao-color-bg-sunken);
-  --zao-color-accent-solid: var(--accent);
-  --zao-color-accent-solid-hover: var(--accent-hover);
-  --zao-color-accent-subtle: var(--well);
-  --zao-color-accent-subtle-hover: var(--hover);
-  --zao-color-accent-border: var(--rule-strong);
-  --zao-color-accent-text: var(--ink);
-  --zao-color-focus-ring: var(--ink);
-}
-
-.study[data-study='quiet-instrument'][data-zao-mode='dark'] {
-  --canvas: #131313;
-  --zao-color-bg-canvas: var(--canvas);
-  --surface: #1f1f1f;
-  --well: #0e0e0e;
-  --ink: #efefef;
-  --muted: #bababa;
-  --disabled: #8f8f8f;
-  --rule: #484848;
-  --rule-strong: #969696;
-  --accent: #efefef;
-  --accent-hover: #d0d0d0;
-  --on-accent: #161616;
-  --hover: #303030;
-  --zao-color-success-solid: #8cbba5;
-  --zao-color-success-text: #a7d2ba;
-  --zao-color-success-border: #8cbba5;
-  --zao-color-danger-text: #ffaaa3;
-  --zao-color-danger-border: #e88982;
-  /* Generated achromatic border step 7 with dark L .54; no other neutral
-   * mapping changes. Invalid retains the study's existing danger border. */
-  --zao-color-border-field: oklch(0.54 0 0);
-  --zao-color-border-field-invalid: var(--zao-color-danger-border);
-  --zao-color-bg-field-disabled: var(--zao-color-bg-surface);
-  color-scheme: dark;
-}
-
-/* Button inherits the approved stationary base and hover lift from @zao/react.
- * This study supplies semantic colors and timing, without moving the hit area. */
+/* Button inherits its planes, rest depth, lift and seat from @zao/react. */
 
 /* Working field family: one stationary enclosure and one recessed value plane. */
 .study[data-study='quiet-instrument'] [data-zao-field-frame] {
@@ -133,18 +68,17 @@
       (1 - var(--zao-menu-reveal-progress)) * 100% - var(--zao-menu-reveal-progress) *
         var(--zao-space-1)
     );
-    border-radius: var(--zao-radius-none);
     border-color: var(--zao-color-border-subtle);
-    box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-construction-side);
+    /* The published popup planes replace the drawn contact. */
+    box-shadow: none;
     opacity: 1;
     transform: none;
     clip-path: inset(
       var(--field-reveal-near) var(--field-reveal-outset) var(--field-reveal-far)
         var(--field-reveal-outset)
     );
-    transition: --zao-menu-reveal-progress var(--zao-motion-duration-base)
-      var(--zao-motion-easing-standard);
+    transition: --zao-menu-reveal-progress var(--zao-motion-duration-reveal)
+      var(--zao-motion-easing-reveal);
 
     &[data-side='top'] {
       clip-path: inset(
@@ -169,7 +103,8 @@
       --zao-menu-reveal-progress: 0;
     }
     &[data-ending-style] {
-      transition-duration: var(--zao-motion-duration-fast);
+      transition-duration: var(--zao-motion-duration-reveal-exit);
+      transition-timing-function: var(--zao-motion-easing-exit);
     }
     &[data-instant] {
       transition: none;

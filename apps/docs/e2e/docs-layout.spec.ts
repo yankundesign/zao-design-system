@@ -105,7 +105,7 @@ test.afterEach(async ({ page }, info) => {
 });
 
 for (const width of [1440, 1920, 768, 360]) {
-  test(`${width}px: docs use the available canvas and keep content within its columns`, async ({
+  test(`${width}px: docs fill the canvas up to a centred 1440px frame and keep content within its columns`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 1000 });
@@ -122,27 +122,33 @@ for (const width of [1440, 1920, 768, 360]) {
     expect(width - available).toBeGreaterThanOrEqual(0);
     expect(width - available).toBeLessThanOrEqual(nativeGutter);
     const gutter = width >= 768 ? 32 : 16;
+    // One frame for header, sidebar and content, and footer: at most 1440px, centred.
+    const frame = Math.min(available, 1440);
+    const left = (available - frame) / 2;
     const shellBox = await bounds(shell);
     const headerBox = await bounds(headerShell);
+    const footerBox = await bounds(page.locator('body > footer.docs-shell'));
     const mainBox = await bounds(main);
-    expect(shellBox.x).toBeCloseTo(0, 1);
-    expect(shellBox.width).toBeCloseTo(available, 1);
-    expect(headerBox.x).toBeCloseTo(0, 1);
-    expect(headerBox.width).toBeCloseTo(available, 1);
-    expect(available - mainBox.x - mainBox.width).toBeCloseTo(gutter, 1);
+    for (const box of [shellBox, headerBox, footerBox]) {
+      expect(box.x).toBeCloseTo(left, 1);
+      expect(box.width).toBeCloseTo(frame, 1);
+    }
+    // The header rule still spans the whole window.
+    expect((await bounds(page.locator('body > header'))).width).toBeCloseTo(available, 1);
+    expect(left + frame - mainBox.x - mainBox.width).toBeCloseTo(gutter, 1);
     const logo = await bounds(page.locator('body > header').getByRole('link', { name: 'ZAO 造' }));
-    expect(logo.x).toBeCloseTo(gutter + (width >= 768 ? 12 : 0), 1);
+    expect(logo.x).toBeCloseTo(left + gutter + (width >= 768 ? 12 : 0), 1);
 
     if (width >= 768) {
       const sidebar = await bounds(page.locator('.docs-nav-aside'));
-      expect(sidebar.x).toBeCloseTo(gutter, 1);
+      expect(sidebar.x).toBeCloseTo(left + gutter, 1);
       expect(sidebar.width).toBeCloseTo(180, 1);
       expect(mainBox.x - sidebar.x - sidebar.width).toBeCloseTo(32, 1);
-      expect(mainBox.width).toBeCloseTo(available - gutter * 2 - 180 - 32, 1);
+      expect(mainBox.width).toBeCloseTo(frame - gutter * 2 - 180 - 32, 1);
       await expect(page.getByRole('navigation', { name: 'Docs', exact: true })).toHaveCount(1);
     } else {
-      expect(mainBox.x).toBeCloseTo(gutter, 1);
-      expect(mainBox.width).toBeCloseTo(available - gutter * 2, 1);
+      expect(mainBox.x).toBeCloseTo(left + gutter, 1);
+      expect(mainBox.width).toBeCloseTo(frame - gutter * 2, 1);
       await expect(page.getByRole('navigation', { name: 'Docs', exact: true })).toHaveCount(0);
       await expect(page.locator('.docs-nav-aside summary')).toBeVisible();
     }
@@ -184,7 +190,7 @@ for (const width of [1440, 1920, 768, 360]) {
 }
 
 for (const finish of finishes) {
-  test(`${finish.name}: the sidebar reveals its scrollbar without changing geometry`, async ({
+  test(`${finish.name}: the sidebar scrolls with the page without a nested scrolling region`, async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 600 });
@@ -193,27 +199,28 @@ for (const finish of finishes) {
     const region = page.locator('.docs-nav-desktop.docs-scroll-region');
     await page.mouse.move(0, 0);
     const before = await bounds(region);
-    const rest = await scrollbarPaint(region);
-    await captureScrollbar(region, 'sidebar-scrollbar-rest');
-    expect(transparentThumb(rest)).toBe(true);
-    expect(rest.gutter).toContain('stable');
-    expect(await region.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
-    await region.hover();
-    await captureScrollbar(region, 'sidebar-scrollbar-hover');
-    await expectForegroundThumb(region);
-    const hover = await scrollbarPaint(region);
-    expect(hover.width).toBe(rest.width);
-    expect(hover.height).toBe(rest.height);
-    expect(hover.reserved).toBe(rest.reserved);
+    await expect(region).toHaveCSS('overflow-y', 'visible');
+    await expect(page.locator('.docs-nav-aside')).toHaveCSS('position', 'static');
+    expect(await region.evaluate((node) => node.scrollHeight)).toBe(
+      await region.evaluate((node) => node.clientHeight),
+    );
+    await page.mouse.move(before.x + before.width / 2, before.y + 24);
     expect(await bounds(region)).toEqual(before);
-    await page.mouse.wheel(0, 500);
-    await expect.poll(() => region.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
-    await page.mouse.move(0, 0);
-    await expect.poll(async () => transparentThumb(await scrollbarPaint(region))).toBe(true);
-
     const mainBefore = await bounds(page.getByRole('main'));
-    await page.getByRole('heading', { level: 1, name: 'Table', exact: true }).hover();
-    expect(await bounds(page.getByRole('main'))).toEqual(mainBefore);
+    const pageBefore = await page.evaluate(() => scrollY);
+    await page.mouse.wheel(0, 500);
+    await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(pageBefore);
+    const pageAfter = await page.evaluate(() => scrollY);
+    const after = await bounds(region);
+    expect(after.x).toBe(before.x);
+    expect(after.width).toBe(before.width);
+    expect(after.height).toBe(before.height);
+    expect(after.y).toBeCloseTo(before.y - (pageAfter - pageBefore), 1);
+    expect(await region.evaluate((node) => node.scrollTop)).toBe(0);
+    const mainAfter = await bounds(page.getByRole('main'));
+    expect(mainAfter.x).toBe(mainBefore.x);
+    expect(mainAfter.width).toBe(mainBefore.width);
+    await capturePage(page, 'sidebar-in-page-flow');
   });
 }
 

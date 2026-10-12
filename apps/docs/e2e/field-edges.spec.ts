@@ -37,6 +37,12 @@ async function openStudy(page: Page, field: Field, mode: Mode, realStudy = true)
       .not.toBe('');
   }
   await page.evaluate(() => document.fonts.ready);
+  if (field === 'text-field') {
+    await expect(page.locator('[data-anatomy-kind="text-field"]')).toHaveAttribute(
+      'data-anatomy-ready',
+      'true',
+    );
+  }
   await clearFocus(page);
   return study;
 }
@@ -175,21 +181,22 @@ async function assertOutline(frame: Locator, field: Field) {
 }
 
 for (const mode of modes) {
-  test(`published Su ${mode}: field utility fallbacks retain the existing palette roles`, async ({
+  test(`published Su ${mode}: the promoted field roles meet the field-edge contract`, async ({
     page,
   }) => {
+    // Oct 11 (finish plan V1b): the field roles are published from @zao/tokens, so the
+    // published fields meet the same edge minimums the study introduced.
     for (const field of fields) {
       const study = await openStudy(page, field, mode, false);
-      expect(
-        await study.evaluate((node) => {
-          const style = getComputedStyle(node);
-          return [
-            '--zao-color-border-field',
-            '--zao-color-border-field-invalid',
-            '--zao-color-bg-field-disabled',
-          ].map((name) => style.getPropertyValue(name).trim());
-        }),
-      ).toEqual(['', '', '']);
+      const roles = await study.evaluate((node) => {
+        const style = getComputedStyle(node);
+        return [
+          '--zao-color-border-field',
+          '--zao-color-border-field-invalid',
+          '--zao-color-bg-field-disabled',
+        ].map((name) => style.getPropertyValue(name).trim());
+      });
+      for (const role of roles) expect(role).not.toBe('');
       const specimen = study.locator(`[data-zao-specimen="${field}"]`);
       const normal = specimen
         .locator('[data-zao-field-frame]:not([data-zao-invalid], [data-zao-disabled])')
@@ -200,11 +207,11 @@ for (const mode of modes) {
       const resting = await paint(normal);
       const error = await paint(invalid);
       const muted = await paint(disabled);
-      expect(resting.edge).toEqual(resting.tokens.publishedRest);
-      expect(error.edge).toEqual(error.tokens.publishedInvalid);
-      expect(muted.fill).toEqual(muted.tokens.publishedDisabledFill);
-      // Color remains local to the study. These inherited published defaults do
-      // not gain a new minimum until their separate color promotion decision.
+      expect(resting.edge).toEqual(resting.tokens.rest);
+      expect(error.edge).toEqual(error.tokens.invalid);
+      expect(muted.fill).toEqual(muted.tokens.disabledFill);
+      assertEnabledEdge(resting);
+      assertInvalidEdge(resting, error);
     }
   });
 
@@ -334,11 +341,10 @@ for (const mode of modes) {
       const oldNormal = await paint(normal);
       const oldInvalid = await paint(invalid);
       if (mode === 'light') {
+        // With the warm ink palette (Oct 11) both historical roles fall below the minimum.
         for (const backing of ['canvas', 'surface'] as const) {
           expect(contrast(oldInvalid.edge, oldInvalid[backing])).toBeLessThan(3);
-          expect(contrast(oldInvalid.edge, oldInvalid[backing])).toBeLessThan(
-            contrast(oldNormal.edge, oldNormal[backing]),
-          );
+          expect(contrast(oldNormal.edge, oldNormal[backing])).toBeLessThan(3);
         }
       } else {
         for (const backing of ['canvas', 'surface'] as const) {

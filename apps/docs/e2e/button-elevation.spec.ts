@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { expectFocusBrackets } from './focus-mark';
+import { seat } from './construction-values';
 
 const variants = [
   { variant: 'primary', label: 'Save changes' },
@@ -39,8 +41,14 @@ async function openButtonPage(page: Page, realQuietInstrument: boolean, mode: 'l
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
+  await expect(page.locator('[data-anatomy-kind="button"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
+  const study = page.locator('[data-preview-style] .study').first();
+  const specimen = study.locator('[data-zao-specimen="button"]').first();
+  await specimen.scrollIntoViewIfNeeded();
   await page.mouse.move(0, 0);
-  const specimen = page.locator('[data-zao-specimen="button"]').first();
   await settle(specimen);
   return specimen;
 }
@@ -53,6 +61,54 @@ async function bounds(element: Locator) {
   const box = await element.boundingBox();
   expect(box).not.toBeNull();
   return box!;
+}
+
+/** Measure the actual reading, including text nodes without a label wrapper. */
+async function inkBounds(button: Locator) {
+  return face(button).evaluate((element) => {
+    const readings: Array<{
+      kind: 'text' | 'icon';
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }> = [];
+    const record = (kind: 'text' | 'icon', box: DOMRect) => {
+      if (box.width && box.height) {
+        readings.push({ kind, x: box.x, y: box.y, width: box.width, height: box.height });
+      }
+    };
+    const text = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let node: Node | null;
+    while ((node = text.nextNode())) {
+      if (!node.textContent?.trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      record('text', range.getBoundingClientRect());
+    }
+    for (const icon of element.querySelectorAll('svg')) {
+      record('icon', icon.getBoundingClientRect());
+    }
+    return readings;
+  });
+}
+
+function expectInkTravel(
+  current: Awaited<ReturnType<typeof inkBounds>>,
+  resting: Awaited<ReturnType<typeof inkBounds>>,
+  x: number,
+  y: number,
+) {
+  expect(resting.length).toBeGreaterThan(0);
+  expect(current).toHaveLength(resting.length);
+  for (const [index, reading] of current.entries()) {
+    const start = resting[index]!;
+    expect(reading.kind).toBe(start.kind);
+    expect(reading.x - start.x).toBeCloseTo(x, 2);
+    expect(reading.y - start.y).toBeCloseTo(y, 2);
+    expect(reading.width).toBeCloseTo(start.width, 2);
+    expect(reading.height).toBeCloseTo(start.height, 2);
+  }
 }
 
 async function settle(element: Locator) {
@@ -76,17 +132,39 @@ async function observeClicks(button: Locator) {
   });
 }
 
+/**
+ * The side slot paints two planes (finish plan V2): ::before across the axis's x component and
+ * ::after across its y component. Each is a quad from the face's trailing edge to the fixed
+ * base's matching edge; the base sits a rest depth behind the native box along the axis.
+ */
 async function expectContinuousSide(
   button: Locator,
   fixedBase?: { x: number; y: number; width: number; height: number },
+  { resting = !fixedBase }: { resting?: boolean } = {},
 ) {
   const state = await button.evaluate((element) => {
     const shell = element.getBoundingClientRect();
+    const css = getComputedStyle(element);
     const face = element.querySelector<HTMLElement>(':scope > [data-zao-slot="face"]')!;
+    const side = element.querySelector<HTMLElement>(':scope > [data-zao-slot="side"]')!;
     const faceBox = face.getBoundingClientRect();
-    const base = getComputedStyle(element, '::before');
-    const side = getComputedStyle(element, '::after');
-    const baseOffset = new DOMMatrixReadOnly(base.transform);
+    const sideBox = side.getBoundingClientRect();
+    const plane = (which: '::before' | '::after') => {
+      const style = getComputedStyle(side, which);
+      return {
+        x: sideBox.x + parseFloat(style.left),
+        y: sideBox.y + parseFloat(style.top),
+        width: parseFloat(style.width),
+        height: parseFloat(style.height),
+        clip: style.clipPath,
+        content: style.content,
+        pointerEvents: style.pointerEvents,
+        gradient: style.backgroundImage,
+      };
+    };
+    const rest = parseFloat(css.getPropertyValue('--zao-plane-rest'));
+    const axisX = Number(css.getPropertyValue('--zao-depth-axis-x'));
+    const axisY = Number(css.getPropertyValue('--zao-depth-axis-y'));
     return {
       shell: {
         x: shell.x,
@@ -103,22 +181,16 @@ async function expectContinuousSide(
         height: faceBox.height,
         shadow: getComputedStyle(face).boxShadow,
       },
+      side: { x: sideBox.x, y: sideBox.y, width: sideBox.width, height: sideBox.height },
       base: {
-        x: shell.x + parseFloat(base.left) + baseOffset.m41,
-        y: shell.y + parseFloat(base.top) + baseOffset.m42,
-        width: parseFloat(base.width),
-        height: parseFloat(base.height),
+        x: shell.x - axisX * rest,
+        y: shell.y - axisY * rest,
+        width: shell.width,
+        height: shell.height,
       },
-      side: {
-        x: shell.x + parseFloat(side.left),
-        y: shell.y + parseFloat(side.top),
-        width: parseFloat(side.width),
-        height: parseFloat(side.height),
-        clip: side.clipPath,
-        content: side.content,
-        pointerEvents: side.pointerEvents,
-        shadow: side.boxShadow,
-      },
+      rest,
+      x: plane('::before'),
+      y: plane('::after'),
     };
   });
   const shadowLayers =
@@ -126,57 +198,53 @@ async function expectContinuousSide(
       ? []
       : state.face.shadow.replace(/[a-z-]+\([^)]*\)/gi, 'color').split(',');
   expect(shadowLayers.filter((layer) => !/\binset\b/.test(layer))).toHaveLength(0);
-  const sideLayers = state.side.shadow.replace(/[a-z-]+\([^)]*\)/gi, 'color').split(',');
-  expect(sideLayers).toHaveLength(1);
-  expect(sideLayers[0]).not.toContain('inset');
-  const sideShadow = sideLayers[0]!.match(/[-+]?\d*\.?\d+(?:e[-+]?\d+)?px/gi)!.map(parseFloat);
-  expect(sideShadow).toHaveLength(4);
-  expect(sideShadow.slice(0, 3)).toEqual([0, 0, 0]);
-  const paintSpread = sideShadow[3]!;
-  expect(paintSpread).toBeGreaterThan(0);
-  expect(state.side.pointerEvents).toBe('none');
-  expect(state.side.content).not.toBe('none');
+  // The side slot covers the native box exactly and never takes input.
   for (const coordinate of ['x', 'y', 'width', 'height'] as const) {
     expect(state.side[coordinate]).toBeCloseTo(state.shell[coordinate], 2);
   }
-  if (!fixedBase) expect(state.shell.scrollWidth).toBe(state.shell.clientWidth);
+  // At rest nothing overflows the native box; a lifted face is transformed paint.
+  if (resting) expect(state.shell.scrollWidth).toBe(state.shell.clientWidth);
   if (fixedBase) expect(state.base).toEqual(fixedBase);
 
-  const coordinates = state.side.clip.match(/calc\([^)]*\)|[-+]?\d*\.?\d+(?:e[-+]?\d+)?(?:px|%)/gi);
-  expect(coordinates).toHaveLength(12);
-  const points = coordinates!.map((coordinate, index) => {
-    const axis = index % 2 === 0 ? state.side.width : state.side.height;
-    const origin = index % 2 === 0 ? state.side.x : state.side.y;
-    return (
-      origin +
-      [...coordinate.matchAll(/([-+]?\s*\d*\.?\d+(?:e[-+]?\d+)?)\s*(px|%)/gi)].reduce(
-        (sum, term) =>
-          sum + parseFloat(term[1]!.replace(/\s/g, '')) * (term[2] === '%' ? axis / 100 : 1),
-        0,
-      )
-    );
-  });
-  // Measure the front against the rendered face and the rear against the actual fixed base.
-  const expected = [
-    state.face.x,
-    state.face.y,
-    state.face.x + state.face.width,
-    state.face.y,
-    state.face.x + state.face.width,
-    state.face.y + state.face.height,
-    state.base.x + state.base.width,
-    state.base.y + state.base.height,
-    state.base.x,
-    state.base.y + state.base.height,
-    state.base.x,
-    state.base.y,
-  ];
-  for (const [index, coordinate] of points.entries()) {
-    expect(coordinate).toBeCloseTo(expected[index]!, 2);
-    const origin = index % 2 === 0 ? state.side.x : state.side.y;
-    const size = index % 2 === 0 ? state.side.width : state.side.height;
-    const extension = Math.max(origin - coordinate, coordinate - origin - size, 0);
-    expect(extension).toBeLessThanOrEqual(paintSpread + 0.005);
+  const corners = (plane: typeof state.x) => {
+    expect(plane.content).not.toBe('none');
+    expect(plane.pointerEvents).toBe('none');
+    const coordinates = plane.clip.match(/calc\([^)]*\)|[-+]?\d*\.?\d+(?:e[-+]?\d+)?(?:px|%)/gi);
+    expect(coordinates).toHaveLength(8);
+    return coordinates!.map((coordinate, index) => {
+      const axis = index % 2 === 0 ? plane.width : plane.height;
+      const origin = index % 2 === 0 ? plane.x : plane.y;
+      return (
+        origin +
+        [...coordinate.matchAll(/([-+]?\s*\d*\.?\d+(?:e[-+]?\d+)?)\s*(px|%)/gi)].reduce(
+          (sum, term) =>
+            sum + parseFloat(term[1]!.replace(/\s/g, '')) * (term[2] === '%' ? axis / 100 : 1),
+          0,
+        )
+      );
+    });
+  };
+  const { face, base } = state;
+  // Today's axis runs up and to the right, so the planes show on the left and bottom.
+  const expected = {
+    x: [face.x, face.y, face.x, face.y + face.height, base.x, base.y + base.height, base.x, base.y],
+    y: [
+      face.x,
+      face.y + face.height,
+      face.x + face.width,
+      face.y + face.height,
+      base.x + base.width,
+      base.y + base.height,
+      base.x,
+      base.y + base.height,
+    ],
+  };
+  for (const which of ['x', 'y'] as const) {
+    for (const [index, coordinate] of corners(state[which]).entries()) {
+      expect(coordinate, `${which} plane point ${index}`).toBeCloseTo(expected[which][index]!, 2);
+    }
+    // Two hard-stopped bands per plane (叠晕), never a blur.
+    expect(state[which].gradient).toMatch(/^linear-gradient\(/);
   }
   return state.base;
 }
@@ -187,18 +255,20 @@ for (const study of studies) {
   }) => {
     const specimen = await openButtonPage(page, study.realQuietInstrument, study.mode);
 
-    for (const [index, { label }] of variants.entries()) {
+    for (const [index, { label, variant }] of variants.entries()) {
       const button = specimen.getByRole('button', { name: label, exact: true });
       const buttonFace = face(button);
       const neighbor = specimen.getByRole('button', {
         name: variants[(index + 1) % variants.length]!.label,
         exact: true,
       });
+      await button.scrollIntoViewIfNeeded();
       await page.mouse.move(0, 0);
       await settle(specimen);
 
       const shellBefore = await bounds(button);
       const faceBefore = await bounds(buttonFace);
+      const inkBefore = await inkBounds(button);
       const neighborBefore = await bounds(neighbor);
       const neighborFaceBefore = await bounds(face(neighbor));
       expect(shellBefore.height).toBeCloseTo(34, 2);
@@ -226,8 +296,9 @@ for (const study of studies) {
       expect(typography.paddingBottom).toBe(8);
       expect(typography.paddingLeft).toBe(16);
       expect(typography.paddingRight).toBe(16);
-      expect(typography.borderRadius).toBe('0px');
-      const fixedBase = await expectContinuousSide(button);
+      // One faceted leading corner (V4); the native box keeps square corners.
+      expect(typography.borderRadius).toBe('0px 5px 0px 0px');
+      const restBase = await expectContinuousSide(button);
 
       await observeClicks(button);
       // This point is inside the resting button but outside its displaced face.
@@ -238,13 +309,16 @@ for (const study of studies) {
       const faceAfter = await bounds(buttonFace);
       expect(faceAfter.x - faceBefore.x).toBeCloseTo(2, 2);
       expect(faceAfter.y - faceBefore.y).toBeCloseTo(-2, 2);
+      expectInkTravel(await inkBounds(button), inkBefore, 2, -2);
       expect(faceAfter.width).toBe(faceBefore.width);
       expect(faceAfter.height).toBe(faceBefore.height);
       expect(await bounds(button)).toEqual(shellBefore);
       expect(await bounds(neighbor)).toEqual(neighborBefore);
       expect(await bounds(face(neighbor))).toEqual(neighborFaceBefore);
       expect(await button.evaluate((element) => element.matches(':hover'))).toBe(true);
-      await expectContinuousSide(button, fixedBase);
+      // A quiet action shows its planes only once lifted; the others keep the resting base.
+      const fixedBase = await expectContinuousSide(button, undefined, { resting: false });
+      if (variant !== 'quiet') expect(fixedBase).toEqual(restBase);
 
       const hoverBackground = await buttonFace.evaluate(
         (element) => getComputedStyle(element).backgroundColor,
@@ -252,8 +326,9 @@ for (const study of studies) {
       await page.mouse.down();
       await settle(specimen);
       const pressedFace = await bounds(buttonFace);
-      expect(pressedFace.x - faceBefore.x).toBeCloseTo(-1, 2);
-      expect(pressedFace.y - faceBefore.y).toBeCloseTo(1, 2);
+      expect(pressedFace.x - faceBefore.x).toBeCloseTo(-seat, 2);
+      expect(pressedFace.y - faceBefore.y).toBeCloseTo(seat, 2);
+      expectInkTravel(await inkBounds(button), inkBefore, -seat, seat);
       for (const coordinate of ['x', 'y', 'width', 'height'] as const) {
         expect(pressedFace[coordinate]).toBeCloseTo(fixedBase[coordinate], 2);
       }
@@ -269,6 +344,7 @@ for (const study of studies) {
       await settle(specimen);
       expect(await bounds(button)).toEqual(shellBefore);
       expect(await bounds(buttonFace)).toEqual(faceAfter);
+      expectInkTravel(await inkBounds(button), inkBefore, 2, -2);
       expect(await button.evaluate((element) => element.matches(':hover'))).toBe(true);
       await expectContinuousSide(button, fixedBase);
     }
@@ -289,6 +365,7 @@ for (const study of studies) {
     for (const { label } of variants) {
       const button = specimen.getByRole('button', { name: label, exact: true });
       const buttonFace = face(button);
+      await button.scrollIntoViewIfNeeded();
       await page.mouse.move(0, 0);
       await settle(specimen);
       const shellBefore = await bounds(button);
@@ -302,8 +379,8 @@ for (const study of studies) {
       await page.mouse.down();
       await settle(specimen);
       const pressedFace = await bounds(buttonFace);
-      expect(pressedFace.x - faceBefore.x).toBeCloseTo(-1, 2);
-      expect(pressedFace.y - faceBefore.y).toBeCloseTo(1, 2);
+      expect(pressedFace.x - faceBefore.x).toBeCloseTo(-seat, 2);
+      expect(pressedFace.y - faceBefore.y).toBeCloseTo(seat, 2);
 
       await page.mouse.move(shellBefore.x - 8, shellBefore.y + shellBefore.height + 8);
       await settle(specimen);
@@ -329,6 +406,7 @@ for (const study of studies) {
       });
       await expect(button).toBeDisabled();
       await observeClicks(button);
+      await button.scrollIntoViewIfNeeded();
       await page.mouse.move(0, 0);
       await settle(specimen);
       const shellBefore = await bounds(button);
@@ -360,6 +438,7 @@ for (const study of studies) {
     for (const { label } of variants) {
       const button = specimen.getByRole('button', { name: label, exact: true });
       const buttonFace = face(button);
+      await button.scrollIntoViewIfNeeded();
       await page.mouse.move(0, 0);
       await settle(specimen);
       const shellBefore = await bounds(button);
@@ -375,10 +454,13 @@ for (const study of studies) {
       expect(await bounds(buttonFace)).toEqual(faceBefore);
       expect(
         await button.evaluate((element) => {
-          const side = getComputedStyle(element, '::after');
-          return { display: side.display, transition: side.transitionProperty };
+          const css = getComputedStyle(element);
+          return {
+            offset: css.getPropertyValue('--zao-face-offset').trim(),
+            transition: css.transitionProperty,
+          };
         }),
-      ).toEqual({ display: 'none', transition: 'none' });
+      ).toEqual({ offset: '0px', transition: 'none' });
       await expect
         .poll(() => buttonFace.evaluate((element) => getComputedStyle(element).backgroundColor))
         .not.toBe(restBackground);
@@ -425,6 +507,8 @@ for (const study of studies) {
     for (const { label } of variants) {
       const button = specimen.getByRole('button', { name: label, exact: true });
       const buttonFace = face(button);
+      await button.scrollIntoViewIfNeeded();
+      await settle(specimen);
       const shellBefore = await bounds(button);
       const faceBefore = await bounds(buttonFace);
       const restBackground = await buttonFace.evaluate(
@@ -434,12 +518,7 @@ for (const study of studies) {
       await button.focus();
       await expect(button).toBeFocused();
       expect(await button.evaluate((element) => element.matches(':focus-visible'))).toBe(true);
-      const outline = await button.evaluate((element) => {
-        const css = getComputedStyle(element);
-        return { style: css.outlineStyle, width: parseFloat(css.outlineWidth) };
-      });
-      expect(outline.style).not.toBe('none');
-      expect(outline.width).toBeGreaterThan(0);
+      await expectFocusBrackets(button);
 
       for (const [key, heldActivations, releasedActivations] of [
         ['Space', '0', '1'],
@@ -448,8 +527,8 @@ for (const study of studies) {
         await page.keyboard.down(key);
         await settle(specimen);
         const pressedFace = await bounds(buttonFace);
-        expect(pressedFace.x - faceBefore.x).toBeCloseTo(-1, 2);
-        expect(pressedFace.y - faceBefore.y).toBeCloseTo(1, 2);
+        expect(pressedFace.x - faceBefore.x).toBeCloseTo(-seat, 2);
+        expect(pressedFace.y - faceBefore.y).toBeCloseTo(seat, 2);
         expect(await bounds(button)).toEqual(shellBefore);
         await expect(button).toHaveAttribute('data-elevation-activations', heldActivations);
         await expect
@@ -493,6 +572,7 @@ for (const study of studies) {
           const button = specimen.getByRole('button', { name: label, exact: true });
           const buttonFace = face(button);
           await button.scrollIntoViewIfNeeded();
+          await settle(specimen);
           const shellBefore = await bounds(button);
           const faceBefore = await bounds(buttonFace);
           const restBackground = await buttonFace.evaluate(
@@ -515,11 +595,11 @@ for (const study of studies) {
               const pressedFace = await bounds(buttonFace);
               return pressedFace.x - faceBefore.x;
             })
-            .toBeCloseTo(-1, 2);
+            .toBeCloseTo(-seat, 2);
           await settle(specimen);
           const pressedFace = await bounds(buttonFace);
-          expect(pressedFace.x - faceBefore.x).toBeCloseTo(-1, 2);
-          expect(pressedFace.y - faceBefore.y).toBeCloseTo(1, 2);
+          expect(pressedFace.x - faceBefore.x).toBeCloseTo(-seat, 2);
+          expect(pressedFace.y - faceBefore.y).toBeCloseTo(seat, 2);
           expect(await bounds(button)).toEqual(shellBefore);
           await expect(button).toHaveAttribute('data-elevation-activations', '0');
           await expect
@@ -547,7 +627,7 @@ for (const study of studies) {
               const pressedFace = await bounds(buttonFace);
               return pressedFace.x - faceBefore.x;
             })
-            .toBeCloseTo(-1, 2);
+            .toBeCloseTo(-seat, 2);
           // A browser-owned gesture cancellation must clear the pose without another click.
           await touch.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
           await settle(specimen);

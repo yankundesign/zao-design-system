@@ -39,7 +39,7 @@ const markdownComponents: Components = {
   a: ({ children, href }) => (
     <a
       href={href}
-      className="inline-flex min-h-6 items-center text-accent underline underline-offset-2 outline-focus"
+      className="inline-flex min-h-6 items-center text-default underline underline-offset-2 outline-focus"
     >
       {children}
     </a>
@@ -142,7 +142,7 @@ function StorageResult({ sourceId }: { sourceId: string }) {
         Source:{' '}
         <a
           href={`#${sourceId}`}
-          className="inline-flex min-h-6 items-center text-accent underline underline-offset-2 outline-focus"
+          className="inline-flex min-h-6 items-center text-default underline underline-offset-2 outline-focus"
         >
           Storage snapshot
         </a>{' '}
@@ -326,7 +326,7 @@ export function ConversationSpecimen() {
         data-zao-example="assistant-panel"
       >
         <header className="flex min-w-0 flex-wrap items-baseline justify-between gap-2 border-b border-subtle px-3 py-2">
-          <h4 className="type-label font-medium">ZAO assistant</h4>
+          <h3 className="type-label font-medium">ZAO assistant</h3>
           <p className="type-caption text-muted">North workspace</p>
         </header>
         <Conversation.Root aria-label="North workspace conversation" announcement={announcement}>

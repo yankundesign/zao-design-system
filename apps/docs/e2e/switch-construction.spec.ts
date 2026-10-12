@@ -2,6 +2,8 @@ import { readFile } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { expectFocusBrackets } from './focus-mark';
+import { smallSeat } from './construction-values';
 
 async function openSwitch(page: Page, theme: 'su' = 'su', mode: 'light' | 'dark' = 'light') {
   await page.goto('/components/switch');
@@ -17,7 +19,18 @@ async function openSwitch(page: Page, theme: 'su' = 'su', mode: 'light' | 'dark'
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
-  return page.getByRole('form', { name: 'Notification settings' });
+  await expect(page.locator('[data-anatomy-kind="switch"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
+  const form = page
+    .locator('[data-preview-style] .study')
+    .getByRole('form', { name: 'Notification settings' });
+  await form.scrollIntoViewIfNeeded();
+  await form.getByRole('switch', { name: 'Email updates' }).scrollIntoViewIfNeeded();
+  await page.mouse.move(0, 0);
+  await settle(form);
+  return form;
 }
 
 async function settle(element: Locator) {
@@ -48,6 +61,7 @@ for (const finish of [
     const email = form.getByRole('switch', { name: 'Email updates' });
     const face = email.locator('[data-zao-slot="face"]');
     const label = form.getByText('Email updates', { exact: true });
+    await email.scrollIntoViewIfNeeded();
     await settle(form);
     const housing = await bounds(email);
     const labelBox = await bounds(label);
@@ -69,8 +83,9 @@ for (const finish of [
     await page.mouse.down();
     await settle(email);
     const seated = await bounds(face);
-    expect(seated.x).toBe(on.x);
-    expect(seated.y).toBe(on.y + 1);
+    // Press seats the face onto its base, a small rest depth back along the axis.
+    expect(seated.x).toBe(on.x - smallSeat);
+    expect(seated.y).toBe(on.y + smallSeat);
     expect(await bounds(email)).toEqual(housing);
     await expect(email).toBeChecked();
     await page.mouse.up();
@@ -98,6 +113,8 @@ for (const finish of [
     await expect(activity).toBeChecked();
 
     const disabled = form.getByRole('switch', { name: 'Locked setting' });
+    await disabled.scrollIntoViewIfNeeded();
+    await settle(disabled);
     const disabledPose = await bounds(disabled.locator('[data-zao-slot="face"]'));
     await disabled.hover();
     await page.mouse.down();
@@ -120,14 +137,15 @@ test('keyboard press seats only the face, retains the outside focus outline, and
   const email = form.getByRole('switch', { name: 'Email updates' });
   const face = email.locator('[data-zao-slot="face"]');
   await page.keyboard.press('Tab');
+  await email.scrollIntoViewIfNeeded();
   await email.focus();
   await settle(email);
   const housing = await bounds(email);
   const rest = await bounds(face);
-  await expect(email).toHaveCSS('outline-style', 'solid');
+  await expectFocusBrackets(email);
   await page.keyboard.down('Space');
   await settle(email);
-  expect((await bounds(face)).y).toBe(rest.y + 1);
+  expect((await bounds(face)).y).toBe(rest.y + smallSeat);
   expect(await bounds(email)).toEqual(housing);
   await expect(email).toBeFocused();
   await page.keyboard.up('Space');
@@ -148,27 +166,192 @@ test('keyboard press seats only the face, retains the outside focus outline, and
   await expect(email).not.toBeChecked();
 });
 
+type SwitchSlideProbe = HTMLElement & {
+  slideProbe?: {
+    outgoing: Animation | null;
+    beforePointer?: { currentTimeMs: number; durationMs: number; progress: number | null };
+    cancelledElapsedMs?: number;
+    reverseKeyframes?: ComputedKeyframe[];
+  };
+};
+
 test('rapid reversal preserves immediate checked state and continues from the moving face', async ({
   page,
-}) => {
+}, testInfo) => {
   const form = await openSwitch(page);
   const email = form.getByRole('switch', { name: 'Email updates' });
   const face = email.locator('[data-zao-slot="face"]');
+  await email.scrollIntoViewIfNeeded();
   await settle(email);
   const on = await bounds(face);
-  // Lengthen only this probe so the interrupted transition can be measured reliably.
-  await email.evaluate((node) => node.style.setProperty('--zao-motion-duration-base', '2s'));
+  const housing = await bounds(email);
+  const center = { x: housing.x + housing.width / 2, y: housing.y + housing.height / 2 };
+  await email.evaluate((node) => {
+    const root = node as SwitchSlideProbe;
+    const thumb = root.querySelector<HTMLElement>('[data-zao-slot="thumb"]')!;
+    const probe = { outgoing: null as Animation | null } as NonNullable<
+      SwitchSlideProbe['slideProbe']
+    >;
+    root.slideProbe = probe;
+    root.addEventListener(
+      'pointerdown',
+      () => {
+        if (!probe.outgoing) return;
+        const timing = probe.outgoing.effect!.getComputedTiming();
+        probe.beforePointer = {
+          currentTimeMs: Number(probe.outgoing.currentTime),
+          durationMs: Number(timing.duration),
+          progress: timing.progress ?? null,
+        };
+      },
+      true,
+    );
+    thumb.addEventListener('transitioncancel', (event) => {
+      if (event.target === thumb && event.propertyName === 'transform')
+        probe.cancelledElapsedMs = event.elapsedTime * 1000;
+    });
+    thumb.addEventListener('transitionrun', (event) => {
+      if (!probe.outgoing || event.target !== thumb || event.propertyName !== 'transform') return;
+      const reverse = thumb
+        .getAnimations()
+        .find(
+          (animation) =>
+            'transitionProperty' in animation && animation.transitionProperty === 'transform',
+        );
+      if (reverse && reverse !== probe.outgoing)
+        probe.reverseKeyframes = (reverse.effect as KeyframeEffect).getKeyframes();
+    });
+  });
   await email.click();
   await expect(email).not.toBeChecked();
-  await expect.poll(async () => (await bounds(face)).x).toBeLessThan(on.x - 1);
-  const midway = await bounds(face);
+  const outgoing = await email.evaluate(async (node) => {
+    const root = node as SwitchSlideProbe;
+    const thumb = root.querySelector<HTMLElement>('[data-zao-slot="thumb"]')!;
+    const deadline = performance.now() + 1_200;
+    let animation: Animation | undefined;
+    while (!animation && performance.now() < deadline) {
+      animation = thumb
+        .getAnimations()
+        .find(
+          (candidate) =>
+            'transitionProperty' in candidate && candidate.transitionProperty === 'transform',
+        );
+      if (!animation) await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+    if (!animation) throw new Error('Switch did not start its natural slide');
+    await animation.ready;
+    while (performance.now() < deadline) {
+      const timing = animation.effect!.getComputedTiming();
+      if (typeof timing.progress === 'number' && timing.progress > 0.05 && timing.progress < 1) {
+        root.slideProbe!.outgoing = animation;
+        const css = getComputedStyle(thumb);
+        const role = css.getPropertyValue('--zao-motion-duration-slide').trim();
+        const rect = root.querySelector('[data-zao-slot="face"]')!.getBoundingClientRect();
+        return {
+          currentTimeMs: Number(animation.currentTime),
+          durationMs: Number(timing.duration),
+          progress: timing.progress,
+          easing: animation.effect!.getTiming().easing!,
+          keyframes: (animation.effect as KeyframeEffect).getKeyframes(),
+          durationRoleMs: parseFloat(role) * (role.endsWith('ms') ? 1 : 1000),
+          midway: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        };
+      }
+      if (animation.playState === 'finished')
+        throw new Error('Switch slide completed before native reversal');
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+    throw new Error('Switch slide never exposed an unfinished natural frame');
+  });
+  const midway = outgoing.midway;
+  expect(outgoing.durationMs).toBe(outgoing.durationRoleMs);
+  expect(outgoing.currentTimeMs).toBeGreaterThan(0);
+  expect(outgoing.currentTimeMs).toBeLessThan(outgoing.durationMs);
+  expect(outgoing.progress).toBeGreaterThan(0);
+  expect(outgoing.progress).toBeLessThan(1);
+  expect(midway.x).toBeLessThan(on.x - 1);
   expect(midway.x).toBeGreaterThan(on.x - 16);
-  await email.click();
+  // The target is fixed. Locator click's stability waits can consume a 160ms
+  // slide, so reverse through native pointer input at its premeasured center.
+  // No duration override, animation seeking, or playback-rate change is used.
+  await page.mouse.click(center.x, center.y);
   await expect(email).toBeChecked();
   const reversing = await bounds(face);
   expect(reversing.x).toBeGreaterThan(on.x - 16);
   await settle(email);
   expect((await bounds(face)).x).toBe(on.x);
+  expect(await bounds(email)).toEqual(housing);
+  const reversal = await email.evaluate((node, outgoing) => {
+    const probe = (node as SwitchSlideProbe).slideProbe!;
+    if (!probe.reverseKeyframes || probe.cancelledElapsedMs === undefined)
+      throw new Error('Native reversal did not cancel an outgoing slide and start a reverse slide');
+    const fraction = probe.cancelledElapsedMs / outgoing.durationMs;
+    // Su's slide role uses the faceted 举折 enter curve (finish plan V5): linear() stops.
+    const eased = (x: number) => {
+      const linear = outgoing.easing.match(/^linear\((.*)\)$/);
+      if (linear) {
+        const stops = linear[1]!.split(',').map((stop) => stop.trim().split(/\s+/));
+        const points = stops.map(([output, position], index) => ({
+          y: Number(output),
+          x: position ? parseFloat(position) / 100 : index / (stops.length - 1),
+        }));
+        for (let index = 1; index < points.length; index++) {
+          const start = points[index - 1]!;
+          const end = points[index]!;
+          if (x <= end.x) return start.y + ((end.y - start.y) * (x - start.x)) / (end.x - start.x);
+        }
+        return 1;
+      }
+      const [x1, y1, x2, y2] = outgoing.easing
+        .match(/cubic-bezier\(([^)]+)\)/)![1]!
+        .split(',')
+        .map(Number) as [number, number, number, number];
+      const curve = (t: number, a: number, b: number) =>
+        3 * (1 - t) ** 2 * t * a + 3 * (1 - t) * t ** 2 * b + t ** 3;
+      let low = 0;
+      let high = 1;
+      for (let iteration = 0; iteration < 40; iteration++) {
+        const middle = (low + high) / 2;
+        if (curve(middle, x1, x2) < x) low = middle;
+        else high = middle;
+      }
+      return curve((low + high) / 2, y1, y2);
+    };
+    const progress = eased(fraction);
+    const from = new DOMMatrixReadOnly(String(outgoing.keyframes[0]!.transform)).m41;
+    const to = new DOMMatrixReadOnly(String(outgoing.keyframes.at(-1)!.transform)).m41;
+    const expectedStartPx = from + (to - from) * progress;
+    const reverseStartPx = new DOMMatrixReadOnly(String(probe.reverseKeyframes[0]!.transform)).m41;
+    return {
+      beforePointer: probe.beforePointer!,
+      cancelledElapsedMs: probe.cancelledElapsedMs,
+      expectedStartPx,
+      reverseStartPx,
+      continuityResidualPx: reverseStartPx - expectedStartPx,
+    };
+  }, outgoing);
+  await testInfo.attach('natural-switch-reversal.json', {
+    body: JSON.stringify(
+      {
+        units: { geometry: 'CSS px', time: 'ms', progress: 'unitless' },
+        on,
+        midway,
+        reversing,
+        outgoing,
+        reversal,
+      },
+      null,
+      2,
+    ),
+    contentType: 'application/json',
+  });
+  expect(reversal.beforePointer.currentTimeMs).toBeGreaterThan(0);
+  expect(reversal.beforePointer.currentTimeMs).toBeLessThan(reversal.beforePointer.durationMs);
+  expect(reversal.beforePointer.progress).toBeGreaterThan(0);
+  expect(reversal.beforePointer.progress).toBeLessThan(1);
+  expect(reversal.cancelledElapsedMs).toBeGreaterThan(0);
+  expect(reversal.cancelledElapsedMs).toBeLessThan(outgoing.durationMs);
+  expect(Math.abs(reversal.continuityResidualPx)).toBeLessThan(0.01);
 });
 
 test('reduced motion keeps press feedback without depth movement and changes endpoints immediately', async ({
@@ -204,6 +387,7 @@ test('RTL, a narrow setting list, and forced colors retain readable endpoints an
   await form.evaluate((node) => node.setAttribute('dir', 'rtl'));
   const email = form.getByRole('switch', { name: 'Email updates' });
   const face = email.locator('[data-zao-slot="face"]');
+  await email.scrollIntoViewIfNeeded();
   await settle(email);
   const on = await bounds(face);
   await email.click();
@@ -242,7 +426,7 @@ test.describe('touch', () => {
       await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints });
       await expect(email).toHaveAttribute('data-zao-pressed', '');
       await settle(email);
-      expect((await bounds(face)).y).toBe(rest.y + 1);
+      expect((await bounds(face)).y).toBe(rest.y + smallSeat);
       expect(await bounds(email)).toEqual(housing);
       await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
       await expect(email).not.toBeChecked();

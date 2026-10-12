@@ -131,13 +131,13 @@ export const Switch = forwardRef<HTMLElement, SwitchProps>(function Switch(
         onLostPointerCapture?.(event);
       }}
       className={[
-        'switch-construction construction-shading inline-flex h-6 w-10 shrink-0 rounded-none align-middle outline-focus',
+        'switch-construction construction-shading construction-well focus-brackets inline-flex h-6 w-10 shrink-0 rounded-none align-middle outline-focus',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      <BaseSwitch.Thumb data-zao-slot="thumb" aria-hidden="true">
+      <BaseSwitch.Thumb data-zao-slot="thumb" className="construction-planes" aria-hidden="true">
         <span data-zao-slot="face" />
       </BaseSwitch.Thumb>
     </BaseSwitch.Root>

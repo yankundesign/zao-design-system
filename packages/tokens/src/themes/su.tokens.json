@@ -1,41 +1,137 @@
 {
-  "$description": "Su 素, the plain finish. Quiet, precise and easy to adopt: opaque surfaces, hairline borders, restrained motion. Finish only: nothing here may change the size of a component.",
+  "$description": "Su 素, the plain finish. Warm ink and paper, one seal, depth drawn in stepped planes and never blurred, and motion derived from the 举折 roof fold and the timber grades. Finish only: nothing here may change the size of a component.",
   "font": {
     "family": {
       "display": {
         "$type": "fontFamily",
-        "$value": "{font.family.text}",
-        "$description": "Su titles use the text face at display sizes."
+        "$value": [
+          "Newsreader",
+          "Newsreader Fallback",
+          "Noto Serif SC",
+          "Songti SC",
+          "STSong",
+          "Georgia",
+          "serif"
+        ],
+        "$description": "Su titles use Newsreader at display sizes (V7, Oct 11): display and title roles only, at 20px and up. Chinese titles fall back to a Song-style serif."
+      }
+    }
+  },
+  "type": {
+    "$type": "typography",
+    "display": {
+      "$description": "Same size and line height as the structure. Newsreader needs less negative tracking and a lighter weight than Geist.",
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": {
+          "value": 36,
+          "unit": "px"
+        },
+        "fontWeight": 520,
+        "lineHeight": 1.1111,
+        "letterSpacing": {
+          "value": -0.5,
+          "unit": "px"
+        }
+      }
+    },
+    "title": {
+      "$description": "Same size and line height as the structure, in Newsreader.",
+      "$value": {
+        "fontFamily": "{font.family.display}",
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "fontWeight": 520,
+        "lineHeight": 1.3333,
+        "letterSpacing": {
+          "value": -0.24,
+          "unit": "px"
+        }
       }
     }
   },
   "radius": {
     "$type": "dimension",
     "control": {
-      "$value": { "value": 2, "unit": "px" },
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
       "$description": "Inputs, selects, checkboxes."
     },
-    "action": { "$value": { "value": 0, "unit": "px" }, "$description": "Buttons." },
+    "action": {
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      },
+      "$description": "Buttons."
+    },
     "surface": {
-      "$value": { "value": 2, "unit": "px" },
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
       "$description": "Cards, panels, table wrappers."
     },
     "overlay": {
-      "$value": { "value": 2, "unit": "px" },
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
       "$description": "Menus, popovers, dialogs, toasts."
+    },
+    "facet": {
+      "$value": {
+        "value": 5,
+        "unit": "px"
+      },
+      "$description": "The bevelled leading corner (卷杀) of a lifted face: Button, IconButton, Card, Dialog and floating popups. Applied with corner-shape: bevel at the corner that leads along the depth axis; browsers without corner-shape keep the square corner, never a rounded one."
     }
   },
   "depth": {
     "$description": "Finish construction offsets for paint only. Never use these values for layout dimensions, spacing, native hit areas or focus outlines.",
     "contact": {
       "$type": "dimension",
-      "$value": { "value": 1, "unit": "px" },
-      "$description": "Painted contact distance that grounds a face on its fixed base. Independent of border stroke width; never changes a layout box."
+      "$value": {
+        "value": 1,
+        "unit": "px"
+      },
+      "$description": "A one-step drawn contact for recessed walls and thin edges: wells, the Progress end edge and the Menu reveal lip. Independent of border stroke width; never changes a layout box."
     },
     "lift": {
       "$type": "dimension",
-      "$value": { "value": 2, "unit": "px" },
-      "$description": "Painted face travel along the depth axis for approved lift interactions. Native hit areas, focus outlines and neighboring layout stay fixed."
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$description": "Extra face travel along the depth axis on hover, on top of the rest depth: a Button rests 3px above its base and lifts to 5px. Native hit areas, focus brackets and neighboring layout stay fixed."
+    },
+    "rest": {
+      "$type": "dimension",
+      "$description": "How far a part sits above its base at rest (V3, Oct 11). The gap shows as two side planes, each in two flat bands (叠晕). Paint only.",
+      "small": {
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$description": "Small faces inside a track: the Switch face and the secondary Tabs face."
+      },
+      "control": {
+        "$value": {
+          "value": 3,
+          "unit": "px"
+        },
+        "$description": "Controls and floating popups: Button, IconButton, Menu, Select and Combobox."
+      },
+      "surface": {
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        },
+        "$description": "Content surfaces: Card and Dialog. A press inside a Card seats it by one contact step."
+      }
     },
     "axis": {
       "$type": "number",
@@ -52,35 +148,76 @@
   "material": {
     "$description": "Floating layers only: menus, popovers, dialogs, toasts, the command bar. Components read material tokens and never set blur or translucency themselves.",
     "overlay": {
-      "fill": { "$type": "color", "$value": "{color.bg.overlay}" },
+      "fill": {
+        "$type": "color",
+        "$value": "{color.bg.overlay}"
+      },
       "fill-solid": {
         "$type": "color",
         "$value": "{color.bg.overlay}",
         "$description": "Used when the reader asks for reduced transparency."
       },
-      "border": { "$type": "color", "$value": "{color.border.subtle}" },
+      "border": {
+        "$type": "color",
+        "$value": "{color.border.subtle}"
+      },
       "highlight": {
         "$type": "color",
-        "$value": { "colorSpace": "srgb", "components": [1, 1, 1], "alpha": 0 },
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [1, 1, 1],
+          "alpha": 0
+        },
         "$description": "No highlight in the plain finish."
       },
-      "blur": { "$type": "dimension", "$value": { "value": 0, "unit": "px" } },
+      "blur": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
       "shadow": {
         "$type": "shadow",
+        "$description": "A drawn two-step contact toward the depth axis, never blurred. Popups that carry side planes replace it.",
         "$value": [
           {
-            "color": "{color.shadow.soft}",
-            "offsetX": { "value": 0, "unit": "px" },
-            "offsetY": { "value": 1, "unit": "px" },
-            "blur": { "value": 2, "unit": "px" },
-            "spread": { "value": 0, "unit": "px" }
+            "color": "{color.border.default}",
+            "offsetX": {
+              "value": -1,
+              "unit": "px"
+            },
+            "offsetY": {
+              "value": 1,
+              "unit": "px"
+            },
+            "blur": {
+              "value": 0,
+              "unit": "px"
+            },
+            "spread": {
+              "value": 0,
+              "unit": "px"
+            }
           },
           {
-            "color": "{color.shadow.strong}",
-            "offsetX": { "value": 0, "unit": "px" },
-            "offsetY": { "value": 8, "unit": "px" },
-            "blur": { "value": 24, "unit": "px" },
-            "spread": { "value": 0, "unit": "px" }
+            "color": "{color.border.subtle}",
+            "offsetX": {
+              "value": -2,
+              "unit": "px"
+            },
+            "offsetY": {
+              "value": 2,
+              "unit": "px"
+            },
+            "blur": {
+              "value": 0,
+              "unit": "px"
+            },
+            "spread": {
+              "value": 0,
+              "unit": "px"
+            }
           }
         ]
       }
@@ -89,19 +226,74 @@
   "motion": {
     "duration": {
       "$type": "duration",
-      "fast": { "$value": { "value": 80, "unit": "ms" }, "$description": "Hover, press, focus." },
+      "fast": {
+        "$value": {
+          "value": 80,
+          "unit": "ms"
+        },
+        "$description": "State changes such as hover emphasis, and the fast press: seat and reveal exit."
+      },
       "base": {
-        "$value": { "value": 160, "unit": "ms" },
-        "$description": "Overlays opening and closing."
+        "$value": {
+          "value": 160,
+          "unit": "ms"
+        },
+        "$description": "Retained for existing state transitions. Spatial roles now come from the timber grades."
+      },
+      "lift": {
+        "$value": "{motion.duration.grade.7}",
+        "$description": "Grade 7 (Button, IconButton): the face lifts on hover and returns from its seat. Reduced motion removes spatial travel."
+      },
+      "seat": {
+        "$value": "{motion.duration.fast}",
+        "$description": "Press is shorter than release: a face seats onto its base at the fast duration for every grade (Button, Switch face, secondary Tabs face, Card load path). Reduced motion keeps immediate state feedback."
+      },
+      "slide": {
+        "$value": "{motion.duration.grade.7}",
+        "$description": "Grade 7: the Tabs indicator and the Progress face follow an actual value within a fixed track. The Switch face uses grade 8. Reduced motion shows the destination immediately."
+      },
+      "reveal": {
+        "$value": "{motion.duration.grade.5}",
+        "$description": "Grade 5: a floating plane opens from its joint through the clipped reveal (Menu, Select, Combobox). Reduced motion shows the completed frame immediately."
+      },
+      "reveal-exit": {
+        "$value": "{motion.duration.fast}",
+        "$description": "A floating plane closes toward its joint at the fast duration, on the 举折 exit curve. Reduced motion closes immediately."
       },
       "loading": {
-        "$value": { "value": 1000, "unit": "ms" },
+        "$value": {
+          "value": 1000,
+          "unit": "ms"
+        },
         "$description": "One complete linear rotation of a loading indicator during pending work. Reduced motion shows a static indicator."
       }
     },
     "easing": {
       "$type": "cubicBezier",
-      "standard": { "$value": [0.2, 0, 0, 1] }
+      "standard": {
+        "$value": [0.2, 0, 0, 1],
+        "$description": "State changes such as color and emphasis. Spatial motion uses the 举折 curves."
+      },
+      "lift": {
+        "$value": "{motion.easing.fold-enter}",
+        "$description": "举折 enter curve for the Button and IconButton lift and return."
+      },
+      "seat": {
+        "$value": "{motion.easing.standard}",
+        "$description": "Press seating stays on the standard curve: short and simple."
+      },
+      "slide": {
+        "$value": "{motion.easing.fold-enter}",
+        "$description": "举折 enter curve for Switch, Tabs and Progress changes within their tracks, without overshoot."
+      },
+      "reveal": {
+        "$value": "{motion.easing.fold-enter}",
+        "$description": "举折 enter curve for the Menu, Select and Combobox reveal from a joint."
+      },
+      "exit": {
+        "$value": "{motion.easing.fold-exit}",
+        "$description": "举折 exit curve: closing reveals and removals start slowly and accelerate away."
+      }
     }
   }
 }

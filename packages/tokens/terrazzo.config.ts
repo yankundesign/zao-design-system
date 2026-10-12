@@ -1,6 +1,6 @@
 import { defineConfig } from '@terrazzo/cli';
 import css from '@terrazzo/plugin-css';
-import { cssVar } from './contexts.ts';
+import { cssVar, foldCurve } from './contexts.ts';
 
 /**
  * Builds dist/zao.css from the resolver.
@@ -19,6 +19,9 @@ export default defineConfig({
     css({
       filename: 'zao.css',
       variableName: (token) => cssVar(token.id),
+      // 举折 curves are faceted: CSS gets the exact linear() curve, while the DTCG value
+      // keeps a smoothed cubic-bezier fit for tools that need one.
+      transform: (token) => foldCurve(token) ?? undefined,
       permutations: [
         {
           input: { theme: 'su', mode: 'light' },

@@ -38,9 +38,9 @@ const groupOrder = [
   'mode',
 ];
 const fieldClass =
-  'h-8 min-w-0 rounded-control border border-default bg-surface px-2 type-body text-default';
+  'h-control min-w-0 rounded-control border border-default bg-surface px-2 type-body text-default';
 const buttonClass =
-  'h-8 rounded-action border border-default bg-surface px-3 type-label trim-label text-default hover:bg-hover disabled:opacity-50';
+  'h-control rounded-action border border-default bg-surface px-3 type-label trim-label text-default hover:bg-hover disabled:opacity-50';
 
 // The registry is authoritative. A Map also guards against duplicate ids while it evolves.
 const parameters = Array.from(
@@ -169,7 +169,7 @@ function NumericEditor({
         <input
           aria-label={`${parameter.label} slider`}
           type="range"
-          className="h-8 min-w-0 flex-1"
+          className="h-control min-w-0 flex-1"
           style={{ accentColor: 'var(--zao-color-accent-solid)' }}
           min={range[0]}
           max={range[1]}

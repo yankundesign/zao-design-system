@@ -15,7 +15,13 @@ async function openProgress(page: Page, theme: 'su', mode: 'light' | 'dark') {
   );
   await page.addStyleTag({ content: css });
   await page.evaluate(() => document.fonts.ready);
-  return page.locator('[data-zao-specimen="progress"]');
+  await expect(page.locator('[data-anatomy-kind="progress"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
+  const specimen = page.locator('[data-zao-specimen="progress"]');
+  await specimen.scrollIntoViewIfNeeded();
+  return specimen;
 }
 
 async function geometry(progress: Locator) {
@@ -122,11 +128,21 @@ test('an interrupted width update keeps its fixed reference and respects finish 
     const finish = getComputedStyle(node);
     const timing = {
       actual: css.transitionDuration,
-      expected: finish.getPropertyValue('--zao-motion-duration-base').trim(),
+      expected: finish.getPropertyValue('--zao-motion-duration-slide').trim(),
     };
     face.style.width = '100%';
+    // Commit the real transition before timing its interruption.
+    const outgoing = face
+      .getAnimations()
+      .find(
+        (animation) =>
+          animation instanceof CSSTransition && animation.transitionProperty === 'width',
+      );
+    if (!outgoing) throw new Error('The width update must create a CSS transition.');
+    await outgoing.ready;
     await new Promise((resolve) => setTimeout(resolve, 40));
     const changing = face.getBoundingClientRect().width;
+    const progress = outgoing.effect?.getComputedTiming().progress;
     face.style.width = '20%';
     const reversing = face.getBoundingClientRect().width;
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -134,6 +150,7 @@ test('an interrupted width update keeps its fixed reference and respects finish 
     return {
       timing,
       changing,
+      progress,
       reversing,
       destination: face.getBoundingClientRect().width / track.getBoundingClientRect().width,
     };
@@ -141,7 +158,10 @@ test('an interrupted width update keeps its fixed reference and respects finish 
   const seconds = (duration: string) =>
     duration.endsWith('ms') ? parseFloat(duration) / 1000 : parseFloat(duration);
   expect(seconds(update.timing.actual)).toBe(seconds(update.timing.expected));
+  expect(update.progress).toBeGreaterThan(0);
+  expect(update.progress).toBeLessThan(1);
   expect(update.changing).toBeGreaterThan(resting.face.width);
+  expect(update.changing).toBeLessThan(resting.track.width);
   expect(update.reversing).toBeCloseTo(update.changing, 2);
   expect(update.destination).toBeCloseTo(0.2, 3);
   expect((await geometry(progress)).track).toEqual(resting.track);

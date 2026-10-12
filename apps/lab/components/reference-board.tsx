@@ -47,13 +47,13 @@ const teardownLabels: Array<[keyof ReferenceTeardown, string, string]> = [
 ];
 
 const inputClass =
-  'h-8 w-full rounded-control border border-default bg-surface px-2 type-body text-default outline-focus';
+  'h-control w-full rounded-control border border-default bg-surface px-2 type-body text-default outline-focus';
 const textAreaClass =
   'min-h-20 w-full rounded-control border border-default bg-surface p-2 type-body text-default outline-focus';
 const buttonClass =
-  'min-h-8 rounded-action border border-default bg-surface px-3 type-label text-default outline-focus';
+  'min-h-control rounded-action border border-default bg-surface px-3 type-label text-default outline-focus';
 const primaryButtonClass =
-  'min-h-8 rounded-action bg-accent px-3 type-label text-on-accent outline-focus';
+  'min-h-control rounded-action bg-accent px-3 type-label text-on-accent outline-focus';
 
 function splitList(value: string) {
   return [
@@ -484,7 +484,7 @@ export default function ReferenceBoard({
                 <label className="flex flex-col gap-1 type-label">
                   <span>Image or local screenshot</span>
                   <input
-                    className="min-h-8 w-full type-body"
+                    className="min-h-control w-full type-body"
                     type="file"
                     accept="image/png,image/jpeg,.png,.jpg,.jpeg"
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>

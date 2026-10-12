@@ -21,7 +21,7 @@ export default async function DataVisualizationPage() {
         <p className="type-body text-muted">
           Quiet instruments for reading, inspecting, and understanding change. See every chart in
           the{' '}
-          <Link href="/charts" className="text-accent underline outline-focus">
+          <Link href="/charts" className="text-default underline outline-focus">
             Charts section
           </Link>
           .

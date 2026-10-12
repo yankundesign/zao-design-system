@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { ComponentPreview } from './component-preview';
 import { getQuietInstrumentStudy } from '@/lib/style-studies';
+import { anatomyKinds, type AnatomyKind } from '@/lib/anatomy';
+import { Anatomy } from './anatomy';
+import { ConstructionStates } from './construction-states';
+import './anatomy.css';
 
 export type ComponentId =
   | 'button'
@@ -384,7 +388,7 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
       'Keep records on one steady reading plane. Sorting, selection, and actions belong to explicit buttons, checkboxes, and menus; the table does not manage their state.',
       'For sorting, put a Button in the column heading and set aria-sort on the sorted Head. For selection, use labeled checkboxes and a visible selected count. Keep the main action visible outside the frame.',
       'Give the primary column the available width. Keep supporting columns compact, use monospace IDs, and match the type-label role across static and sortable headings. Reserve space for sort indicators so columns stay steady.',
-      'The current specimen uses plain foreground text for statuses, neutral checkbox selection, and a compact secondary action toolbar. Metadata gains default foreground on emphasized rows; the selected count stays concise, with a detailed live announcement for assistive technology.',
+      'Pair each written status with a distinct decorative Iconoir glyph in the default foreground: a check for Ready, play for Running, warning triangle for Needs review, and prohibition for Blocked. Keep the text as the accessible reading; color and motion are unnecessary. The specimen retains neutral checkbox selection and a compact secondary action toolbar. Metadata gains default foreground on emphasized rows; the selected count stays concise, with a detailed live announcement for assistive technology.',
     ],
     accessibility:
       'Table preserves native table, row, column header, row header, and cell semantics. Head defaults to scope="col"; use scope="row" for record names. Root provides a named, keyboard focusable horizontal scroll region for narrow layouts. Readable status text, labeled native checkboxes, aria-sort on the active heading, and visible action focus support the specimen’s read, sort, and select workflow. Table does not add grid navigation or editable spreadsheet behavior.',
@@ -462,12 +466,21 @@ export async function ComponentDetail({
         <p className="type-body text-muted">{definition.description}</p>
       </header>
 
+      {(anatomyKinds as readonly string[]).includes(component) && (
+        <Anatomy
+          kind={component as AnatomyKind}
+          quietStudy={quietStudy ? { cssUrl: quietStudy.cssUrl } : null}
+        />
+      )}
+
       <ComponentPreview
         component={component}
         title={definition.title}
         selectedStyle={style}
         quietStudy={quietStudy ? { title: quietStudy.title, cssUrl: quietStudy.cssUrl } : null}
       />
+
+      {component === 'card' && <ConstructionStates />}
 
       <section className="docs-detail-section grid gap-5 border-t border-subtle pt-5">
         <h2 className="type-heading">Usage</h2>
@@ -478,7 +491,7 @@ export async function ComponentDetail({
           {component === 'progress' && (
             <li>
               Follow the{' '}
-              <Link className="text-accent underline" href="/foundations/data-visualization">
+              <Link className="text-default underline" href="/foundations/data-visualization">
                 data visualization guideline
               </Link>{' '}
               when composing the reading.
@@ -524,4 +537,9 @@ export async function ComponentDetail({
       </section>
     </div>
   );
+}
+
+/** A component's usage rules, read from the same definition its docs page renders. */
+export function componentUsage(id: ComponentId): readonly string[] {
+  return definitions[id].usage;
 }

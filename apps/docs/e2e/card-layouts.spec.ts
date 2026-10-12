@@ -49,6 +49,10 @@ async function openCardPage(page: Page, realQuietInstrument: boolean) {
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
+  await expect(page.locator('[data-anatomy-kind="card"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
   await settle(page.locator('.study').first());
 }
 
@@ -73,6 +77,7 @@ async function expectNoHorizontalOverflow(element: Locator) {
 }
 
 async function expectKeyboardScrollAccess(sample: Locator, viewportWidth: number) {
+  await sample.scrollIntoViewIfNeeded();
   await expect(sample).toHaveAttribute('tabindex', '0');
   const metrics = await sample.evaluate((node) => ({
     scrollWidth: node.scrollWidth,
@@ -157,6 +162,7 @@ for (const study of studies) {
       await openCardPage(page, study.realQuietInstrument);
 
       const selector = page.getByRole('tablist', { name: 'Card layout', exact: true });
+      await selector.scrollIntoViewIfNeeded();
       await expect(selector).toBeVisible();
       await expect(selector.getByRole('tab')).toHaveCount(4);
       const split = selector.getByRole('tab', { name: 'Split', exact: true });

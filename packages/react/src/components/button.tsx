@@ -15,7 +15,7 @@ export interface ButtonProps extends Omit<
 > {
   /** The button's visual emphasis. */
   variant?: ButtonVariant;
-  /** Small is 28px, default follows the 34px reference, and large is 40px. */
+  /** Shared control heights: small 28px, default 34px, and large 40px. */
   size?: ButtonSize;
   /** A decorative Iconoir-compatible icon before the visible label. */
   leadingIcon?: ButtonIcon;
@@ -35,7 +35,7 @@ export interface ButtonProps extends Omit<
 
 const sizeClasses: Record<ButtonSize, string> = {
   small: 'h-7 px-2',
-  default: 'h-button px-4 py-2',
+  default: 'h-control px-4 py-2',
   large: 'h-10 px-4',
 };
 
@@ -198,13 +198,14 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
           onLostPointerCapture?.(event);
         }}
         className={[
-          'button-construction construction-shading inline-flex min-w-7 shrink-0 rounded-action type-button outline-focus disabled:cursor-not-allowed',
+          'button-construction construction-shading focus-brackets inline-flex min-w-7 shrink-0 rounded-action type-button outline-focus disabled:cursor-not-allowed',
           block ? 'w-full' : undefined,
           className,
         ]
           .filter(Boolean)
           .join(' ')}
       >
+        <span data-zao-slot="side" className="construction-planes" aria-hidden="true" />
         <span
           data-zao-slot="face"
           className={[

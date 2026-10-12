@@ -208,34 +208,324 @@
   transition-duration: var(--zao-motion-duration-base);
 }
 
-/* D3, option A: one sRGB shade of the current semantic face. Black is the
- * mathematical endpoint, not a new palette color. Button and Card's dark surface faces
- * use a semantic edge below so their construction separates from the backing. */
+/*
+ * Construction (finish plan V2–V4, Oct 11). A lifted part has a face, a fixed base and the
+ * gap between them. The gap shows as two side planes toward the depth axis, each drawn in
+ * two flat bands (叠晕): depth is drawn, never blurred. Only paint moves; the native box,
+ * hit area and neighboring layout stay where they are.
+ *
+ *   --zao-face-offset  the face's travel along the axis: 0 at rest, +lift on hover,
+ *                      minus the rest depth when seated on its base.
+ *   --zao-plane-rest   how far the base sits behind the face at rest (depth.rest.*).
+ *
+ * Both are registered, so the face, both planes and their bands move on one value.
+ */
+@property --zao-face-offset {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --zao-plane-rest {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* 叠晕: plane tones are shades of the current semantic face. Light faces step toward black;
+ * dark faces step toward white so the planes stay visible on near-black backing. The far
+ * band of the bottom plane is only slightly darker than the side plane (Oct 11 review: a
+ * much darker bottom reads as a detached shadow). Solid seal faces override these below. */
 @utility construction-shading {
-  --zao-construction-side: color-mix(in srgb, var(--zao-construction-face) 80%, black 20%);
+  --zao-plane-strength: 8%;
+  --zao-plane-x-near: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black var(--zao-plane-strength)),
+    color-mix(in oklch, var(--zao-construction-face), white calc(var(--zao-plane-strength) * 1.75))
+  );
+  --zao-plane-x-far: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black calc(var(--zao-plane-strength) * 1.75)),
+    color-mix(in oklch, var(--zao-construction-face), white calc(var(--zao-plane-strength) * 1.125))
+  );
+  --zao-plane-y-near: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black calc(var(--zao-plane-strength) * 1.5)),
+    color-mix(in oklch, var(--zao-construction-face), white calc(var(--zao-plane-strength) * 1.375))
+  );
+  --zao-plane-y-far: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black calc(var(--zao-plane-strength) * 2)),
+    color-mix(in oklch, var(--zao-construction-face), white calc(var(--zao-plane-strength) * 0.875))
+  );
+  /* The nearest band, for drawings and existing readers of the single side tone. */
+  --zao-construction-side: var(--zao-plane-x-near);
 }
 
-/* A static contact edge grounds a content surface without moving its contents or actions. */
-@utility card-construction {
-  box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-color-border-subtle);
+/* A seal-colored face (the primary action, an on Switch face) always steps toward black. */
+@utility construction-shading-solid {
+  --zao-plane-x-near: color-mix(in oklch, var(--zao-construction-face), black 14%);
+  --zao-plane-x-far: color-mix(in oklch, var(--zao-construction-face), black 24%);
+  --zao-plane-y-near: color-mix(in oklch, var(--zao-construction-face), black 21%);
+  --zao-plane-y-far: color-mix(in oklch, var(--zao-construction-face), black 28%);
+  --zao-construction-side: var(--zao-plane-x-near);
 }
 
-/* Card's single contact edge stays visible against dark backing without moving its plane. */
-@utility card-shaded-construction {
-  --zao-construction-face: var(--zao-color-bg-surface);
-  --card-contact-side: var(--zao-construction-side);
-  &[data-zao-component='card'] {
-    --card-contact-side: light-dark(var(--zao-construction-side), var(--zao-color-border-subtle));
+/* The two planes, painted on this element's ::before (the plane across the axis's x
+ * component) and ::after (its y component). Both cover the native box exactly: inside it a
+ * hard-stopped gradient paints the bands, and outside it two zero-blur spreads do (the near
+ * band's spread over the far band's), so the planes add paint but never scrollable overflow.
+ * A polygon per plane cuts the quad between the face's trailing edge and the base's. The host
+ * must be positioned. */
+@utility construction-planes {
+  --plane-reach: calc(var(--zao-depth-rest-surface) + var(--zao-depth-lift) + 2px);
+  --plane-ax: var(--zao-depth-axis-x);
+  --plane-ay: var(--zao-depth-axis-y);
+  /* Distances out from the trailing edge, toward the face: base edge, band joint, face edge. */
+  --plane-base: calc(-1 * var(--zao-plane-rest));
+  --plane-face: var(--zao-face-offset);
+  --plane-mid: calc((var(--plane-base) + var(--plane-face)) / 2);
+  --plane-shift: calc(var(--plane-mid) + var(--plane-reach));
+  /* The trailing edges: left and bottom for today's up-and-right axis. */
+  --plane-xe: calc((1 - var(--plane-ax)) / 2 * 100%);
+  --plane-ye: calc((1 - var(--plane-ay)) / 2 * 100%);
+  --plane-fx: calc(var(--plane-ax) * var(--zao-face-offset));
+  --plane-fy: calc(var(--plane-ay) * var(--zao-face-offset));
+  --plane-bx: calc(-1 * var(--plane-ax) * var(--zao-plane-rest));
+  --plane-by: calc(-1 * var(--plane-ay) * var(--zao-plane-rest));
+
+  &::before,
+  &::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    /* The planes follow the host's registered values; they never transition on their own. */
+    transition: none;
+    content: '';
   }
-  box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--card-contact-side);
+
+  &::before {
+    background: linear-gradient(
+      calc(90deg * var(--plane-ax)),
+      transparent var(--plane-base),
+      var(--zao-plane-x-far) var(--plane-base),
+      var(--zao-plane-x-far) var(--plane-mid),
+      var(--zao-plane-x-near) var(--plane-mid),
+      var(--zao-plane-x-near) var(--plane-face),
+      transparent var(--plane-face)
+    );
+    box-shadow:
+      calc(var(--plane-ax) * var(--plane-shift)) 0 0 var(--plane-reach) var(--zao-plane-x-near),
+      0 0 0 var(--plane-reach) var(--zao-plane-x-far);
+    clip-path: polygon(
+      calc(var(--plane-xe) + var(--plane-fx)) var(--plane-fy),
+      calc(var(--plane-xe) + var(--plane-fx)) calc(100% + var(--plane-fy)),
+      calc(var(--plane-xe) + var(--plane-bx)) calc(100% + var(--plane-by)),
+      calc(var(--plane-xe) + var(--plane-bx)) var(--plane-by)
+    );
+  }
+
+  &::after {
+    background: linear-gradient(
+      calc(90deg + 90deg * var(--plane-ay)),
+      transparent var(--plane-base),
+      var(--zao-plane-y-far) var(--plane-base),
+      var(--zao-plane-y-far) var(--plane-mid),
+      var(--zao-plane-y-near) var(--plane-mid),
+      var(--zao-plane-y-near) var(--plane-face),
+      transparent var(--plane-face)
+    );
+    box-shadow:
+      0 calc(var(--plane-ay) * var(--plane-shift)) 0 var(--plane-reach) var(--zao-plane-y-near),
+      0 0 0 var(--plane-reach) var(--zao-plane-y-far);
+    clip-path: polygon(
+      var(--plane-fx) calc(var(--plane-ye) + var(--plane-fy)),
+      calc(100% + var(--plane-fx)) calc(var(--plane-ye) + var(--plane-fy)),
+      calc(100% + var(--plane-bx)) calc(var(--plane-ye) + var(--plane-by)),
+      var(--plane-bx) calc(var(--plane-ye) + var(--plane-by))
+    );
+  }
+
+  @media (forced-colors: active) {
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+}
+
+/* A recess: stepped inner walls on the edges facing away from the viewer (top and right for
+ * today's axis), drawn with hard inset steps of the contact distance. */
+@utility construction-well {
+  --zao-well-near: light-dark(
+    color-mix(in oklch, var(--zao-well-face, var(--zao-color-bg-sunken)), black 20%),
+    color-mix(in oklch, var(--zao-well-face, var(--zao-color-bg-sunken)), black 60%)
+  );
+  --zao-well-far: light-dark(
+    color-mix(in oklch, var(--zao-well-face, var(--zao-color-bg-sunken)), black 10%),
+    color-mix(in oklch, var(--zao-well-face, var(--zao-color-bg-sunken)), black 30%)
+  );
+  --zao-well-walls:
+    inset calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 var(--zao-well-near),
+    inset calc(-2 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+      calc(-2 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 var(--zao-well-far);
+  box-shadow: var(--zao-well-walls);
+
+  @media (forced-colors: active) {
+    box-shadow: none;
+  }
+}
+
+/* Field value planes are recessed into the canvas. */
+@utility field-well {
+  --zao-well-face: var(--zao-color-bg-canvas);
+}
+
+/* A floating popup: a square face resting a control depth above its base, with the planes
+ * replacing the material's drawn contact, and one faceted leading corner. */
+@utility popup-construction {
+  isolation: isolate;
+  --zao-construction-face: var(--zao-material-overlay-fill);
+  --zao-plane-rest: var(--zao-depth-rest-control);
+  --zao-face-offset: 0px;
+  &[data-zao-slot='popup'] {
+    border-radius: 0;
+    box-shadow: none;
+    @supports (corner-shape: bevel) {
+      border-top-right-radius: var(--zao-radius-facet);
+      corner-shape: bevel;
+    }
+  }
+}
+
+/* A content surface: static face, base at the surface rest depth. Card and Dialog. A press
+ * on a control inside it seats the surface by one contact step (the load path, V11). */
+@utility card-shaded-construction {
+  position: relative;
+  isolation: isolate;
+  --zao-construction-face: var(--zao-color-bg-surface);
+  --zao-plane-strength: 6%;
+  --zao-plane-rest: var(--zao-depth-rest-surface);
+  --zao-face-offset: 0px;
+  transition: --zao-plane-rest var(--zao-motion-duration-seat) var(--zao-motion-easing-seat);
+
+  &:has(:is(button, [role='button'], a):is(:active, [data-zao-pressed]):not(:disabled)) {
+    --zao-plane-rest: calc(var(--zao-depth-rest-surface) - var(--zao-depth-contact));
+  }
+
+  @supports (corner-shape: bevel) {
+    border-top-right-radius: var(--zao-radius-facet);
+    corner-shape: bevel;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/* A content frame with the same planes, for Table and the conversation transcript. */
+@utility card-construction {
+  position: relative;
+  isolation: isolate;
+  --zao-construction-face: var(--zao-color-bg-canvas);
+  --zao-plane-strength: 6%;
+  --zao-plane-rest: var(--zao-depth-rest-surface);
+  --zao-face-offset: 0px;
+}
+
+/* Focus arrives as four ink brackets that close in from a few pixels out over a control's
+ * grade duration, then hold still outside the part (V12, V1c). They never move with the
+ * face. Each bracket is a corner of an outline, cut out by an even-odd polygon, so focus adds
+ * paint but never scrollable overflow. Forced colors keep a solid system outline. The host
+ * must be positioned. */
+@property --zao-bracket-offset {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@utility focus-brackets {
+  --zao-bracket-gap: var(--zao-space-1-5);
+  --zao-bracket-travel: var(--zao-space-1);
+  --zao-bracket-arm: var(--zao-space-2);
+  --zao-bracket-stroke: var(--zao-space-0-5);
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &::after {
+    --zao-bracket-offset: calc(var(--zao-bracket-gap) + var(--zao-bracket-travel));
+    /* The outline's outer edge, and the inner end of each arm, from the native box. */
+    --bracket-out: calc(-1 * (var(--zao-bracket-offset) + var(--zao-bracket-stroke)));
+    --bracket-in: calc(var(--bracket-out) + var(--zao-bracket-arm));
+    --bracket-far: calc(100% - var(--bracket-out));
+    --bracket-far-in: calc(100% - var(--bracket-in));
+    --bracket-past: calc(var(--bracket-out) - 1px);
+    --bracket-far-past: calc(100% - var(--bracket-past));
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    outline: var(--zao-bracket-stroke) solid var(--zao-color-focus-ring);
+    outline-offset: var(--zao-bracket-offset);
+    /* The outline's bounds, less a cross through its middle: four corners remain. */
+    clip-path: polygon(
+      evenodd,
+      var(--bracket-out) var(--bracket-out),
+      var(--bracket-far) var(--bracket-out),
+      var(--bracket-far) var(--bracket-far),
+      var(--bracket-out) var(--bracket-far),
+      var(--bracket-out) var(--bracket-out),
+      var(--bracket-in) var(--bracket-past),
+      var(--bracket-far-in) var(--bracket-past),
+      var(--bracket-far-in) var(--bracket-in),
+      var(--bracket-far-past) var(--bracket-in),
+      var(--bracket-far-past) var(--bracket-far-in),
+      var(--bracket-far-in) var(--bracket-far-in),
+      var(--bracket-far-in) var(--bracket-far-past),
+      var(--bracket-in) var(--bracket-far-past),
+      var(--bracket-in) var(--bracket-far-in),
+      var(--bracket-past) var(--bracket-far-in),
+      var(--bracket-past) var(--bracket-in),
+      var(--bracket-in) var(--bracket-in),
+      var(--bracket-in) var(--bracket-past),
+      var(--bracket-out) var(--bracket-out)
+    );
+    transition:
+      --zao-bracket-offset var(--zao-motion-duration-grade-7) var(--zao-motion-easing-fold-enter),
+      opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+    content: '';
+  }
+
+  &:focus-visible::after,
+  &[data-zao-focus-visible]::after {
+    --zao-bracket-offset: var(--zao-bracket-gap);
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    &:focus-visible {
+      outline: 2px solid CanvasText;
+      outline-offset: 2px;
+    }
+    &::after {
+      display: none;
+    }
+  }
 }
 
 /* D7, option B: Card's stationary frame appears complete without a reveal. */
 @utility dialog-construction {
   &[data-zao-slot='popup'] {
     border-width: var(--zao-stroke-hairline);
+    /* Dialog stays instant (V8): even the load-path dip seats without travel. */
+    transition: none;
   }
   opacity: 1;
   transform: none;
@@ -341,13 +631,27 @@
   }
 }
 
+/* Semantic default controls follow structure, independently of the 8-fen spacing step. */
+@utility h-control {
+  height: var(--zao-size-control-md);
+}
+
+@utility min-h-control {
+  min-height: var(--zao-size-control-md);
+}
+
+@utility w-control {
+  width: var(--zao-size-control-md);
+}
+
+/* Compatibility alias. New default controls use h-control. */
 @utility h-button {
-  height: var(--zao-size-button-default);
+  height: var(--zao-size-control-md);
 }
 
 /* IconButton reuses Button's construction with a square face at each shared size. */
 @utility icon-button-sizing {
-  --icon-button-size: var(--zao-size-button-default);
+  --icon-button-size: var(--zao-size-control-md);
   --icon-button-icon-size: var(--zao-size-icon-sm);
   width: var(--icon-button-size);
   height: var(--icon-button-size);
@@ -420,15 +724,20 @@
   clip-path: inset(50%);
 }
 
-/* Button's face and connected side move together over a stationary seat and hit area. */
+/*
+ * Button: one face, two banded side planes and a fixed base over a stationary native hit
+ * area (V2, V3). The face rests a control depth above its base, lifts on hover, and seats
+ * onto the base on press; press is shorter than release. Labels and icons travel with the
+ * face (D12 A). The side slot carries the planes so ::after can carry the focus brackets.
+ */
 @utility button-construction {
   position: relative;
   isolation: isolate;
   border: 0;
   padding: 0;
   background: transparent;
-  --button-x: 0px;
-  --button-y: 0px;
+  --zao-plane-rest: var(--zao-depth-rest-control);
+  --zao-face-offset: 0px;
   --button-fill: var(--zao-color-accent-solid);
   --button-hover-fill: var(--zao-color-accent-solid-hover);
   --button-pressed-fill: var(--zao-color-accent-solid-hover);
@@ -436,11 +745,21 @@
   --zao-construction-face: var(--button-face-fill);
   --button-ink: var(--zao-color-fg-on-accent);
   --button-edge: var(--zao-color-accent-solid);
-  --button-side: var(--zao-construction-side);
   --button-icon-size: var(--zao-size-icon-sm);
+  --button-spatial-duration: var(--zao-motion-duration-lift);
+  --button-spatial-easing: var(--zao-motion-easing-lift);
+  transition: --zao-face-offset var(--button-spatial-duration) var(--button-spatial-easing);
 
   &[data-zao-size='large'] {
     --button-icon-size: var(--zao-size-icon-md);
+  }
+
+  /* The seal face steps toward black in both modes. */
+  &[data-zao-variant='primary'] {
+    --zao-plane-x-near: color-mix(in oklch, var(--zao-construction-face), black 14%);
+    --zao-plane-x-far: color-mix(in oklch, var(--zao-construction-face), black 24%);
+    --zao-plane-y-near: color-mix(in oklch, var(--zao-construction-face), black 21%);
+    --zao-plane-y-far: color-mix(in oklch, var(--zao-construction-face), black 28%);
   }
 
   &:is([data-zao-variant='secondary'], [data-zao-variant='danger']) {
@@ -449,62 +768,27 @@
     --button-pressed-fill: var(--zao-color-bg-active);
     --button-ink: var(--zao-color-fg-default);
     --button-edge: var(--zao-color-border-default);
-    /* Dark surface faces need a lighter joined edge to separate from their backing. */
-    --button-side: light-dark(var(--zao-construction-side), var(--zao-color-border-subtle));
   }
 
   &[data-zao-variant='danger'] {
     --button-ink: var(--zao-color-danger-text);
   }
 
+  /* A quiet action has no face or planes until it is lifted. */
   &[data-zao-variant='quiet'] {
+    --zao-plane-rest: 0px;
     --button-fill: transparent;
     --button-hover-fill: var(--zao-color-bg-surface);
     --button-pressed-fill: var(--zao-color-bg-hover);
     --button-ink: var(--zao-color-fg-default);
     --button-edge: transparent;
-    --button-side: transparent;
   }
 
-  &::before {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    z-index: -1;
-    background: var(--button-side);
-    transform: translate(
-      calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact)),
-      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact))
-    );
-    content: '';
-  }
-
-  &::after {
+  & > [data-zao-slot='side'] {
     position: absolute;
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background: var(--button-side);
-    /* Extend paint without enlarging the layout box or adding offset silhouettes. */
-    box-shadow: 0 0 0 var(--zao-depth-lift) var(--button-side);
-    /* One continuous side joins the moving face to the fixed seat at every pose. */
-    clip-path: polygon(
-      var(--button-x) var(--button-y),
-      calc(100% + var(--button-x)) var(--button-y),
-      calc(100% + var(--button-x)) calc(100% + var(--button-y)),
-      calc(100% - var(--zao-depth-axis-x) * var(--zao-depth-contact))
-        calc(100% - var(--zao-depth-axis-y) * var(--zao-depth-contact)),
-      calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-        calc(100% - var(--zao-depth-axis-y) * var(--zao-depth-contact)),
-      calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-        calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact))
-    );
-    transition:
-      clip-path var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
-      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
-      box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
-    content: '';
   }
 
   & > [data-zao-slot='face'] {
@@ -512,20 +796,28 @@
     pointer-events: none;
     border-radius: inherit;
     background: var(--button-face-fill);
+    /* 卷杀: the leading corner is bevelled; older engines keep it square. */
+    @supports (corner-shape: bevel) {
+      border-top-right-radius: var(--zao-radius-facet);
+      corner-shape: bevel;
+    }
     color: var(--button-ink);
     box-shadow: inset 0 0 0 1px var(--button-edge);
-    transform: translate(var(--button-x), var(--button-y));
+    transform: translate(
+      calc(var(--zao-depth-axis-x) * var(--zao-face-offset)),
+      calc(var(--zao-depth-axis-y) * var(--zao-face-offset))
+    );
     transition:
       background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
-      box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
-      transform var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+      box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
   }
 
+  /* Unavailable actions sit flat on their base: no planes, a quiet well-colored face. */
   &:disabled {
+    --zao-plane-rest: 0px;
     --button-fill: var(--zao-color-bg-sunken);
     --button-ink: var(--zao-color-fg-disabled);
     --button-edge: transparent;
-    --button-side: transparent;
 
     &:is([data-zao-variant='secondary'], [data-zao-variant='danger']) {
       --button-edge: var(--zao-color-border-subtle);
@@ -538,47 +830,66 @@
 
   @media (hover: hover) and (pointer: fine) {
     &:enabled:not([data-disabled]):hover {
-      --button-x: calc(var(--zao-depth-axis-x) * var(--zao-depth-lift));
-      --button-y: calc(var(--zao-depth-axis-y) * var(--zao-depth-lift));
+      --zao-face-offset: var(--zao-depth-lift);
 
       &[data-zao-variant='quiet'] {
+        --zao-plane-rest: var(--zao-depth-rest-control);
         --button-face-fill: var(--button-hover-fill);
-        --button-side: light-dark(var(--zao-construction-side), var(--zao-color-border-subtle));
+        --button-edge: var(--zao-color-border-subtle);
       }
     }
 
     /* Releasing or dragging outside lets native activation and hover decide the next pose. */
     &:enabled:not([data-disabled]):active:hover {
-      --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
-      --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
+      --button-spatial-duration: var(--zao-motion-duration-seat);
+      --button-spatial-easing: var(--zao-motion-easing-seat);
+      --zao-face-offset: calc(-1 * var(--zao-plane-rest));
       --button-face-fill: var(--button-pressed-fill);
     }
   }
 
   @media (hover: none), (pointer: coarse) {
     &:enabled:not([data-disabled]):active {
-      --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
-      --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
+      --button-spatial-duration: var(--zao-motion-duration-seat);
+      --button-spatial-easing: var(--zao-motion-easing-seat);
+      --zao-face-offset: calc(-1 * var(--zao-plane-rest));
       --button-face-fill: var(--button-pressed-fill);
     }
   }
 
   &:enabled:not([data-disabled])[data-zao-pressed] {
-    --button-x: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact));
-    --button-y: calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
+    --button-spatial-duration: var(--zao-motion-duration-seat);
+    --button-spatial-easing: var(--zao-motion-easing-seat);
+    --zao-face-offset: calc(-1 * var(--zao-plane-rest));
     --button-face-fill: var(--button-pressed-fill);
   }
 
+  /* A quiet action pressed without a hover (keyboard, touch) takes its depth to seat. */
+  &[data-zao-variant='quiet']:enabled:not([data-disabled])[data-zao-pressed] {
+    --zao-plane-rest: var(--zao-depth-rest-control);
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    &[data-zao-variant='quiet']:enabled:not([data-disabled]):active {
+      --zao-plane-rest: var(--zao-depth-rest-control);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    /* The fixed seat supplies the contact edge when spatial motion is disabled. */
-    &::after {
-      display: none;
-      transition: none;
+    /* No spatial travel: the face stays at rest above its planes; fill carries feedback. */
+    transition: none;
+
+    &,
+    &:enabled:not([data-disabled]):hover,
+    &:enabled:not([data-disabled]):active,
+    &:enabled:not([data-disabled]):active:hover,
+    &:enabled:not([data-disabled])[data-zao-pressed] {
+      --zao-face-offset: 0px;
     }
 
     & > [data-zao-slot='face'] {
-      transition: none;
       transform: none;
+      transition: none;
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -590,6 +901,12 @@
           --button-face-fill: color-mix(in srgb, var(--button-fill), var(--button-hover-fill));
         }
       }
+    }
+  }
+
+  @media (forced-colors: active) {
+    & > [data-zao-slot='face'] {
+      transform: none;
     }
   }
 }
@@ -617,6 +934,7 @@
 /* Uncover one full-size plane from its anchor; labels and selection targets stay fixed. */
 @utility menu-construction {
   --zao-construction-face: var(--zao-material-overlay-fill);
+  isolation: isolate;
   --zao-menu-reveal-progress: 1;
   --menu-reveal-outset: calc(-1 * var(--zao-space-1));
   --menu-reveal-near: calc(-1 * var(--zao-menu-reveal-progress) * var(--zao-space-1));
@@ -630,9 +948,11 @@
   max-height: var(--available-height);
   &[data-zao-slot='popup'] {
     border-color: var(--zao-color-border-subtle);
-    box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--zao-construction-side);
+    /* The banded planes replace the material's drawn contact (construction-planes). */
+    box-shadow: none;
   }
+  --zao-plane-rest: var(--zao-depth-rest-control);
+  --zao-face-offset: 0px;
   opacity: 1;
   transform: none;
   /* Leave room for the outside focus outline and the crisp contact edge at rest. */
@@ -640,8 +960,8 @@
     var(--menu-reveal-near) var(--menu-reveal-outset) var(--menu-reveal-far)
       var(--menu-reveal-outset)
   );
-  transition: --zao-menu-reveal-progress var(--zao-motion-duration-base)
-    var(--zao-motion-easing-standard);
+  transition: --zao-menu-reveal-progress var(--zao-motion-duration-reveal)
+    var(--zao-motion-easing-reveal);
 
   &[data-side='top'] {
     clip-path: inset(
@@ -666,7 +986,8 @@
     --zao-menu-reveal-progress: 0;
   }
   &[data-ending-style] {
-    transition-duration: var(--zao-motion-duration-fast);
+    transition-duration: var(--zao-motion-duration-reveal-exit);
+    transition-timing-function: var(--zao-motion-easing-exit);
   }
   &[data-instant] {
     transition: none;
@@ -779,6 +1100,34 @@
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     background-color: var(--zao-material-overlay-fill-solid);
   }
+}
+
+/*
+ * The seal (V1, Oct 11). Su has one color, used only for the primary action and the current
+ * selection. Ink 墨 is the default. data-zao-seal="azurite" makes an element and everything in
+ * it use azurite 青, including nested finish islands, by pointing the accent roles at the
+ * azurite seal tokens. data-zao-seal="ink" switches a nested island back.
+ */
+:is(:root, [data-zao-theme])[data-zao-seal='azurite'],
+[data-zao-seal='azurite'] [data-zao-theme]:not([data-zao-seal='ink']) {
+  --zao-color-accent-solid: var(--zao-color-seal-azurite-solid);
+  --zao-color-accent-solid-hover: var(--zao-color-seal-azurite-solid-hover);
+  --zao-color-accent-subtle: var(--zao-color-seal-azurite-subtle);
+  --zao-color-accent-subtle-hover: var(--zao-color-seal-azurite-subtle-hover);
+  --zao-color-accent-border: var(--zao-color-seal-azurite-border);
+  --zao-color-accent-text: var(--zao-color-seal-azurite-text);
+  --zao-color-fg-on-accent: var(--zao-color-seal-azurite-on);
+}
+
+:is(:root, [data-zao-theme])[data-zao-seal='ink'],
+[data-zao-seal='ink'] [data-zao-theme]:not([data-zao-seal='azurite']) {
+  --zao-color-accent-solid: var(--zao-color-seal-ink-solid);
+  --zao-color-accent-solid-hover: var(--zao-color-seal-ink-solid-hover);
+  --zao-color-accent-subtle: var(--zao-color-seal-ink-subtle);
+  --zao-color-accent-subtle-hover: var(--zao-color-seal-ink-subtle-hover);
+  --zao-color-accent-border: var(--zao-color-seal-ink-border);
+  --zao-color-accent-text: var(--zao-color-seal-ink-text);
+  --zao-color-fg-on-accent: var(--zao-color-seal-ink-on);
 }
 
 @layer base {

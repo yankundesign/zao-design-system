@@ -14,3 +14,9 @@ export type Mode = Context['mode'];
 
 /** CSS custom property for a token ID, e.g. color.bg.canvas → --zao-color-bg-canvas */
 export const cssVar = (id: string) => `--zao-${id.replaceAll('.', '-')}`;
+
+/** The exact faceted linear() curve for a generated 举折 easing token, if it has one. */
+export function foldCurve(token: { $extensions?: Record<string, unknown> }): string | undefined {
+  const motion = token.$extensions?.['dev.zao.motion'] as { linear?: string } | undefined;
+  return motion?.linear;
+}

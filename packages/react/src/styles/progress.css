@@ -11,8 +11,6 @@
     block-size: var(--zao-space-2);
     border-radius: var(--zao-radius-none);
     background: var(--zao-color-bg-sunken);
-    box-shadow: 0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
-      var(--zao-color-border-subtle);
   }
 
   /* Paint the frame over the track, so it never changes the quantitative span. */
@@ -22,8 +20,21 @@
     z-index: 1;
     inset: 0;
     border: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
-    box-shadow: inset 0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
-      var(--zao-color-border-subtle);
+    /* A recessed track: stepped walls on the edges facing away from the viewer. */
+    --zao-well-face: var(--zao-color-bg-sunken);
+    box-shadow:
+      inset calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+        calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+        light-dark(
+          color-mix(in oklch, var(--zao-well-face), black 20%),
+          color-mix(in oklch, var(--zao-well-face), black 60%)
+        ),
+      inset calc(-2 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+        calc(-2 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+        light-dark(
+          color-mix(in oklch, var(--zao-well-face), black 10%),
+          color-mix(in oklch, var(--zao-well-face), black 30%)
+        );
     pointer-events: none;
   }
 
@@ -33,10 +44,11 @@
     inset-inline-start: 0;
     overflow: hidden;
     block-size: 100%;
-    background: var(--zao-color-accent-solid);
+    /* A reading is data, so it keeps ink whichever seal the island uses (finish plan rule 3). */
+    background: var(--zao-color-seal-ink-solid);
     box-shadow: inset 0 calc(var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
-      var(--zao-color-accent-border);
-    transition: width var(--zao-motion-duration-base) var(--zao-motion-easing-standard);
+      var(--zao-color-seal-ink-border);
+    transition: width var(--zao-motion-duration-slide) var(--zao-motion-easing-slide);
   }
 
   /* The end edge stays inside the measured face, including very small values. */
@@ -46,7 +58,7 @@
     inset-block: 0;
     inset-inline-end: 0;
     inline-size: var(--zao-depth-contact);
-    background: var(--zao-color-accent-border);
+    background: var(--zao-color-seal-ink-border);
     pointer-events: none;
   }
 

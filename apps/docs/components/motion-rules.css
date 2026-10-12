@@ -1,0 +1,154 @@
+/* Foundations → Motion: the fold, the race and the grades. Docs-local. */
+.docs-fold-ground,
+.docs-fold-axis,
+.docs-fold-chord,
+.docs-fold-drop,
+.docs-fold-grid {
+  fill: none;
+  stroke-width: 1;
+}
+
+.docs-fold-ground {
+  stroke: var(--zao-color-border-default);
+}
+
+.docs-fold-axis {
+  stroke: var(--zao-color-border-default);
+  stroke-dasharray: 3 4;
+}
+
+.docs-fold-chord {
+  stroke: var(--zao-color-border-default);
+  stroke-dasharray: 5 4;
+}
+
+.docs-fold-chord-minor {
+  stroke-dasharray: 2 4;
+}
+
+.docs-fold-drop {
+  stroke: var(--zao-color-fg-default);
+  stroke-width: 2;
+}
+
+.docs-fold-profile {
+  fill: none;
+  stroke: var(--zao-color-fg-default);
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+}
+
+.docs-fold-purlin {
+  fill: var(--zao-color-bg-surface);
+  stroke: var(--zao-color-fg-default);
+  stroke-width: 1.25;
+}
+
+.docs-fold-label {
+  fill: var(--zao-color-fg-muted);
+  font: var(--zao-type-caption-font-weight) 11px / 1 var(--zao-font-family-mono);
+}
+
+.docs-fold-grid {
+  stroke: var(--zao-color-border-subtle);
+}
+
+.docs-fold-grid-minor {
+  stroke-dasharray: 2 3;
+}
+
+.docs-fold-enter,
+.docs-fold-exit,
+.docs-fold-standard {
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.docs-fold-enter {
+  stroke: var(--zao-color-fg-default);
+  stroke-width: 2.4;
+}
+
+.docs-fold-exit {
+  stroke: var(--zao-color-fg-muted);
+  stroke-width: 1.5;
+}
+
+.docs-fold-standard {
+  stroke: var(--zao-color-border-default);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.docs-fold-key {
+  display: inline-block;
+  inline-size: var(--zao-space-5);
+  block-size: 0;
+  margin-inline-end: var(--zao-space-1);
+  vertical-align: middle;
+  border-block-start: 2px solid var(--zao-color-fg-default);
+}
+
+.docs-fold-key-exit {
+  border-block-start: 1.5px solid var(--zao-color-fg-muted);
+}
+
+.docs-fold-key-standard {
+  border-block-start: 1.5px dashed var(--zao-color-border-default);
+}
+
+.docs-race-lane {
+  position: relative;
+  block-size: var(--zao-space-10);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-default);
+  background: repeating-linear-gradient(
+      to right,
+      var(--zao-color-border-subtle) 0 var(--zao-stroke-hairline),
+      transparent var(--zao-stroke-hairline) 10%
+    )
+    bottom / 100% var(--zao-space-1-5) no-repeat;
+}
+
+.docs-race-puck {
+  position: absolute;
+  inset-block-end: var(--zao-space-2);
+  inset-inline-start: 0;
+  inline-size: var(--zao-space-6);
+  block-size: var(--zao-space-6);
+  background: var(--zao-color-fg-default);
+  transition: inset-inline-start var(--docs-race-duration) var(--docs-race-curve);
+}
+
+.docs-race-puck-standard {
+  background: var(--zao-color-border-default);
+}
+
+.docs-race[data-run='true'] .docs-race-puck {
+  inset-inline-start: calc(100% - var(--zao-space-6));
+}
+
+.docs-ladder-part {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--docs-ladder-duration) linear,
+    transform var(--docs-ladder-duration) var(--zao-motion-easing-fold-enter),
+    --zao-plane-rest var(--docs-ladder-duration) var(--zao-motion-easing-fold-enter);
+}
+
+.docs-ladder[data-up='false'] .docs-ladder-part {
+  --zao-plane-rest: 0px;
+  opacity: 0;
+  transform: translateY(var(--zao-space-5));
+  transition:
+    opacity var(--docs-ladder-duration) linear,
+    transform var(--docs-ladder-duration) var(--zao-motion-easing-fold-exit),
+    --zao-plane-rest var(--docs-ladder-duration) var(--zao-motion-easing-fold-exit);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-race-puck,
+  .docs-ladder-part {
+    transition: none;
+  }
+}

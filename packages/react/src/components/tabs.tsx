@@ -144,14 +144,18 @@ const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(
         activateOnFocus={activateOnFocus}
         data-zao-slot="list"
         data-zao-variant={variant}
-        className={['tabs-list', className].filter(Boolean).join(' ')}
+        className={['tabs-list', variant === 'secondary' ? 'construction-well' : null, className]
+          .filter(Boolean)
+          .join(' ')}
       >
         {variant === 'primary' && <PrimaryRail />}
         {children}
         <BaseTabs.Indicator
           data-zao-slot="indicator"
           className={
-            variant === 'secondary' ? 'tabs-indicator construction-shading' : 'tabs-indicator'
+            variant === 'secondary'
+              ? 'tabs-indicator construction-shading construction-planes'
+              : 'tabs-indicator'
           }
         >
           {variant === 'primary' && <span data-zao-slot="selection-line" />}
@@ -273,7 +277,7 @@ const Tab = forwardRef<HTMLElement, TabsTabProps>(function TabsTab(
         onLostPointerCapture?.(event);
       }}
       className={[
-        'tabs-tab inline-flex h-8 min-w-7 shrink-0 items-center gap-2 whitespace-nowrap rounded-none px-3 type-label trim-label font-medium',
+        'tabs-tab inline-flex h-control min-w-7 shrink-0 items-center gap-2 whitespace-nowrap rounded-none px-3 type-label trim-label font-medium',
         'text-muted outline-focus transition-colors duration-fast hover:text-default data-active:text-default',
         'data-disabled:cursor-not-allowed data-disabled:text-disabled',
         className,

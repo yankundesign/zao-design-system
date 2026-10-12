@@ -2,6 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { expectFocusBrackets } from './focus-mark';
+import { seat } from './construction-values';
 
 const actionLabels = ['Add workspace', 'Open settings', 'Copy workspace ID'] as const;
 
@@ -108,23 +110,34 @@ for (const study of [false, true]) {
       await settle(specimen);
       const targetBefore = await bounds(button);
       const faceBefore = await bounds(face);
+      const icon = face.locator('svg');
+      const iconBefore = await bounds(icon);
       const neighborBefore = await bounds(neighbor);
       await page.mouse.move(targetBefore.x + 1, targetBefore.y + targetBefore.height - 1);
       await settle(specimen);
       const hovered = await bounds(face);
       expect(hovered.x - faceBefore.x).toBeCloseTo(2, 2);
       expect(hovered.y - faceBefore.y).toBeCloseTo(-2, 2);
+      const hoveredIcon = await bounds(icon);
+      expect(hoveredIcon.x - iconBefore.x).toBeCloseTo(2, 2);
+      expect(hoveredIcon.y - iconBefore.y).toBeCloseTo(-2, 2);
+      expect(hoveredIcon.width).toBe(iconBefore.width);
+      expect(hoveredIcon.height).toBe(iconBefore.height);
       expect(await bounds(button)).toEqual(targetBefore);
       expect(await bounds(neighbor)).toEqual(neighborBefore);
       await page.mouse.down();
       await settle(specimen);
       const pressed = await bounds(face);
-      expect(pressed.x - faceBefore.x).toBeCloseTo(-1, 2);
-      expect(pressed.y - faceBefore.y).toBeCloseTo(1, 2);
+      expect(pressed.x - faceBefore.x).toBeCloseTo(-seat, 2);
+      expect(pressed.y - faceBefore.y).toBeCloseTo(seat, 2);
+      const pressedIcon = await bounds(icon);
+      expect(pressedIcon.x - iconBefore.x).toBeCloseTo(-seat, 2);
+      expect(pressedIcon.y - iconBefore.y).toBeCloseTo(seat, 2);
       expect(await bounds(button)).toEqual(targetBefore);
       await page.mouse.up();
       await settle(specimen);
       expect(await bounds(face)).toEqual(hovered);
+      expect(await bounds(icon)).toEqual(hoveredIcon);
     }
     await expect(specimen.getByText('Copied workspace ID.', { exact: true })).toBeVisible();
     await page.mouse.move(0, 0);
@@ -154,12 +167,7 @@ for (const study of [false, true]) {
     await page.keyboard.press('Tab');
     await expect(button).toBeFocused();
     await expect(tooltip).toBeVisible();
-    const outline = await button.evaluate((node) => {
-      const css = getComputedStyle(node);
-      return { style: css.outlineStyle, width: parseFloat(css.outlineWidth) };
-    });
-    expect(outline.style).not.toBe('none');
-    expect(outline.width).toBeGreaterThan(0);
+    await expectFocusBrackets(button);
     await page.keyboard.press('Escape');
     await expect(tooltip).toHaveCount(0);
     await expect(button).toBeFocused();
@@ -168,7 +176,7 @@ for (const study of [false, true]) {
     const faceBefore = await bounds(face);
     await page.keyboard.down('Space');
     await settle(specimen);
-    expect((await bounds(face)).x - faceBefore.x).toBeCloseTo(-1, 2);
+    expect((await bounds(face)).x - faceBefore.x).toBeCloseTo(-seat, 2);
     expect(await bounds(button)).toEqual(targetBefore);
     await expect(specimen.getByText('Opened settings.', { exact: true })).toHaveCount(0);
     await page.keyboard.up('Space');
@@ -228,7 +236,7 @@ for (const study of [false, true]) {
           type: 'touchStart',
           touchPoints: [{ x: targetBefore.x + 17, y: targetBefore.y + 17 }],
         });
-        await expect.poll(async () => (await bounds(face)).x - faceBefore.x).toBeCloseTo(-1, 2);
+        await expect.poll(async () => (await bounds(face)).x - faceBefore.x).toBeCloseTo(-seat, 2);
         expect(await bounds(button)).toEqual(targetBefore);
         await touch.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
         await expect.poll(() => bounds(face)).toEqual(faceBefore);

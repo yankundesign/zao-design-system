@@ -71,7 +71,7 @@ export default function ChatSpecimen() {
           </ul>
           <button
             type="button"
-            className="mt-4 h-8 rounded-action bg-accent px-3 type-label trim-label text-on-accent"
+            className="mt-4 h-control rounded-action bg-accent px-3 type-label trim-label text-on-accent"
           >
             Review 3 requests
           </button>
@@ -89,7 +89,7 @@ export default function ChatSpecimen() {
             setVisible(0);
             setStreaming(true);
           }}
-          className="h-8 self-start rounded-action border border-default bg-surface px-3 type-label trim-label disabled:text-disabled"
+          className="h-control self-start rounded-action border border-default bg-surface px-3 type-label trim-label disabled:text-disabled"
         >
           Generate response again
         </button>

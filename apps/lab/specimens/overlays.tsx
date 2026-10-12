@@ -39,7 +39,7 @@ export default function OverlaysSpecimen() {
               type="button"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen(!menuOpen)}
-              className="h-8 rounded-action border border-default bg-surface px-3 type-label trim-label"
+              className="h-control rounded-action border border-default bg-surface px-3 type-label trim-label"
             >
               Actions
             </button>
@@ -113,7 +113,7 @@ export default function OverlaysSpecimen() {
             <button
               type="button"
               onClick={() => setDialogOpen(true)}
-              className="mt-3 h-8 rounded-action bg-accent px-3 type-label trim-label text-on-accent"
+              className="mt-3 h-control rounded-action bg-accent px-3 type-label trim-label text-on-accent"
             >
               Open dialog
             </button>
@@ -137,14 +137,14 @@ export default function OverlaysSpecimen() {
                     setStatus('Exported activity');
                     setDialogOpen(false);
                   }}
-                  className="h-8 rounded-action bg-accent px-3 type-label trim-label text-on-accent"
+                  className="h-control rounded-action bg-accent px-3 type-label trim-label text-on-accent"
                 >
                   Export activity
                 </button>
                 <button
                   type="button"
                   onClick={() => setDialogOpen(false)}
-                  className="h-8 rounded-action border border-default bg-surface px-3 type-label trim-label"
+                  className="h-control rounded-action border border-default bg-surface px-3 type-label trim-label"
                 >
                   Cancel export
                 </button>

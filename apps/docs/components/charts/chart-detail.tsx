@@ -49,7 +49,7 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
       {
         part: 'Center square',
         detail:
-          'The one accent, in accent-solid. In a single-reading ring it belongs to the reading.',
+          'The one accent, in ink (fg-default). In a single-reading ring it belongs to the reading.',
       },
       {
         part: 'Region controls',
@@ -90,7 +90,7 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
         part: 'Needles',
         detail: '1.5px strokes from the baseline, with 6px square heads and values above them.',
       },
-      { part: 'Accent', detail: 'The lead bar’s head, in accent-solid.' },
+      { part: 'Accent', detail: 'The lead bar’s head, in ink.' },
       { part: 'Reference', detail: 'The dashed average, labeled with its value.' },
       ...frameSlots(
         'calls.by_region',
@@ -123,7 +123,7 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
       },
       { part: 'Trace', detail: 'A 1.5px fg-default line that breaks at missing readings.' },
       { part: 'Reference', detail: 'The previous period as a dashed fg-muted trace.' },
-      { part: 'Accent', detail: 'The latest sample, in accent-solid.' },
+      { part: 'Accent', detail: 'The latest sample, in ink.' },
       ...frameSlots('latency.p95', 'the sampling interval', 'time, value, previous value', 'ms'),
     ],
     accessibility:
@@ -144,7 +144,7 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
         detail:
           'Squares with a 2px gap and no borders, filled from a five-step neutral ramp (pending DV3).',
       },
-      { part: 'Current cell', detail: 'Accent corner brackets in accent-solid.' },
+      { part: 'Current cell', detail: 'Accent corner brackets in ink.' },
       { part: 'Unknown', detail: 'A 2px fg-muted dot where no data exists yet.' },
       { part: 'Legend', detail: 'The five steps with their lower bounds, and the no-data dot.' },
       ...frameSlots('events.by_hour', 'the period', 'day, hour, events', 'events'),
@@ -165,7 +165,7 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
       { part: 'Comb', detail: 'One 1px fg-default stroke per bin from a solid baseline.' },
       { part: 'Ruler', detail: 'Graduations every 5 minutes, labeled every 15.' },
       { part: 'Reference', detail: 'The dashed median, labeled with its value.' },
-      { part: 'Accent', detail: 'The latest observation’s bin, in accent-solid.' },
+      { part: 'Accent', detail: 'The latest observation’s bin, in ink.' },
       ...frameSlots('session.length', 'the bin width', 'bin range and count', 'sessions'),
     ],
     accessibility:
@@ -219,7 +219,7 @@ export async function ChartDetail({ chart }: { chart: ChartId }) {
           ))}
           <li>
             Follow the{' '}
-            <Link className="text-accent underline" href="/foundations/data-visualization">
+            <Link className="text-default underline" href="/foundations/data-visualization">
               data visualization guideline
             </Link>{' '}
             for the five rules every chart shares.

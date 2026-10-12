@@ -201,12 +201,16 @@ describe('promotion planner', () => {
   it('keeps theme typography composites aligned when a shared display size changes', () => {
     const output = plan(style({ 'type.display.size': 40 }), true);
     expect(output.unsupported).toEqual([]);
+    // Su carries Newsreader display and title composites since the Oct 11 finish plan (V7).
     expect(output.files.map((file) => file.path)).toEqual([
+      'packages/tokens/src/themes/su.tokens.json',
       'packages/tokens/src/themes/yu.tokens.json',
       'packages/tokens/src/base/type.tokens.json',
     ]);
-    const yu = JSON.parse(output.files[0]!.after);
-    const base = JSON.parse(output.files[1]!.after);
+    const su = JSON.parse(output.files[0]!.after);
+    const yu = JSON.parse(output.files[1]!.after);
+    const base = JSON.parse(output.files[2]!.after);
+    expect(su.type.display.$value.fontSize.value).toBe(40);
     expect(yu.type.display.$value.fontSize.value).toBe(40);
     expect(base.type.display.$value.fontSize.value).toBe(40);
   });

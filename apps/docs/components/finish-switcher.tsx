@@ -1,12 +1,44 @@
 'use client';
 
 import { Tabs } from '@zao/react';
-import { useFinish, type ModeSetting } from './use-finish';
+import { useFinish, type ModeSetting, type SealSetting } from './use-finish';
 
 export function FinishSwitcher() {
-  const { setting, setMode } = useFinish();
+  const { setting, setMode, seal, setSeal } = useFinish();
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-3">
+      <Tabs.Root
+        className="shrink-0 [&>.tabs-viewport]:max-w-none"
+        value={seal}
+        onValueChange={(value) => {
+          if (value === 'ink' || value === 'azurite') setSeal(value satisfies SealSetting);
+        }}
+      >
+        <Tabs.List variant="secondary" role="radiogroup" aria-label="Seal">
+          <Tabs.Tab
+            value="ink"
+            role="radio"
+            aria-checked={seal === 'ink'}
+            aria-selected={undefined}
+          >
+            <span aria-hidden="true" className="font-display">
+              墨
+            </span>
+            Ink
+          </Tabs.Tab>
+          <Tabs.Tab
+            value="azurite"
+            role="radio"
+            aria-checked={seal === 'azurite'}
+            aria-selected={undefined}
+          >
+            <span aria-hidden="true" className="font-display">
+              青
+            </span>
+            Azurite
+          </Tabs.Tab>
+        </Tabs.List>
+      </Tabs.Root>
       <Tabs.Root
         className="shrink-0 [&>.tabs-viewport]:max-w-none"
         value={setting}

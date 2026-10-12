@@ -25,7 +25,11 @@ WP 5.1 can start at once. WP 5.2–5.4 follow it. WP 5.5 should wait for Phases 
 
 ## WP 5.1: Component specs
 
-**Gate:** ⛔ D14. Write the Button spec and its template, then stop.
+**Gate: D14 passed Oct 11.** Yankun accepted the Button pilot's template with “the template works.” Continue WP 5.1 using that structure; D15 still gates the subsequent agent layer.
+
+**Reference specs complete Oct 11; WP 5.1 integrations remain.** The [catalog](../../components/README.md) covers all 16 current UI exports, including the separately exported ComposerContextChip; compound members are covered by their parent spec. Every spec uses the nine required front-matter fields and six sections, names existing token IDs and authored hooks, and identifies its actual approval status. Exact BRIEF paragraphs retain their wording; later decisions and current finish supersession retain their actual source attribution. Partial approvals do not promote the complete field, Table, Progress, or Message study contract. Source review distinguishes native behavior from paint, host responsibilities from component behavior, and published behavior from local studies. Independent review corrected Tabs' initially disabled explicit-default selection exception. Source approvals remain in place for the separate migration; concise component-page source integration, automated coverage guards, and agent runtime generation have not begun. Tests were not run for this documentation-only pass. [D14 decision draft](decision-drafts/component-spec-template.md).
+
+**Website presentation, Yankun's clarification Oct 11.** Keep the complete specs as reference and agent input. The website uses a concise, curated view: a one-sentence introduction from `intent`, the existing live specimen, a few relevant usage notes, and a short copyable example where useful. Preserve existing Anatomy figures and interactive studies. Do not render the six full spec sections, metadata, exhaustive token/part inventories, source audit notes, or approval history as the component page. Detailed reference can remain in the repository or be reached through an unobtrusive reference link when needed. This clarifies presentation density; it changes no component behavior or template field.
 
 **Build**
 
@@ -36,13 +40,14 @@ WP 5.1 can start at once. WP 5.2–5.4 follow it. WP 5.5 should wait for Phases 
 2. Stop for Yankun's review of the template.
 3. After the gate, write a spec for every exported component. Mark each one's real status; several are "requested, under review", not approved.
 4. Replace the copied approval paragraphs in `BRIEF.md`, `PLAN.md`, `AGENTS.md`, `docs/style-studies.md` and the study's `design.md` and `styleguide.md` with one link each to the spec. Do this in a separate PR so the diff is reviewable.
-5. Render the docs component pages from the specs so the page and the spec cannot disagree.
+5. Derive the concise component-page introduction and selected usage guidance from the specs, retaining the working previews and useful examples. Keep visible wording tied to its source fields; do not render the complete spec body. Full specs remain available to the agent guidance/reference pipeline.
 
 **Acceptance**
 
 - A test fails when an exported component has no spec, or a spec names a part, motion or token that does not exist.
 - Each approval text exists in exactly one file.
 - `AGENTS.md` keeps its rules and repo map and loses the per-component paragraphs.
+- Component pages remain concise. Visible summaries agree with their source spec fields; the full contract and approval history stay in the reference documents.
 
 ## WP 5.2: Manifest
 

@@ -19,7 +19,7 @@ export type TextFieldProps = Omit<ComponentProps<'input'>, 'children' | 'ref' | 
 
 const heightClasses: Record<TextFieldSize, string> = {
   small: 'h-7',
-  default: 'h-button',
+  default: 'h-control',
   large: 'h-10',
 };
 
@@ -54,7 +54,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         data-zao-invalid={invalid ? '' : undefined}
         data-zao-disabled={disabled ? '' : undefined}
         className={[
-          'w-full rounded-control border bg-canvas px-2 type-body text-default outline-focus placeholder:text-muted',
+          'construction-well field-well w-full rounded-control border bg-canvas px-2 type-body text-default outline-focus placeholder:text-muted',
           'transition-colors duration-fast disabled:cursor-not-allowed disabled:bg-field-disabled disabled:text-disabled',
           'disabled:placeholder:text-disabled data-invalid:border-field-invalid',
           invalid ? 'border-field-invalid' : 'border-field',

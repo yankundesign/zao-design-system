@@ -74,7 +74,7 @@ export function Menu({ trigger, items, disabled, size = 'default', className }: 
           >
             <BaseMenu.Popup
               data-zao-slot="popup"
-              className="construction-shading material-overlay menu-construction text-default outline-focus"
+              className="construction-shading material-overlay popup-construction construction-planes menu-construction text-default outline-focus"
             >
               <div data-zao-slot="items" className="menu-content-construction overflow-y-auto p-1">
                 {items.map((item, index) =>
@@ -92,7 +92,7 @@ export function Menu({ trigger, items, disabled, size = 'default', className }: 
                       data-zao-slot="item"
                       data-zao-item-index={index}
                       data-zao-exit-highlighted={exitHighlight === index ? '' : undefined}
-                      className="menu-item-construction flex min-h-8 cursor-default items-center rounded-none px-3 py-1.5 type-body text-default outline-focus data-disabled:text-muted"
+                      className="menu-item-construction flex min-h-control cursor-default items-center rounded-none px-3 py-1.5 type-body text-default outline-focus data-disabled:text-muted"
                     >
                       {item.label}
                     </BaseMenu.Item>

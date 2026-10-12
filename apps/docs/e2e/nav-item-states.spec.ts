@@ -52,7 +52,8 @@ async function semantic(link: Locator) {
       muted: color('--zao-color-fg-muted'),
       hover: background('--zao-color-bg-hover'),
       active: background('--zao-color-bg-active'),
-      edge: background('--zao-color-fg-default'),
+      // The current page is the nav's selection, so its edge carries the seal (finish plan V1).
+      edge: background('--zao-color-accent-solid'),
       contact: background('--zao-color-border-subtle'),
       medium: getComputedStyle(node).getPropertyValue('--zao-font-weight-medium').trim(),
     };

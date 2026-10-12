@@ -6,7 +6,7 @@
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { defineConfig, parse, type TokenNormalized } from '@terrazzo/parser';
-import { contexts, cssVar } from '../contexts.ts';
+import { contexts, cssVar, foldCurve } from '../contexts.ts';
 
 const root = new URL('../', import.meta.url);
 const resolverUrl = new URL('src/zao.resolver.json', root);
@@ -43,7 +43,7 @@ export function cssValue(token: TokenNormalized): string {
     case 'fontFamily':
       return (v as string[]).map((f) => (/\s/.test(f) ? `"${f}"` : f)).join(', ');
     case 'cubicBezier':
-      return `cubic-bezier(${(v as number[]).join(', ')})`;
+      return foldCurve(token) ?? `cubic-bezier(${(v as number[]).join(', ')})`;
     case 'shadow':
       return (v as Array<Record<string, unknown>>)
         .map((s) =>
@@ -62,6 +62,17 @@ export function cssValue(token: TokenNormalized): string {
     default:
       return typeof v === 'object' ? JSON.stringify(v) : String(v);
   }
+}
+
+/** Follow an alias to the token that carries the value and its extensions. */
+function aliasTarget(token: TokenNormalized, tokens: Record<string, TokenNormalized>) {
+  let current = token;
+  for (let hops = 0; current.aliasOf && hops < 16; hops++) {
+    const next = tokens[current.aliasOf];
+    if (!next) break;
+    current = next;
+  }
+  return current;
 }
 
 async function main() {
@@ -83,7 +94,7 @@ async function main() {
           {
             type: t.$type,
             cssVar: cssVar(t.id),
-            value: t.$type === 'typography' ? t.$value : cssValue(t),
+            value: t.$type === 'typography' ? t.$value : cssValue(aliasTarget(t, tokens)),
             ...(t.aliasOf ? { aliasOf: t.aliasOf } : {}),
             ...(t.$description ? { description: t.$description } : {}),
           },

@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp } from 'iconoir-react';
+import { ArrowDown, ArrowUp, Check, Play, Prohibition, WarningTriangle } from 'iconoir-react';
 import { Button, Menu, Table } from '@zao/react';
 
-const requests = [
+/** Shared sample records: the Table page and the landing showcase read the same requests. */
+export const requests = [
   {
     id: 'REQ-01Il10',
     name: 'Access review',
@@ -49,12 +50,38 @@ const requests = [
   },
 ] as const;
 
-type RequestRecord = (typeof requests)[number];
+export type RequestRecord = (typeof requests)[number];
 type SortColumn = 'request' | 'items';
 type SortDirection = 'ascending' | 'descending';
 type Sort = { column: SortColumn; direction: SortDirection };
 
 const formatItems = (value: number) => value.toLocaleString('en-US');
+
+const statusGlyphs = {
+  Ready: Check,
+  Running: Play,
+  'Needs review': WarningTriangle,
+  Blocked: Prohibition,
+} as const;
+
+/** A distinct monochrome shape supplements each written status. */
+export function RequestStatus({ status }: { status: RequestRecord['status'] }) {
+  const Glyph = statusGlyphs[status];
+  return (
+    <span
+      data-zao-slot="status"
+      className="inline-flex items-center gap-1 type-caption text-default"
+    >
+      <Glyph
+        data-zao-status-glyph={status}
+        className="size-4 shrink-0"
+        aria-hidden="true"
+        focusable="false"
+      />
+      <span>{status}</span>
+    </span>
+  );
+}
 
 /** Read, sort, and select records on one steady content plane. */
 export function TableSpecimen() {
@@ -238,7 +265,7 @@ export function TableSpecimen() {
                   {formatItems(request.items)}
                 </Table.Cell>
                 <Table.Cell className="whitespace-nowrap">
-                  <span className="type-caption">{request.status}</span>
+                  <RequestStatus status={request.status} />
                 </Table.Cell>
               </Table.Row>
             );

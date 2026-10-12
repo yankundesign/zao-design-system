@@ -1,0 +1,159 @@
+{
+  "$description": "Generated from motion.config.ts and src/base/grade.tokens.json by scripts/generate-motion.ts. Do not edit by hand; change the inputs and run `pnpm motion`.",
+  "motion": {
+    "grade-unit": {
+      "$type": "duration",
+      "$value": {
+        "value": 30,
+        "unit": "ms"
+      },
+      "$description": "Milliseconds per 寸 of 材 height. A grade’s duration is its height (grade.N) times this unit."
+    },
+    "duration": {
+      "$type": "duration",
+      "grade": {
+        "1": {
+          "$value": {
+            "value": 270,
+            "unit": "ms"
+          },
+          "$description": "Grade 1: 9 寸 × 30ms. Parts of this grade move over this duration."
+        },
+        "2": {
+          "$value": {
+            "value": 247.5,
+            "unit": "ms"
+          },
+          "$description": "Grade 2: 8.25 寸 × 30ms. Parts of this grade move over this duration."
+        },
+        "3": {
+          "$value": {
+            "value": 225,
+            "unit": "ms"
+          },
+          "$description": "Grade 3: 7.5 寸 × 30ms. Parts of this grade move over this duration."
+        },
+        "4": {
+          "$value": {
+            "value": 216,
+            "unit": "ms"
+          },
+          "$description": "Grade 4: 7.2 寸 × 30ms. Parts of this grade move over this duration."
+        },
+        "5": {
+          "$value": {
+            "value": 198,
+            "unit": "ms"
+          },
+          "$description": "Grade 5: 6.6 寸 × 30ms. Parts of this grade move over this duration."
+        },
+        "6": {
+          "$value": {
+            "value": 180,
+            "unit": "ms"
+          },
+          "$description": "Grade 6: 6 寸 × 30ms. Parts of this grade move over this duration."
+        },
+        "7": {
+          "$value": {
+            "value": 157.5,
+            "unit": "ms"
+          },
+          "$description": "Grade 7: 5.25 寸 × 30ms. Parts of this grade move over this duration."
+        },
+        "8": {
+          "$value": {
+            "value": 135,
+            "unit": "ms"
+          },
+          "$description": "Grade 8: 4.5 寸 × 30ms. Parts of this grade move over this duration."
+        }
+      }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "fold-enter": {
+        "$value": [
+          0.191,
+          0.276,
+          0.306,
+          0.537
+        ],
+        "$description": "举折 enter curve: the 10-rafter roof profile turned 180°. It starts quickly and settles without overshoot. CSS uses the exact faceted linear() curve; the cubic-bezier value is a smoothed fit for tools that need one.",
+        "$extensions": {
+          "dev.zao.motion": {
+            "linear": "linear(0, 0.3 20%, 0.525 40%, 0.7083 60%, 0.8667 80%, 1)",
+            "rafters": 10,
+            "points": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 0.2,
+                "y": 0.3
+              },
+              {
+                "x": 0.4,
+                "y": 0.525
+              },
+              {
+                "x": 0.6,
+                "y": 0.7083
+              },
+              {
+                "x": 0.8,
+                "y": 0.8667
+              },
+              {
+                "x": 1,
+                "y": 1
+              }
+            ]
+          }
+        }
+      },
+      "fold-exit": {
+        "$value": [
+          0.673,
+          0.452,
+          0.784,
+          0.682
+        ],
+        "$description": "举折 exit curve: the 10-rafter roof profile as built. It starts slowly and accelerates away. CSS uses the exact faceted linear() curve; the cubic-bezier value is a smoothed fit.",
+        "$extensions": {
+          "dev.zao.motion": {
+            "linear": "linear(0, 0.1333 20%, 0.2917 40%, 0.475 60%, 0.7 80%, 1)",
+            "rafters": 10,
+            "points": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 0.2,
+                "y": 0.1333
+              },
+              {
+                "x": 0.4,
+                "y": 0.2917
+              },
+              {
+                "x": 0.6,
+                "y": 0.475
+              },
+              {
+                "x": 0.8,
+                "y": 0.7
+              },
+              {
+                "x": 1,
+                "y": 1
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

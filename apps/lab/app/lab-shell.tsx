@@ -614,7 +614,7 @@ export function LabShell({
               ).map(([id, label]) => (
                 <button
                   aria-current={section === id ? 'page' : undefined}
-                  className={`min-h-8 rounded-action px-2 text-left type-label trim-label ${section === id ? 'bg-hover text-default' : 'text-muted hover:bg-hover'}`}
+                  className={`min-h-control rounded-action px-2 text-left type-label trim-label ${section === id ? 'bg-hover text-default' : 'text-muted hover:bg-hover'}`}
                   key={id}
                   onClick={() => setSection(id)}
                   type="button"
@@ -632,7 +632,7 @@ export function LabShell({
                 id="lab-style"
                 value={selectedStyleId}
                 onChange={(event) => selectStyle(event.target.value)}
-                className="h-8 w-full rounded-control border border-default bg-surface px-2 type-body text-default outline-focus"
+                className="h-control w-full rounded-control border border-default bg-surface px-2 type-body text-default outline-focus"
               >
                 {styleOptions.map((style) => (
                   <option key={style.id} value={style.id}>
@@ -653,7 +653,7 @@ export function LabShell({
                 id="lab-specimen"
                 value={specimenId}
                 onChange={(event) => setSpecimenId(event.target.value)}
-                className="h-8 w-full rounded-control border border-default bg-surface px-2 type-body text-default outline-focus"
+                className="h-control w-full rounded-control border border-default bg-surface px-2 type-body text-default outline-focus"
               >
                 {specimens.map((specimen) => (
                   <option key={specimen.id} value={specimen.id}>
@@ -693,7 +693,7 @@ export function LabShell({
                 id="lab-context"
                 value={contextId}
                 onChange={(event) => setContextId(event.target.value as ContextId)}
-                className="h-8 w-full rounded-control border border-default bg-surface px-2 type-body text-default outline-focus"
+                className="h-control w-full rounded-control border border-default bg-surface px-2 type-body text-default outline-focus"
               >
                 {contexts.map((context) => (
                   <option key={context.id} value={context.id}>

@@ -104,7 +104,7 @@ export function ComponentPreview({
             className={
               ['table', 'composer', 'conversation'].includes(component)
                 ? 'study min-w-0 bg-canvas text-default'
-                : 'study min-w-0 rounded-surface border border-subtle bg-canvas p-5 text-default'
+                : `study min-w-0 rounded-surface border border-subtle bg-canvas p-5 text-default${component === 'menu' ? ' docs-menu-preview' : ''}`
             }
           >
             {component === 'card' ? <CardLayoutPreview /> : <Specimen />}

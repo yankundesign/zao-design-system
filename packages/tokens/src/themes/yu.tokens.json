@@ -81,19 +81,57 @@
         "unit": "px"
       },
       "$description": "Menus, popovers, dialogs, toasts."
+    },
+    "facet": {
+      "$value": {
+        "value": 5,
+        "unit": "px"
+      },
+      "$description": "Completeness entry matching Su; not Yu design work."
     }
   },
   "depth": {
     "$description": "Completeness entries copied from Su for shared token IDs, not Yu design work. Paint only; never use depth for layout dimensions, spacing, native hit areas or focus outlines.",
     "contact": {
       "$type": "dimension",
-      "$value": { "value": 1, "unit": "px" },
+      "$value": {
+        "value": 1,
+        "unit": "px"
+      },
       "$description": "Completeness entry copied from Su: painted contact distance that grounds a face on its fixed base. Independent of stroke width; never changes layout."
     },
     "lift": {
       "$type": "dimension",
-      "$value": { "value": 2, "unit": "px" },
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
       "$description": "Completeness entry copied from Su: painted face travel for approved lift interactions. Native hit areas, focus outlines and neighboring layout stay fixed."
+    },
+    "rest": {
+      "$type": "dimension",
+      "$description": "Completeness entry matching Su; not Yu design work.",
+      "small": {
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$description": "Small faces inside a track: the Switch face and the secondary Tabs face."
+      },
+      "control": {
+        "$value": {
+          "value": 3,
+          "unit": "px"
+        },
+        "$description": "Controls and floating popups: Button, IconButton, Menu, Select and Combobox."
+      },
+      "surface": {
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        },
+        "$description": "Content surfaces: Card and Dialog. A press inside a Card seats it by one contact step."
+      }
     },
     "axis": {
       "$type": "number",
@@ -210,8 +248,31 @@
         },
         "$description": "Overlays opening and closing."
       },
+      "lift": {
+        "$value": "{motion.duration.fast}",
+        "$description": "Completeness entry for the deferred Yu finish: lift role aliases its existing fast timing, preserving existing values. Reduced motion removes spatial travel."
+      },
+      "seat": {
+        "$value": "{motion.duration.fast}",
+        "$description": "Completeness entry for the deferred Yu finish: seat role aliases its existing fast timing, preserving existing values and reduced-motion state feedback."
+      },
+      "slide": {
+        "$value": "{motion.duration.base}",
+        "$description": "Completeness entry for the deferred Yu finish: slide role aliases its existing base timing. Reduced motion shows the destination immediately."
+      },
+      "reveal": {
+        "$value": "{motion.duration.base}",
+        "$description": "Completeness entry for the deferred Yu finish: opening reveal role aliases its existing base timing. Reduced motion shows the completed frame immediately."
+      },
+      "reveal-exit": {
+        "$value": "{motion.duration.fast}",
+        "$description": "Completeness entry for the deferred Yu finish: closing reveal role aliases its existing fast timing and uses the exit easing. Reduced motion closes immediately."
+      },
       "loading": {
-        "$value": { "value": 1000, "unit": "ms" },
+        "$value": {
+          "value": 1000,
+          "unit": "ms"
+        },
         "$description": "Completeness entry for the deferred Yu finish: one complete linear loading rotation during pending work. Reduced motion shows a static indicator."
       }
     },
@@ -219,6 +280,26 @@
       "$type": "cubicBezier",
       "standard": {
         "$value": [0.2, 0, 0, 1]
+      },
+      "lift": {
+        "$value": "{motion.easing.standard}",
+        "$description": "Completeness entry for the deferred Yu finish: lift role aliases its existing standard curve without changing values."
+      },
+      "seat": {
+        "$value": "{motion.easing.standard}",
+        "$description": "Completeness entry for the deferred Yu finish: seat role aliases its existing standard curve without changing values."
+      },
+      "slide": {
+        "$value": "{motion.easing.standard}",
+        "$description": "Completeness entry for the deferred Yu finish: slide role aliases its existing standard curve without changing values."
+      },
+      "reveal": {
+        "$value": "{motion.easing.standard}",
+        "$description": "Completeness entry for the deferred Yu finish: opening reveal role aliases its existing standard curve without changing values."
+      },
+      "exit": {
+        "$value": "{motion.easing.standard}",
+        "$description": "Completeness entry for the deferred Yu finish: closing reveal role aliases its existing standard curve without changing values."
       }
     }
   }

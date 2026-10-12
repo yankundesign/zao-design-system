@@ -107,7 +107,7 @@ A highlighted Menu item currently shows a fill, an inset mark and, on keyboard f
 
 ## WP 2.5: Table rule and status
 
-**No gate for the rule. ⛔ D10 for status.**
+**No gate for the rule. D10 resolved Oct 10: Yankun selected B, words plus monochrome glyphs.** The current source already spans the frame; retain its paint path and add desktop/narrow regression coverage. Pair each written status with a distinct decorative Iconoir glyph in default foreground, preserving native readings and existing behavior.
 
 **Build**
 
@@ -123,6 +123,10 @@ A highlighted Menu item currently shows a fill, an inset mark and, on keyboard f
 
 **No gate.** These are docs bugs, not design decisions.
 
+**Implemented Oct 10.** The desktop nav follows page scrolling, with every link reachable through pointer and native keyboard navigation. The docs canvas spans the viewport. The Menu specimen reserves token-derived space above and below its trigger, preserving Base UI collision placement and the approved reveal. Code and preview frames inherit the promoted 2px surface radius. Regression coverage keeps both popup placements inside their preview and leaves subsequent documentation clear.
+
+**Verified Oct 10 before D9.** Build, tests, typecheck, format check, and static docs export pass. The full browser suite passes 498 cases, including the Table rule/status and field portal regressions. The published Select/Combobox layout correction has a patch changeset.
+
 **Build**
 
 - **Nav.** At 1440×900 the desktop nav holds 908px of links in a 788px scroll region, and Switch, Table and Tabs are hidden with no cue. Make every link reachable without the reader having to discover a hidden scroll area. Letting the nav scroll with the page is the simplest fix.
@@ -136,7 +140,11 @@ A highlighted Menu item currently shows a fill, an inset mark and, on keyboard f
 
 ## WP 2.7: One default control height
 
-**Gate:** ⛔ D9. This is a structural token and affects every finish.
+**Gate resolved Oct 10:** Yankun selected C, one structural 34px default height shared by every finish.
+
+**Approved C.** The private [review](http://127.0.0.1:3233/) and `explorations/snapshots/private/control-height-options-20261010/review.md` preserve the source inventory and A/B/C comparison on real Fields together, Dialog, Table, and Tabs specimens in Su light and dark. `size.control.md` now supplies the 34px default; `size.button.default` aliases it. Semantic control-height utilities migrate default consumers, including Tabs and Menu row minima, without changing the 32px spacing step. Button keeps its reference padding and line box. Small/large controls remain 28px/40px, Table's small toolbar remains 28px, and the frozen lab shell retains its historical sizing. The changeset describes the structural size change.
+
+**Scoped verification:** All 20 control-height browser cases pass across published Su and the actual study, light/dark, LTR/RTL, and narrow layouts. They cover shared fields/actions, preserved Button padding and line box, explicit sizes, Tabs/Menu minima, small Table actions, fixed native geometry, keyboard focus, disabled states, reduced motion, and forced colors. Token tests also retain the independent 32px spacing step and shared structural values in every finish.
 
 **Prepare**
 

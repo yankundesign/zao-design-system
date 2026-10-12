@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { expectFocusBrackets } from './focus-mark';
 
 const contexts = [
   { name: 'published Su light', study: false, mode: 'light' },
@@ -40,8 +41,14 @@ async function openSpecimen(page: Page, context: (typeof contexts)[number]) {
     });
   }
   await page.evaluate(() => document.fonts.ready);
-  const specimen = page.locator('[data-zao-specimen="button"]');
-  await expect(page.locator('.study').first()).toHaveAttribute('data-zao-mode', context.mode);
+  await expect(page.locator('[data-anatomy-kind="button"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
+  const study = page.locator('[data-preview-style] .study').first();
+  const specimen = study.locator('[data-zao-specimen="button"]');
+  await expect(study).toHaveAttribute('data-zao-mode', context.mode);
+  await specimen.scrollIntoViewIfNeeded();
   await page.mouse.move(0, 0);
   await settle(specimen);
   return specimen;
@@ -114,6 +121,7 @@ for (const context of contexts) {
     const specimen = await openSpecimen(page, context);
     const blockExample = specimen.locator('[data-zao-button-example="block"]');
     const button = blockExample.getByRole('button', { name: 'Continue setup', exact: true });
+    await button.scrollIntoViewIfNeeded();
     const parent = await documentBox(blockExample);
     const target = await documentBox(button);
     expect(target.width).toBeCloseTo(parent.width, 2);
@@ -140,7 +148,7 @@ for (const context of contexts) {
     expect((await documentBox(longLabel)).width).toBeLessThanOrEqual(parent.width);
 
     await page
-      .locator('.study')
+      .locator('[data-preview-style] .study')
       .first()
       .evaluate((node) => node.setAttribute('dir', 'rtl'));
     await settle(specimen);
@@ -235,12 +243,7 @@ for (const context of contexts) {
     await expect(specimen.getByRole('status').filter({ hasText: /^Saving draft\.$/ })).toHaveText(
       'Saving draft.',
     );
-    const outline = await save.evaluate((node) => {
-      const css = getComputedStyle(node);
-      return { style: css.outlineStyle, width: parseFloat(css.outlineWidth) };
-    });
-    expect(outline.style).not.toBe('none');
-    expect(outline.width).toBeGreaterThan(0);
+    await expectFocusBrackets(save);
 
     await page.keyboard.press('Enter');
     await page.keyboard.press('Space');
@@ -309,6 +312,8 @@ for (const context of contexts) {
     const defaultAnnouncements = specimen.getByRole('status').filter({ hasText: /^Loading$/ });
     expect(await defaultAnnouncements.count()).toBeGreaterThanOrEqual(4);
     const disabled = specimen.getByRole('button', { name: 'Unavailable sync', exact: true });
+    await disabled.scrollIntoViewIfNeeded();
+    await settle(specimen);
     await expect(disabled).toBeDisabled();
     expect(await disabled.evaluate((node) => (node as HTMLButtonElement).disabled)).toBe(true);
     await disabled.focus();
@@ -334,7 +339,12 @@ test('ordinary Buttons do not add live regions or widen horizontal Card scroller
   await page.goto('/components/card');
   await expect(page.getByRole('heading', { level: 1, name: 'Card', exact: true })).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
+  await expect(page.locator('[data-anatomy-kind="card"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
   const scroller = page.getByRole('region', { name: 'Split card at 640 pixels', exact: true });
+  await scroller.scrollIntoViewIfNeeded();
   // The storage chart owns a separate readout announcement; ordinary Buttons add none.
   await expect(scroller.locator('[data-zao-slot="loading-announcement"]')).toHaveCount(0);
   const sizes = await scroller.evaluate((node) => ({

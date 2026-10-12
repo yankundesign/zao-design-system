@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { smallSeat } from './construction-values';
 
 async function openTabs(page: Page, theme: 'su' = 'su', mode: 'light' | 'dark' = 'light') {
   await page.goto('/components/tabs');
@@ -18,6 +19,10 @@ async function openTabs(page: Page, theme: 'su' = 'su', mode: 'light' | 'dark' =
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
+  await expect(page.locator('[data-anatomy-kind="tabs"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
   return page.locator('[data-zao-specimen="tabs"]').first();
 }
 
@@ -51,6 +56,7 @@ for (const finish of [
     const activity = list.getByRole('tab', { name: 'Activity' });
     const line = list.locator('[data-zao-slot="selection-line"]');
     const rail = list.locator(':scope > [data-zao-slot="rail"]');
+    await list.scrollIntoViewIfNeeded();
     await settle(list);
     const rest = await bounds(overview);
     const marker = await bounds(line);
@@ -106,7 +112,8 @@ test('secondary tabs retain nested selection and seat only the decorative face o
   }
   await page.keyboard.down('Space');
   await settle(secondary);
-  expect((await bounds(indicator)).y).toBeCloseTo(face.y + 1, 2);
+  // The face seats onto its base, a small rest depth back along the axis.
+  expect((await bounds(indicator)).y).toBeCloseTo(face.y + smallSeat, 2);
   expect(await bounds(members)).toEqual(target);
   await expect(members).toBeFocused();
   await page.keyboard.up('Space');
@@ -130,6 +137,7 @@ test('vertical manual navigation, RTL, and narrow strips preserve access and mar
   const vertical = page.getByRole('tablist', { name: 'Account sections' });
   const profile = vertical.getByRole('tab', { name: 'Profile' });
   const security = vertical.getByRole('tab', { name: 'Security' });
+  await vertical.scrollIntoViewIfNeeded();
   await profile.focus();
   await page.keyboard.press('ArrowDown');
   await expect(security).toBeFocused();
@@ -186,6 +194,10 @@ test('reduced motion changes selection immediately, and secondary grids follow t
 
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/components/card');
+  await expect(page.locator('[data-anatomy-kind="card"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
   const layouts = page.getByRole('tablist', { name: 'Card layout' });
   const media = layouts.getByRole('tab', { name: 'Media' });
   await media.click();
@@ -241,7 +253,7 @@ test.describe('touch feedback', () => {
         if (name === 'Workspace views') {
           expect((await bounds(list.locator('[data-zao-slot="selection-line"]'))).height).toBe(1);
         } else {
-          expect((await bounds(indicator)).y).toBeCloseTo(face.y + 1, 2);
+          expect((await bounds(indicator)).y).toBeCloseTo(face.y + smallSeat, 2);
         }
         expect(await bounds(selected)).toEqual(target);
         await touch.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });

@@ -35,7 +35,7 @@ export interface SelectProps {
 
 const heightClasses: Record<SelectSize, string> = {
   small: 'h-7',
-  default: 'h-button',
+  default: 'h-control',
   large: 'h-10',
 };
 
@@ -99,7 +99,7 @@ export function Select({
           aria-describedby={describedBy || undefined}
           aria-invalid={invalid || undefined}
           className={[
-            'inline-flex w-full items-center justify-between gap-2 rounded-control border bg-canvas px-2 type-body text-default outline-focus transition-colors duration-fast',
+            'construction-well field-well inline-flex w-full items-center justify-between gap-2 rounded-control border bg-canvas px-2 type-body text-default outline-focus transition-colors duration-fast',
             'data-disabled:cursor-not-allowed data-disabled:bg-field-disabled data-disabled:text-disabled',
             invalid ? 'border-field-invalid' : 'border-field',
             !invalid && !disabled ? 'hover:border-strong' : null,
@@ -119,7 +119,7 @@ export function Select({
             </svg>
           </BaseSelect.Icon>
         </BaseSelect.Trigger>
-        <BaseSelect.Portal container={portalContainer} data-zao-slot="portal">
+        <BaseSelect.Portal container={portalContainer} data-zao-slot="portal" className="contents">
           <BaseSelect.Positioner
             alignItemWithTrigger={false}
             side="bottom"
@@ -131,7 +131,7 @@ export function Select({
           >
             <BaseSelect.Popup
               data-zao-slot="popup"
-              className="construction-shading relative material-overlay min-w-0 text-default outline-focus"
+              className="construction-shading relative material-overlay popup-construction construction-planes min-w-0 text-default outline-focus"
               style={{ maxWidth: 'var(--available-width)', maxHeight: 'var(--available-height)' }}
             >
               <div

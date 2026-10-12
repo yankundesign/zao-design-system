@@ -30,9 +30,9 @@ const contextDetails: Record<
 };
 const groups = [...new Set(parameterRegistry.map((parameter) => parameter.group))];
 const fieldClass =
-  'h-8 min-w-0 rounded-control border border-default bg-surface px-2 type-body text-default outline-focus';
+  'h-control min-w-0 rounded-control border border-default bg-surface px-2 type-body text-default outline-focus';
 const buttonClass =
-  'h-8 rounded-action border border-default bg-surface px-3 type-label trim-label text-default hover:bg-hover disabled:opacity-50';
+  'h-control rounded-action border border-default bg-surface px-3 type-label trim-label text-default hover:bg-hover disabled:opacity-50';
 
 function nativeContext(
   style: StyleFile,
@@ -560,7 +560,7 @@ export default function ExplorePanel({
           <label className="flex flex-col gap-1 type-label md:col-span-2">
             Position · {Math.round(position * 100)}%
             <input
-              className="h-8 w-full"
+              className="h-control w-full"
               type="range"
               min="0"
               max="1"

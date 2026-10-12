@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 title="ZAO on GitHub"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-muted outline-focus hover:text-default focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="inline-flex h-control w-control shrink-0 items-center justify-center text-muted outline-focus hover:text-default focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 <Github className="h-5 w-5" aria-hidden="true" focusable="false" />
               </a>

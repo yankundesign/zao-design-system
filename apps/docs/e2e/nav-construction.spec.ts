@@ -51,9 +51,17 @@ async function linkBounds(nav: Locator) {
   return nav.getByRole('link').evaluateAll((links) =>
     links.map((link) => {
       const { x, y, width, height } = link.getBoundingClientRect();
-      return { x, y, width, height };
+      // Page scrolling changes viewport coordinates, not native layout geometry.
+      return { x: x + scrollX, y: y + scrollY, width, height };
     }),
   );
+}
+
+async function documentBounds(element: Locator) {
+  return element.evaluate((node) => {
+    const { x, y, width, height } = node.getBoundingClientRect();
+    return { x: x + scrollX, y: y + scrollY, width, height };
+  });
 }
 
 async function captureNavigation(page: Page, name: string) {
@@ -192,7 +200,7 @@ for (const finish of finishes) {
         expect(bounds.height).toBeGreaterThanOrEqual(24);
         expect(bounds.width).toBeGreaterThanOrEqual(24);
       }
-      const figureBox = await figure.boundingBox();
+      const figureBox = await documentBounds(figure);
       const muted = await figure.evaluate((node) => getComputedStyle(node).color);
       const foreground = await nav
         .locator('[aria-current="page"]')
@@ -205,7 +213,7 @@ for (const finish of finishes) {
         .poll(() => figure.evaluate((node) => getComputedStyle(node).color))
         .toBe(foreground);
       expect(await linkBounds(nav)).toEqual(before);
-      expect(await figure.boundingBox()).toEqual(figureBox);
+      expect(await documentBounds(figure)).toEqual(figureBox);
       await expectArtworkInsideViewport(figure);
       await captureNavigation(page, `${await section.getAttribute('data-nav-section')}-open`);
       const timing = await part.evaluate((node) => {
@@ -324,57 +332,108 @@ test('navigation retains the Su study only for components and design notes', asy
   }
 });
 
-for (const finish of finishes) {
-  test(`${finish.name}: short desktop navigation scrolls every link into view with room for keyboard focus`, async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1280, height: 500 });
-    await page.goto('/components/card');
-    await chooseFinish(page, finish);
-    const nav = page.getByRole('navigation', { name: 'Docs', exact: true });
-    const scroll = page.locator('.docs-nav-desktop');
-    const scrollSizes = await scroll.evaluate((node) => ({
-      visible: node.clientHeight,
-      total: node.scrollHeight,
-      overflow: getComputedStyle(node).overflowY,
-    }));
-    expect(scrollSizes.total).toBeGreaterThan(scrollSizes.visible);
-    expect(scrollSizes.overflow).toBe('auto');
-    const links = nav.getByRole('link');
-    await page.keyboard.press('Tab');
-    await links.first().focus();
-    const count = await links.count();
-    for (let index = 0; index < count; index += 1) {
-      const link = links.nth(index);
-      if (index > 0) await page.keyboard.press('Tab');
-      await expect(link).toBeFocused();
-      await expect(link).toBeInViewport();
-      const clearance = await link.evaluate((node) => {
-        const port = node.closest('.docs-nav-desktop')!;
-        const viewport = port.getBoundingClientRect();
-        const bounds = node.getBoundingClientRect();
-        const style = getComputedStyle(node);
-        const outline =
-          Number.parseFloat(style.outlineWidth) + Number.parseFloat(style.outlineOffset);
-        return {
-          top: bounds.top - outline - viewport.top,
-          bottom: viewport.bottom - bounds.bottom - outline,
-          left: bounds.left - outline - viewport.left,
-          right: viewport.right - bounds.right - outline,
-        };
-      });
-      for (const space of Object.values(clearance)) expect(space).toBeGreaterThanOrEqual(-0.5);
-    }
-    await expect(links.last()).toHaveText('Histogram');
-    expect(await scroll.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
-    const aside = await page.locator('.docs-nav-aside').boundingBox();
-    if (!aside) throw new Error('The desktop docs navigation must have visible bounds.');
-    expect(aside.y + aside.height).toBeLessThanOrEqual(500);
-    await captureNavigation(page, 'short-desktop-bottom');
-    expect(
-      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
-    ).toBe(true);
+async function navigationClearance(link: Locator) {
+  return link.evaluate((node) => {
+    const bounds = node.getBoundingClientRect();
+    const header = document.querySelector('body > header')!.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    const outline = Number.parseFloat(style.outlineWidth) + Number.parseFloat(style.outlineOffset);
+    const hit = document.elementFromPoint(
+      bounds.left + bounds.width / 2,
+      bounds.top + bounds.height / 2,
+    );
+    return {
+      top: bounds.top - outline - header.bottom,
+      bottom: innerHeight - bounds.bottom - outline,
+      left: bounds.left - outline,
+      right: innerWidth - bounds.right - outline,
+      hit: hit?.closest('a') === node,
+    };
   });
+}
+
+async function expectNavigationLinkReachable(link: Locator) {
+  await expect
+    .poll(async () => {
+      const { hit, ...spaces } = await navigationClearance(link);
+      return hit && Object.values(spaces).every((space) => space >= -0.5);
+    })
+    .toBe(true);
+}
+
+for (const finish of finishes) {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1280, height: 500 },
+  ]) {
+    test(`${finish.name}: ${viewport.width}×${viewport.height} desktop navigation reaches every link with page scrolling and keyboard focus`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      const nav = await openDocs(page, finish);
+      const desktop = page.locator('.docs-nav-desktop');
+      await expect(desktop).toHaveCSS('overflow-y', 'visible');
+      await expect(page.locator('.docs-nav-aside')).toHaveCSS('position', 'static');
+      expect(await desktop.evaluate((node) => node.scrollHeight)).toBe(
+        await desktop.evaluate((node) => node.clientHeight),
+      );
+      const links = nav.getByRole('link');
+      const count = await links.count();
+      expect(count).toBeGreaterThan(0);
+      for (const name of ['Switch', 'Table', 'Tabs']) {
+        await expect(nav.getByRole('link', { name, exact: true })).toHaveCount(1);
+      }
+
+      // Pointer scrolling uses the page while the pointer remains over the nav column.
+      for (let index = 0; index < count; index += 1) {
+        const link = links.nth(index);
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          const clearance = await navigationClearance(link);
+          if (clearance.hit && clearance.top >= -0.5 && clearance.bottom >= -0.5) break;
+          const before = await page.evaluate(() => scrollY);
+          const navBox = await nav.boundingBox();
+          if (!navBox) throw new Error('The desktop nav must have visible bounds.');
+          const headerBottom = await page
+            .locator('body > header')
+            .evaluate((node) => node.getBoundingClientRect().bottom);
+          await page.mouse.move(navBox.x + navBox.width / 2, headerBottom + 24);
+          const delta = clearance.top < 0 ? clearance.top - 24 : -clearance.bottom + 24;
+          await page.mouse.wheel(0, delta);
+          await expect.poll(() => page.evaluate(() => scrollY)).not.toBe(before);
+        }
+        await expectNavigationLinkReachable(link);
+        const box = await link.boundingBox();
+        if (!box) throw new Error('Each pointer-reachable nav link must have visible bounds.');
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await expect.poll(() => link.evaluate((node) => node.matches(':hover'))).toBe(true);
+      }
+      expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+      expect(await desktop.evaluate((node) => node.scrollTop)).toBe(0);
+
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.mouse.move(0, 0);
+      await page.keyboard.press('Tab');
+      await links.first().focus();
+      for (let index = 0; index < count; index += 1) {
+        const link = links.nth(index);
+        if (index > 0) await page.keyboard.press('Tab');
+        await expect(link).toBeFocused();
+        await expectNavigationLinkReachable(link);
+      }
+      await expect(links.last()).toHaveText('Histogram');
+      expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+      expect(await desktop.evaluate((node) => node.scrollTop)).toBe(0);
+      for (let index = count - 2; index >= 0; index -= 1) {
+        await page.keyboard.press('Shift+Tab');
+        await expect(links.nth(index)).toBeFocused();
+        await expectNavigationLinkReachable(links.nth(index));
+      }
+      await captureNavigation(page, 'page-scrolling-navigation');
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+      ).toBe(true);
+    });
+  }
 }
 
 test.describe('mobile docs navigation', () => {

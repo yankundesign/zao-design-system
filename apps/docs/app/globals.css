@@ -5,9 +5,21 @@
 /* Let Tailwind see class names used inside the ZAO packages. */
 @source '../../../packages/react/src';
 
+/*
+ * The header row, sidebar and content, and footer share one frame: 1440px (360 fen) including
+ * the side gutters, centred. At 1440px and below it fills the window as before; wider screens
+ * gain margin. The header rule and page background still run edge to edge.
+ */
 .docs-shell {
-  max-inline-size: 80rem;
+  max-inline-size: calc(var(--zao-space-1) * 360);
   margin-inline: auto;
+}
+
+/* Three shared-height rows, a separator, frame padding/borders, and joint/focus clearance. */
+.docs-menu-preview [data-zao-specimen='menu'] > [data-zao-component='menu'] {
+  margin-block: calc(
+    var(--zao-size-control-md) * 3 + var(--zao-space-1) * 6 + var(--zao-stroke-hairline) * 3
+  );
 }
 
 @media (min-width: 64rem) {
@@ -26,6 +38,11 @@
     scrollbar-color: transparent transparent;
     scrollbar-width: thin;
     scrollbar-gutter: stable;
+  }
+
+  /* Table scrolls horizontally; an unused vertical gutter would shorten its ledger rules. */
+  :where(.docs-shell [data-zao-component='table'] > [data-zao-slot='scroll-area']) {
+    scrollbar-gutter: auto;
   }
 
   :where(
@@ -110,7 +127,8 @@
   inset-block: var(--zao-space-2);
   inset-inline-end: 0;
   inline-size: var(--zao-space-1);
-  background-color: var(--zao-color-fg-default);
+  /* The current page is the nav's selection, so its mark carries the seal. */
+  background-color: var(--zao-color-accent-solid);
   content: '';
 }
 
@@ -192,19 +210,13 @@
 }
 
 @media (min-width: 48rem) {
-  .docs-nav-aside {
-    --docs-nav-top: calc(var(--zao-space-20) + var(--zao-space-4));
-    position: sticky;
-    top: var(--docs-nav-top);
-    align-self: start;
+  html {
+    /* Native keyboard scrolling leaves room for the sticky header and outside focus outline. */
+    scroll-padding-block: calc(var(--zao-space-20) + var(--zao-space-4)) var(--zao-space-1);
   }
 
-  .docs-nav-desktop {
-    max-block-size: calc(100dvh - var(--docs-nav-top) - var(--zao-space-4));
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-    overscroll-behavior-block: contain;
-    scroll-padding-block: var(--zao-space-1);
+  .docs-nav-aside {
+    align-self: start;
   }
 }
 

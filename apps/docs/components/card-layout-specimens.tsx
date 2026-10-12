@@ -104,7 +104,7 @@ export function MediaCardSpecimen() {
                   d="M112 30 180 64 228 40 252 52 204 76 272 110 248 122 180 88 132 112 108 100 156 76 88 42Z"
                   fill="var(--zao-color-bg-surface)"
                 />
-                <path d="M180 64 204 76 180 88 156 76Z" fill="var(--zao-color-accent-subtle)" />
+                <path d="M180 64 204 76 180 88 156 76Z" fill="var(--zao-color-bg-sunken)" />
               </g>
             </svg>
           </div>

@@ -18,8 +18,15 @@ async function openRing(page: Page, theme: 'su' = 'su', mode: 'light' | 'dark' =
       'utf8',
     ),
   });
+  await page.evaluate(() => document.fonts.ready);
+  await expect(page.locator('[data-anatomy-kind="card"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
+  const ring = page.locator('[data-zao-slot="storage-study"]').first();
+  await ring.scrollIntoViewIfNeeded();
   await page.mouse.move(0, 0);
-  return page.locator('[data-zao-slot="storage-study"]').first();
+  return ring;
 }
 
 async function coordinates(ring: Locator) {
@@ -135,6 +142,10 @@ test('touch inspection works on a small screen and the guideline is reachable fr
   const page = await context.newPage();
   try {
     await page.goto('/components/card');
+    await expect(page.locator('[data-anatomy-kind="card"]')).toHaveAttribute(
+      'data-anatomy-ready',
+      'true',
+    );
     // The docs comparison keeps fixed sample widths in its named scroll regions.
     const ring = page.locator('[data-zao-slot="storage-study"]').first();
     const available = ring.getByRole('button', { name: 'Inspect available capacity', exact: true });

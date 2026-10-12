@@ -193,7 +193,7 @@ function applyThemeParam(theme: JsonObject, baseType: JsonObject, id: string, va
   }
   if (id.startsWith('motion.duration.'))
     return setToken(theme, id.split('.'), dimension(value, 'ms'), 'theme');
-  if (id === 'motion.easing.standard') return setToken(theme, id.split('.'), value, 'theme');
+  if (id.startsWith('motion.easing.')) return setToken(theme, id.split('.'), value, 'theme');
   if (id === 'font.family.display')
     return setToken(theme, id.split('.'), fontValue(value), 'theme');
   const role = id.split('.')[1] as 'display' | 'title';
@@ -227,7 +227,15 @@ function applyModeParam(
         changed.push(mode);
       continue;
     }
-    const current = token(modes[mode], tokenPath.split('.'), `mode ${mode}`);
+    let path = tokenPath;
+    let current = token(modes[mode], path.split('.'), `mode ${mode}`);
+    // Accent roles alias the active seal (color.seal.ink.*); edit the step where it lives.
+    for (let hops = 0; hops < 4; hops++) {
+      const alias = String(current.$value).match(/^\{(color\.[a-z0-9.-]+)\}$/);
+      if (!alias) break;
+      path = alias[1]!;
+      current = token(modes[mode], path.split('.'), `mode ${mode}`);
+    }
     const reference = String(current.$value).match(
       /^\{palette\.([a-z-]+)\.(light|dark)\.(\d+|contrast)\}$/,
     );
@@ -236,7 +244,7 @@ function applyModeParam(
     if (
       setToken(
         modes[mode],
-        tokenPath.split('.'),
+        path.split('.'),
         `{palette.${reference[1]}.${mode}.${selected}}`,
         `mode ${mode}`,
       )

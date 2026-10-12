@@ -109,10 +109,11 @@
     transform: translate(var(--active-tab-left), var(--active-tab-top));
     pointer-events: none;
     transition:
-      transform var(--zao-motion-duration-base) var(--zao-motion-easing-standard),
-      inline-size var(--zao-motion-duration-base) var(--zao-motion-easing-standard),
-      block-size var(--zao-motion-duration-base) var(--zao-motion-easing-standard),
-      translate var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      transform var(--zao-motion-duration-slide) var(--zao-motion-easing-slide),
+      inline-size var(--zao-motion-duration-slide) var(--zao-motion-easing-slide),
+      block-size var(--zao-motion-duration-slide) var(--zao-motion-easing-slide),
+      translate var(--zao-motion-duration-seat) var(--zao-motion-easing-seat),
+      --zao-plane-rest var(--zao-motion-duration-seat) var(--zao-motion-easing-seat),
       background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
       box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
   }
@@ -122,7 +123,8 @@
     inset-inline: var(--zao-space-2);
     inset-block-start: calc(100% + var(--zao-space-1));
     block-size: var(--zao-space-0-5);
-    background: var(--zao-color-fg-default);
+    /* The current selection carries the seal. */
+    background: var(--zao-color-accent-solid);
     transform: translateY(-50%);
     transition: block-size var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
   }
@@ -150,8 +152,6 @@
     padding: var(--zao-space-0-5);
     border: var(--tabs-stroke) solid var(--zao-color-border-subtle);
     background: var(--zao-color-bg-sunken);
-    box-shadow: inset 0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
-      var(--zao-color-border-subtle);
   }
 
   .tabs-list[data-zao-variant='secondary'] > .tabs-tab > [data-zao-slot='tick'] {
@@ -162,22 +162,25 @@
     background: var(--zao-color-bg-hover);
   }
 
+  /* The sliding face rests a small depth above its base, with banded planes (V2, V3). */
   .tabs-list[data-zao-variant='secondary'] > .tabs-indicator {
     --zao-construction-face: var(--zao-color-bg-surface);
+    --zao-plane-rest: var(--zao-depth-rest-small);
+    --zao-face-offset: 0px;
+    isolation: isolate;
     background: var(--zao-construction-face);
     border: var(--tabs-stroke) solid var(--zao-color-border-default);
-    box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 var(--zao-construction-side);
   }
 
+  /* Seating moves the face onto its base while the base stays registered to the cell. */
   .tabs-list[data-zao-variant='secondary']:has(
       > .tabs-tab[data-active]:is(:active, [data-zao-pressed])
     )
     > .tabs-indicator {
-    /* Seating follows the vertical part of --zao-depth-axis-y; registration stays fixed. */
-    translate: 0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact));
+    translate: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-rest-small))
+      calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-rest-small));
+    --zao-plane-rest: 0px;
     --zao-construction-face: var(--zao-color-bg-hover);
-    box-shadow: none;
   }
 
   /* Vertical navigation aligns labels toward the rail at its inline end. */
@@ -284,6 +287,7 @@
       --zao-color-border-subtle: CanvasText;
       --zao-color-border-default: CanvasText;
       --zao-color-fg-default: CanvasText;
+      --zao-color-accent-solid: CanvasText;
       forced-color-adjust: none;
     }
   }

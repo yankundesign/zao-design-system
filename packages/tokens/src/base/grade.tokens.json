@@ -1,0 +1,38 @@
+{
+  "$description": "Structure: the eight timber grades of Yingzao Fashi (材分八等). Each grade is the height of its 材 in 寸. A part's grade sets how heavy it is: its motion duration is the grade's height times the finish's grade unit (motion.grade-unit). Shared by every finish.",
+  "grade": {
+    "$type": "number",
+    "1": {
+      "$value": 9,
+      "$description": "First grade, 9 寸. The heaviest timber: Dialog and the exploded view."
+    },
+    "2": {
+      "$value": 8.25,
+      "$description": "Second grade, 8.25 寸. Unassigned."
+    },
+    "3": {
+      "$value": 7.5,
+      "$description": "Third grade, 7.5 寸. Card and other content surfaces."
+    },
+    "4": {
+      "$value": 7.2,
+      "$description": "Fourth grade, 7.2 寸. Unassigned."
+    },
+    "5": {
+      "$value": 6.6,
+      "$description": "Fifth grade, 6.6 寸. Floating overlays: Menu, Select and Combobox popups."
+    },
+    "6": {
+      "$value": 6,
+      "$description": "Sixth grade, 6 寸. Unassigned."
+    },
+    "7": {
+      "$value": 5.25,
+      "$description": "Seventh grade, 5.25 寸. Controls: Button, IconButton, Tabs and Progress, and focus brackets."
+    },
+    "8": {
+      "$value": 4.5,
+      "$description": "Eighth grade, 4.5 寸. The lightest timber: the Switch face."
+    }
+  }
+}

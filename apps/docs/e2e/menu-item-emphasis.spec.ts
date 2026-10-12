@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { studyRuleCount } from './study-paint';
 
 const components = ['menu', 'select', 'combobox'] as const;
 const modes = ['light', 'dark'] as const;
@@ -35,14 +36,16 @@ async function openStudy(page: Page, component: Component, mode: Mode, real = tr
   await expect(study).toHaveAttribute('data-zao-theme', 'su');
   await expect(study).toHaveAttribute('data-zao-mode', mode);
   await expect(study).toHaveAttribute('data-study', 'quiet-instrument');
-  const fieldRole = expect.poll(() =>
-    study.evaluate((node) =>
-      getComputedStyle(node).getPropertyValue('--zao-color-border-field').trim(),
-    ),
-  );
-  if (real) await fieldRole.not.toBe('');
-  else await fieldRole.toBe('');
+  const fieldRole = expect.poll(() => studyRuleCount(page));
+  if (real) await fieldRole.toBeGreaterThan(0);
+  else await fieldRole.toBe(0);
   await page.evaluate(() => document.fonts.ready);
+  if (component === 'menu') {
+    await expect(page.locator('[data-anatomy-kind="menu"]')).toHaveAttribute(
+      'data-anatomy-ready',
+      'true',
+    );
+  }
   const specimen = study.locator(`[data-zao-specimen="${component}"]`).first();
   const root = specimen.locator(`[data-zao-component="${component}"]`).first();
   const trigger = root.locator(

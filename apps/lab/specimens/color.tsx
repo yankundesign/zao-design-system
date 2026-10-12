@@ -121,7 +121,7 @@ export default function ColorSpecimen() {
       </div>
       <button
         type="button"
-        className="h-8 self-start rounded-action bg-accent px-3 type-label trim-label text-on-accent"
+        className="h-control self-start rounded-action bg-accent px-3 type-label trim-label text-on-accent"
       >
         On-accent text
       </button>

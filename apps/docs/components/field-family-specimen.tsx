@@ -33,7 +33,7 @@ export function FieldFamilySpecimen() {
         setSaved(`Saved changes for ${nameRef.current?.value ?? 'this workspace'}.`);
       }}
     >
-      <h4 className="type-label font-medium">Fields together</h4>
+      <h3 className="type-label font-medium">Fields together</h3>
       <div data-zao-slot="form-row" className="grid min-w-0 gap-3 @3xl:grid-cols-4">
         <TextField
           ref={nameRef}
@@ -73,7 +73,7 @@ export function FieldSizeSpecimen({
 }) {
   return (
     <div data-zao-specimen="field-sizes" className="@container flex min-w-0 flex-col gap-3">
-      <h4 className="type-label font-medium">Sizes</h4>
+      <h3 className="type-label font-medium">Sizes</h3>
       <div className="grid min-w-0 items-start gap-4 @xl:grid-cols-3">
         {sizes.map((size) => {
           const label = size === 'small' ? 'Small' : size === 'large' ? 'Large' : 'Default';

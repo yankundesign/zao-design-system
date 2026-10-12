@@ -38,13 +38,13 @@ export function FinishSample({
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            className="h-8 rounded-action bg-accent px-3 type-label trim-label text-on-accent transition-colors duration-fast hover:bg-accent-hover"
+            className="h-control rounded-action bg-accent px-3 type-label trim-label text-on-accent transition-colors duration-fast hover:bg-accent-hover"
           >
             Approve 3 changes
           </button>
           <button
             type="button"
-            className="h-8 rounded-action border border-default bg-surface px-3 type-label trim-label text-default transition-colors duration-fast hover:border-strong"
+            className="h-control rounded-action border border-default bg-surface px-3 type-label trim-label text-default transition-colors duration-fast hover:border-strong"
           >
             Review one by one
           </button>

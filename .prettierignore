@@ -4,3 +4,4 @@ dist
 .next-*
 pnpm-lock.yaml
 packages/tokens/src/palettes/*.generated.tokens.json
+packages/tokens/src/motion/*.generated.tokens.json

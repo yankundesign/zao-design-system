@@ -23,10 +23,6 @@
   height: var(--zao-size-control-sm);
 }
 
-.lab-island :is(button, input, select, textarea).h-8 {
-  height: var(--zao-size-control-md);
-}
-
 .lab-island :is(button, input, select, textarea).h-10 {
   height: var(--zao-size-control-lg);
 }

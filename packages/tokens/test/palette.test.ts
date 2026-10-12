@@ -4,9 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { generatePaletteDocuments } from '@zao/engine/palette';
 import { finishes } from '../palette.config.ts';
 
+// Updated Oct 11 for the finish plan: warm ink neutrals (V1b), the ink seal and the
+// azurite seal ramp (V1). Change these only with an intended palette change.
 const baselineHashes: Record<string, string> = {
-  su: '3fbeb826db4ac693da4f927af6ae429d67904231e2553166b3395c4897405b65',
-  yu: '1511e4cb6a4a5cac51a70fc37f9af92d8deb2ba8568f45f7ab4c4828f419438f',
+  su: '3bd406c9c6b52eccef48cbb3efe12254be701ca8d37dc5baa9976d74a85b8e8e',
+  yu: 'c8fd82dfbcc53f69076b9671ce27b229b9a3bb274ebbdb2f4d6edc5d5054b573',
 };
 
 describe('palette generator preserves its original output', () => {

@@ -130,9 +130,19 @@ for (const axis of ['x', 'y']) add(`depth.axis.${axis}`, 'depth and material', '
 for (const key of ['fill', 'fill-solid', 'border', 'highlight'])
   add(`material.overlay.${key}`, 'depth and material', 'color', 'finish');
 add('material.overlay.blur', 'depth and material', 'number', 'finish', [0, 48], 'px');
-for (const duration of ['fast', 'base', 'loading'])
+for (const duration of [
+  'fast',
+  'base',
+  'loading',
+  'lift',
+  'seat',
+  'slide',
+  'reveal',
+  'reveal-exit',
+])
   add(`motion.duration.${duration}`, 'motion', 'duration', 'finish', [0, 2000], 'ms');
-add('motion.easing.standard', 'motion', 'easing', 'finish');
+for (const easing of ['standard', 'lift', 'seat', 'slide', 'reveal', 'exit'])
+  add(`motion.easing.${easing}`, 'motion', 'easing', 'finish');
 add('font.family.display', 'type', 'font', 'finish');
 add('font.family.text', 'type', 'font', 'structure');
 add('font.family.mono', 'type', 'font', 'structure');
@@ -179,6 +189,18 @@ const modeTokenPaths: Record<string, string> = {
   'danger.subtle': 'color.danger.subtle',
   'danger.border': 'color.danger.border',
   'danger.text': 'color.danger.text',
+  // Field roles and the two seals (finish plan V1, V1b, Oct 11).
+  'border.field': 'color.border.field',
+  'border.field-invalid': 'color.border.field-invalid',
+  'bg.field-disabled': 'color.bg.field-disabled',
+  ...Object.fromEntries(
+    ['ink', 'azurite'].flatMap((seal) =>
+      ['solid', 'solid-hover', 'subtle', 'subtle-hover', 'border', 'text', 'on'].map((role) => [
+        `seal.${seal}.${role}`,
+        `color.seal.${seal}.${role}`,
+      ]),
+    ),
+  ),
 };
 for (const [role, tokenPath] of Object.entries(modeTokenPaths)) {
   add(`mode.${role.replaceAll('.', '-')}`, 'mode', 'step', 'mode', [1, 12], '', tokenPath, true);

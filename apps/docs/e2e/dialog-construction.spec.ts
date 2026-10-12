@@ -2,6 +2,8 @@ import { readFile } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { expectFocusBrackets } from './focus-mark';
+import { seat } from './construction-values';
 
 const modes = ['light', 'dark'] as const;
 type Mode = (typeof modes)[number];
@@ -89,7 +91,21 @@ async function framePaint(popup: Locator) {
       shadowColor: shadowColor ? pixel(shadowColor) : null,
       shadow,
       shadowLengths,
+      planes: {
+        rest: parseFloat(style.getPropertyValue('--zao-plane-rest')),
+        before: {
+          content: getComputedStyle(node, '::before').content,
+          image: getComputedStyle(node, '::before').backgroundImage,
+          clip: getComputedStyle(node, '::before').clipPath,
+        },
+        after: {
+          content: getComputedStyle(node, '::after').content,
+          image: getComputedStyle(node, '::after').backgroundImage,
+          clip: getComputedStyle(node, '::after').clipPath,
+        },
+      },
       tokens: {
+        surfaceRest: parseFloat(style.getPropertyValue('--zao-depth-rest-surface')),
         contact: parseFloat(style.getPropertyValue('--zao-depth-contact')),
         x: Number(style.getPropertyValue('--zao-depth-axis-x')),
         y: Number(style.getPropertyValue('--zao-depth-axis-y')),
@@ -103,13 +119,15 @@ async function framePaint(popup: Locator) {
   });
 }
 
+function luminance(color: number[]) {
+  return color.slice(0, 3).reduce((sum, channel, index) => {
+    const value = channel / 255;
+    const linear = value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    return sum + linear * [0.2126, 0.7152, 0.0722][index]!;
+  }, 0);
+}
+
 function contrast(first: number[], second: number[]) {
-  const luminance = (color: number[]) =>
-    color.slice(0, 3).reduce((sum, channel, index) => {
-      const value = channel / 255;
-      const linear = value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-      return sum + linear * [0.2126, 0.7152, 0.0722][index]!;
-    }, 0);
   const [lower, upper] = [luminance(first), luminance(second)].sort((a, b) => a - b);
   return (upper! + 0.05) / (lower! + 0.05);
 }
@@ -136,9 +154,7 @@ async function keyboardOutline(page: Page, button: Locator, previous?: Locator) 
   else await expect(button).not.toBeFocused();
   await page.keyboard.press('Tab');
   await expect(button).toBeFocused();
-  await expect(button).toHaveCSS('outline-style', 'solid');
-  await expect(button).toHaveCSS('outline-width', '2px');
-  await expect(button).toHaveCSS('outline-offset', '2px');
+  await expectFocusBrackets(button);
 }
 
 async function twoFrames(page: Page) {
@@ -159,7 +175,8 @@ for (const mode of modes) {
     await trigger.click();
     await expect(popup).toBeVisible();
     await expect(popup).not.toHaveClass(/\bmaterial-overlay\b/);
-    await expect(popup).toHaveCSS('border-radius', '0px');
+    // One faceted leading corner (V4); the rest of the frame stays square.
+    await expect(popup).toHaveCSS('border-radius', '0px 5px 0px 0px');
     await expect(popup).toHaveCSS('border-style', 'solid');
     await expect(popup).toHaveCSS('opacity', '1');
     await expect(popup).toHaveCSS('transform', 'none');
@@ -174,17 +191,21 @@ for (const mode of modes) {
     expect(parseFloat(await popup.evaluate((node) => getComputedStyle(node).borderTopWidth))).toBe(
       reading.tokens.hairline,
     );
-    expect(reading.shadowLengths).toEqual([
-      -reading.tokens.x * reading.tokens.contact,
-      -reading.tokens.y * reading.tokens.contact,
-      0,
-      0,
-    ]);
-    expect(reading.shadowColor).toEqual(reading.shadedToken);
-    for (const channel of [0, 1, 2]) {
-      expect(
-        Math.abs(reading.shadedToken[channel]! - Math.round(reading.fill[channel]! * 0.8)),
-      ).toBeLessThanOrEqual(1);
+    // Card's construction (finish plan V2–V4): the drawn contact is replaced by two banded
+    // planes on the frame's own pseudo-elements, resting a surface depth above the base.
+    expect(reading.shadow).toBe('none');
+    expect(reading.planes.rest).toBe(reading.tokens.surfaceRest);
+    for (const plane of [reading.planes.before, reading.planes.after]) {
+      expect(plane.content).not.toBe('none');
+      expect(plane.image).toMatch(/^linear-gradient\(/);
+      expect(plane.clip).toMatch(/^polygon\(/);
+    }
+    // The near side band is a shade of the surface: darker in light mode, lighter in dark.
+    expect(reading.shadedToken[3]).toBe(255);
+    if (mode === 'light') {
+      expect(luminance(reading.shadedToken)).toBeLessThan(luminance(reading.fill));
+    } else {
+      expect(luminance(reading.shadedToken)).toBeGreaterThan(luminance(reading.fill));
     }
     for (const text of reading.text) {
       expect(contrast(text.color, reading.fill), `${text.slot} contrast`).toBeGreaterThanOrEqual(
@@ -302,8 +323,8 @@ for (const mode of modes) {
       expect(await box(popup)).toEqual(plane);
       expect(await box(button)).toEqual(target);
       const seated = await box(face);
-      expect(seated.x - resting.x).toBeCloseTo(-1, 2);
-      expect(seated.y - resting.y).toBeCloseTo(1, 2);
+      expect(seated.x - resting.x).toBeCloseTo(-seat, 2);
+      expect(seated.y - resting.y).toBeCloseTo(seat, 2);
       await page.mouse.move(plane.x + 8, plane.y + 8);
       await page.mouse.up();
       await expect(popup).toBeVisible();

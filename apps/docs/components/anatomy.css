@@ -1,0 +1,27 @@
+.docs-anatomy {
+  position: relative;
+}
+
+.docs-anatomy-source {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  max-width: var(--container-sm);
+  height: calc(var(--zao-space-20) * 8);
+  border: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.docs-anatomy-drawing {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(var(--zao-space-20) * 5);
+  color: var(--zao-color-fg-muted);
+  overflow: visible;
+}
+
+.docs-anatomy-pending {
+  min-height: calc(var(--zao-space-20) * 2);
+}

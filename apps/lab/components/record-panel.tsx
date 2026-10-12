@@ -41,9 +41,9 @@ const contexts: { id: ContextId; label: string }[] = [
   { id: 'yu-dark', label: 'Yu · dark' },
 ];
 const fieldClass =
-  'h-8 min-w-0 rounded-control border border-default bg-surface px-2 type-body text-default outline-focus';
+  'h-control min-w-0 rounded-control border border-default bg-surface px-2 type-body text-default outline-focus';
 const buttonClass =
-  'h-8 rounded-action border border-default bg-surface px-3 type-label trim-label text-default hover:bg-hover disabled:opacity-50';
+  'h-control rounded-action border border-default bg-surface px-3 type-label trim-label text-default hover:bg-hover disabled:opacity-50';
 
 function toggle(items: string[], id: string) {
   return items.includes(id) ? items.filter((item) => item !== id) : [...items, id];

@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { studyRuleCount } from './study-paint';
 
 const modes = ['light', 'dark'] as const;
 const paints = ['published Su', 'real Quiet instrument'] as const;
@@ -46,14 +47,14 @@ async function openTabs(page: Page, mode: Mode, paint: Paint, direction: Directi
   await expect(study).toHaveAttribute('data-zao-theme', 'su');
   await expect(study).toHaveAttribute('data-zao-mode', mode);
   await expect(study).toHaveAttribute('data-study', 'quiet-instrument');
-  const role = expect.poll(() =>
-    study.evaluate((node) =>
-      getComputedStyle(node).getPropertyValue('--zao-color-border-field').trim(),
-    ),
-  );
-  if (paint === 'real Quiet instrument') await role.not.toBe('');
-  else await role.toBe('');
+  const role = expect.poll(() => studyRuleCount(page));
+  if (paint === 'real Quiet instrument') await role.toBeGreaterThan(0);
+  else await role.toBe(0);
   await page.evaluate(() => document.fonts.ready);
+  await expect(page.locator('[data-anatomy-kind="tabs"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
   await study.evaluate((node, value) => {
     (node as HTMLElement).dir = value;
   }, direction);

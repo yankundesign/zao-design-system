@@ -48,12 +48,16 @@ async function openMenuPage(page: Page, realQuietInstrument: boolean, mode: 'lig
       ),
     });
   }
-  const study = page.locator('.study').first();
+  const study = page.locator('[data-preview-style] .study').first();
   await expect(study).toHaveAttribute('data-zao-theme', 'su');
   await expect(study).toHaveAttribute('data-zao-mode', mode);
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
+  await expect(page.locator('[data-anatomy-kind="menu"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
   const specimen = study.locator('[data-zao-specimen="menu"]').first();
   await specimen
     .getByRole('button', { name: 'Workspace actions', exact: true })
@@ -212,7 +216,9 @@ async function scrubPocket(
     const popup = node.querySelector<HTMLElement>('[data-zao-slot="popup"]')!;
     const cssDuration = getComputedStyle(popup)
       .getPropertyValue(
-        currentPhase === 'open' ? '--zao-motion-duration-base' : '--zao-motion-duration-fast',
+        currentPhase === 'open'
+          ? '--zao-motion-duration-reveal'
+          : '--zao-motion-duration-reveal-exit',
       )
       .trim();
     return {
@@ -476,6 +482,8 @@ for (const study of studies) {
 
         // Move only this specimen anchor to exercise Base UI's real viewport collision handling.
         await root.evaluate((node) => {
+          // A fixed collision probe does not use the docs preview's surrounding reservation.
+          node.style.marginBlock = '0';
           node.style.position = 'fixed';
           node.style.left = '16px';
           node.style.bottom = '8px';
@@ -521,6 +529,8 @@ for (const mode of modes) {
     for (const side of ['bottom', 'top'] as const) {
       if (side === 'top') {
         await root.evaluate((node) => {
+          // Put the native anchor at the viewport edge, outside the docs reservation.
+          node.style.marginBlock = '0';
           node.style.position = 'fixed';
           node.style.left = '16px';
           node.style.bottom = '8px';

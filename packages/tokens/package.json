@@ -23,6 +23,7 @@
   },
   "scripts": {
     "palette": "node scripts/generate-palettes.ts",
+    "motion": "node scripts/generate-motion.ts",
     "build": "tz build && node scripts/export-json.ts",
     "dev": "node scripts/dev-watch.ts",
     "dev:watch": "node scripts/dev-watch.ts",

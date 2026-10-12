@@ -40,6 +40,10 @@ async function openCardPage(page: Page, realQuietInstrument: boolean) {
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
+  await expect(page.locator('[data-anatomy-kind="card"]')).toHaveAttribute(
+    'data-anatomy-ready',
+    'true',
+  );
   await page.mouse.move(0, 0);
   const panel = page.getByRole('tabpanel', { name: 'Split', exact: true });
   await settle(panel);
@@ -97,6 +101,7 @@ for (const study of studies) {
           name: `Split card at ${width} pixels`,
           exact: true,
         });
+        await sample.scrollIntoViewIfNeeded();
         const card = sample.locator('[data-zao-component="card"]');
         expect((await bounds(card)).width).toBeCloseTo(width, 2);
         const figure = card.getByRole('img', { name: 'Storage use at 68 percent', exact: true });

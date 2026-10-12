@@ -45,7 +45,9 @@ async function openIsland(page: Page, component: Component, mode: 'light' | 'dar
     ),
   });
   await page.evaluate(() => document.fonts.ready);
-  const island = page.locator('.study').first();
+  const anatomy = page.locator(`[data-anatomy-kind="${component}"]`);
+  if (await anatomy.count()) await expect(anatomy).toHaveAttribute('data-anatomy-ready', 'true');
+  const island = page.locator('[data-preview-style] .study').first();
   await expect(island).toHaveAttribute('data-zao-mode', mode);
 
   // Field depth belongs to the floating choice frame; open it before measuring.

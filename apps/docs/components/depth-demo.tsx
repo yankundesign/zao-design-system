@@ -1,8 +1,8 @@
 'use client';
 
 import { useId, useState } from 'react';
-import type { CSSProperties } from 'react';
 import { Button, Card, Composer, Menu, Progress, Select, Switch, Tabs, finish } from '@zao/react';
+import { DepthScaleControl, useDepthScale } from './depth-scale';
 import { useFinish } from './use-finish';
 
 const regions = [
@@ -21,19 +21,13 @@ interface DepthDemoProps {
 
 /** A docs-only island that scales the shared painted distances without changing layout. */
 export function DepthDemo({ contact, lift, studyCssUrl }: DepthDemoProps) {
-  const scaleId = useId();
   const descriptionId = useId();
   const { theme, resolved } = useFinish();
-  const [scale, setScale] = useState(1);
+  const { scale, setScale, style: depth } = useDepthScale(contact, lift);
   const [emailUpdates, setEmailUpdates] = useState(true);
   const [region, setRegion] = useState<string | null>('west');
   const [draft, setDraft] = useState('Review storage use.');
   const [result, setResult] = useState('This preview keeps every action local.');
-  const readout = `${scale.toFixed(2)}×`;
-  const depth = {
-    '--zao-depth-contact': `${contact * scale}px`,
-    '--zao-depth-lift': `${lift * scale}px`,
-  } as CSSProperties;
 
   return (
     <section aria-labelledby="depth-demo-heading" className="flex flex-col gap-4">
@@ -49,32 +43,7 @@ export function DepthDemo({ contact, lift, studyCssUrl }: DepthDemoProps) {
         </p>
       </div>
 
-      <div className="flex max-w-2xl flex-col gap-3" data-depth-controls="">
-        <div className="flex items-baseline justify-between gap-3">
-          <label htmlFor={scaleId} className="type-label font-medium">
-            Depth scale
-          </label>
-          <output htmlFor={scaleId} className="type-label figures-tabular" aria-live="off">
-            {readout}
-          </output>
-        </div>
-        <input
-          id={scaleId}
-          type="range"
-          min={0}
-          max={4}
-          step={0.01}
-          value={scale}
-          onChange={(event) => setScale(Number(event.currentTarget.value))}
-          aria-describedby={descriptionId}
-          aria-valuetext={`${scale.toFixed(2)} times the published depth`}
-          className="min-h-6 w-full outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
-          style={{ accentColor: 'var(--zao-color-accent-solid)' }}
-        />
-        <Button variant="secondary" className="self-start" onClick={() => setScale(1)}>
-          Reset depth
-        </Button>
-      </div>
+      <DepthScaleControl scale={scale} onScaleChange={setScale} describedBy={descriptionId} />
 
       <div
         {...finish(theme, resolved)}

@@ -38,7 +38,7 @@ export default function SettingsSpecimen() {
           </label>
           <input
             id={`${id}-workspace-name`}
-            className="h-8 w-full rounded-control border border-default bg-canvas px-2 type-body text-default outline-focus placeholder:text-muted"
+            className="h-control w-full rounded-control border border-default bg-canvas px-2 type-body text-default outline-focus placeholder:text-muted"
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
@@ -52,7 +52,7 @@ export default function SettingsSpecimen() {
           <select
             id={`${id}-region`}
             defaultValue="west"
-            className="h-8 w-full rounded-control border border-default bg-canvas px-2 type-body text-default outline-focus"
+            className="h-control w-full rounded-control border border-default bg-canvas px-2 type-body text-default outline-focus"
           >
             <option value="west">West region</option>
             <option value="central">Central region</option>
@@ -85,7 +85,7 @@ export default function SettingsSpecimen() {
             onChange={(event) => setContact(event.target.value)}
             aria-invalid={!contactIsValid}
             aria-describedby={contactIsValid ? undefined : `${id}-contact-error`}
-            className={`h-8 w-full rounded-control border bg-canvas px-2 type-body text-default outline-focus ${contactIsValid ? 'border-default' : 'border-danger'}`}
+            className={`h-control w-full rounded-control border bg-canvas px-2 type-body text-default outline-focus ${contactIsValid ? 'border-default' : 'border-danger'}`}
           />
           {!contactIsValid && (
             <p id={`${id}-contact-error`} className="type-caption text-danger">
@@ -96,7 +96,7 @@ export default function SettingsSpecimen() {
         <div className="flex flex-wrap gap-2 border-t border-subtle pt-4">
           <button
             type="submit"
-            className="h-8 rounded-action bg-accent px-3 type-label trim-label text-on-accent transition-colors duration-fast hover:bg-accent-hover"
+            className="h-control rounded-action bg-accent px-3 type-label trim-label text-on-accent transition-colors duration-fast hover:bg-accent-hover"
           >
             Save settings
           </button>
@@ -107,7 +107,7 @@ export default function SettingsSpecimen() {
               setContact('team@outside.example');
               setStatus('');
             }}
-            className="h-8 rounded-action border border-default bg-surface px-3 type-label trim-label"
+            className="h-control rounded-action border border-default bg-surface px-3 type-label trim-label"
           >
             Reset form
           </button>

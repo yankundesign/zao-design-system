@@ -45,7 +45,7 @@ function TableRoot({
       data-zao-component="table"
       data-zao-theme={theme}
       data-zao-mode={mode}
-      className={`card-construction min-w-0 rounded-none border border-subtle bg-canvas text-default${className ? ` ${className}` : ''}`}
+      className={`card-construction construction-shading construction-planes min-w-0 rounded-none border border-subtle bg-canvas text-default${className ? ` ${className}` : ''}`}
     >
       <div
         data-zao-slot="scroll-area"

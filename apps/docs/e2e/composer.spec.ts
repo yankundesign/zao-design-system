@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { expectFocusBrackets } from './focus-mark';
 
 const contexts = [
   { name: 'Quiet light', theme: 'su', mode: 'light', real: true },
@@ -473,7 +474,7 @@ test('context chips can be removed by pointer and keyboard without sending or ch
   await expect(removeAttachment).toBeFocused();
   await removeAttachment.press('Shift+Tab');
   await expect(remove).toBeFocused();
-  await expect(remove).toHaveCSS('outline-style', 'solid');
+  await expectFocusBrackets(remove);
   await remove.press('Space');
   await expect(context).toHaveCount(0);
   await expect(form.locator('[data-zao-slot="context"]')).toHaveCount(0);

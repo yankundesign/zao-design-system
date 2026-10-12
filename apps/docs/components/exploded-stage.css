@@ -1,0 +1,210 @@
+/* The exploded view (finish plan WP 3.1). Docs-local. */
+@property --exploded-x {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --exploded-gap {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --exploded-pick {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --exploded-tag-room {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --exploded-lift {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.exploded-stage {
+  --exploded-gap: calc(var(--zao-space-20) + var(--zao-space-2));
+  --exploded-pick: var(--zao-space-6);
+  --exploded-tag-room: var(--zao-space-6);
+  --exploded-x: 0;
+  position: relative;
+  outline: none;
+  transition: --exploded-x var(--zao-motion-duration-grade-1) var(--zao-motion-easing-fold-exit);
+}
+
+/* The drawing stays inside the stage, including between poses. */
+.exploded-stage[data-pose='parts'] {
+  overflow: clip;
+}
+
+/*
+ * A narrow stage holds a tall window; its drawing is smaller than the window, so the Parts pose
+ * shortens the stage and both poses switch without travel.
+ */
+.exploded-stage[data-pose='parts'][data-compact='true'] {
+  block-size: var(--exploded-fit-height);
+}
+
+.exploded-stage[data-compact='true'],
+.exploded-stage[data-compact='true'] .exploded-layer {
+  transition: none;
+}
+
+.exploded-stage[data-apart='true'] {
+  --exploded-x: 1;
+  transition-timing-function: var(--zao-motion-easing-fold-enter);
+}
+
+.exploded-stage[data-ready='false'] {
+  visibility: hidden;
+}
+
+.exploded-stage:focus-visible {
+  outline: 2px solid var(--zao-color-focus-ring);
+  outline-offset: var(--zao-space-1);
+}
+
+/*
+ * Orthographic: no perspective, one tilt, the layers separate along the depth axis. The stage
+ * measures the fit (scale, turn and offset) so every layer stays inside it.
+ */
+.exploded-assembly {
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  transform: translate(
+      calc(var(--exploded-x) * var(--exploded-fit-x, 0px)),
+      calc(var(--exploded-x) * var(--exploded-fit-y, 0px))
+    )
+    rotateX(calc(var(--exploded-x) * 54deg))
+    rotateZ(calc(var(--exploded-x) * var(--exploded-turn, -36deg)))
+    scale3d(
+      calc(1 - var(--exploded-x) * (1 - var(--exploded-fit-scale, 0.66))),
+      calc(1 - var(--exploded-x) * (1 - var(--exploded-fit-scale, 0.66))),
+      calc(1 - var(--exploded-x) * (1 - var(--exploded-fit-scale, 0.66)))
+    );
+}
+
+.exploded-live {
+  position: relative;
+}
+
+.exploded-stage[data-pose='parts'] .exploded-live {
+  visibility: hidden;
+}
+
+.exploded-layer {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  transform: translateZ(
+    calc(var(--exploded-x) * var(--exploded-index) * var(--exploded-gap) + var(--exploded-lift))
+  );
+  transition:
+    --exploded-lift var(--zao-motion-duration-grade-7) var(--zao-motion-easing-fold-enter),
+    opacity var(--zao-motion-duration-grade-7) linear;
+}
+
+.exploded-stage[data-pose='parts'] .exploded-layer {
+  display: block;
+}
+
+.exploded-copy,
+.exploded-extra {
+  position: absolute;
+  inset: 0;
+}
+
+.exploded-copy > * {
+  margin: 0;
+}
+
+/* Dashed outline of each layer's plate, drawn only as the layers come apart. */
+.exploded-layer::before {
+  position: absolute;
+  inset: 0;
+  border: var(--zao-stroke-hairline) dashed var(--zao-color-border-default);
+  opacity: calc((var(--exploded-x) - 0.3) * 1.4);
+  content: '';
+}
+
+.exploded-layer[data-layer='canvas']::before {
+  border-style: solid;
+  border-color: var(--zao-color-border-default);
+}
+
+.exploded-plate {
+  position: absolute;
+  inset: 0;
+  background-color: var(--zao-color-bg-canvas);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--zao-color-border-default), transparent 45%) 0.75px,
+    transparent 1.25px
+  );
+  background-size: var(--zao-space-4) var(--zao-space-4);
+}
+
+.exploded-tag {
+  position: absolute;
+  inset-block-start: calc(-1 * var(--zao-space-6));
+  inset-inline-start: 0;
+  color: var(--zao-color-fg-muted);
+  white-space: nowrap;
+  opacity: calc((var(--exploded-x) - 0.45) * 3);
+}
+
+.exploded-tag-name {
+  color: var(--zao-color-fg-default);
+}
+
+/* Picking: the picked layer rises a little further; the others ghost. */
+.exploded-layer[data-picked='true'] {
+  --exploded-lift: var(--exploded-pick);
+}
+
+.exploded-stage[data-picking='true'] .exploded-layer:not([data-picked='true']) {
+  opacity: 0.22;
+}
+
+.exploded-focus {
+  position: absolute;
+  --c: var(--zao-color-focus-ring);
+  --a: var(--zao-space-2);
+  --w: var(--zao-space-0-5);
+  background:
+    linear-gradient(var(--c) 0 0) top left / var(--a) var(--w) no-repeat,
+    linear-gradient(var(--c) 0 0) top left / var(--w) var(--a) no-repeat,
+    linear-gradient(var(--c) 0 0) top right / var(--a) var(--w) no-repeat,
+    linear-gradient(var(--c) 0 0) top right / var(--w) var(--a) no-repeat,
+    linear-gradient(var(--c) 0 0) bottom left / var(--a) var(--w) no-repeat,
+    linear-gradient(var(--c) 0 0) bottom left / var(--w) var(--a) no-repeat,
+    linear-gradient(var(--c) 0 0) bottom right / var(--a) var(--w) no-repeat,
+    linear-gradient(var(--c) 0 0) bottom right / var(--w) var(--a) no-repeat;
+}
+
+.exploded-overlay {
+  position: absolute;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exploded-stage,
+  .exploded-layer {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .exploded-layer::before {
+    border-color: CanvasText;
+  }
+}

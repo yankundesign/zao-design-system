@@ -25,7 +25,7 @@ const ramp = [14, 32, 52, 74, 100].map(
 );
 const hourLabel = (hour: number) => `${String(hour).padStart(2, '0')}:00`;
 
-/** Square cells in five gray steps; the current hour gets accent brackets. */
+/** Square cells in five gray steps; the current hour gets ink accent brackets. */
 export function HeatmapChart({ compact = false }: { compact?: boolean }) {
   const [plotRef, width] = useChartWidth<HTMLDivElement>();
   const [values, setValues] = useState(initialActivity);
@@ -188,7 +188,7 @@ export function HeatmapChart({ compact = false }: { compact?: boolean }) {
             className="chart-accent-stroke"
             d={bracket}
             fill="none"
-            stroke="var(--zao-color-accent-solid)"
+            stroke="var(--zao-color-fg-default)"
             strokeWidth="1.5"
           />
           {[0, 6, 12, 18].map((hour) => (

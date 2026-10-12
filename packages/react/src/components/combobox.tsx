@@ -35,7 +35,7 @@ export interface ComboboxProps {
 
 const heightClasses: Record<ComboboxSize, string> = {
   small: 'h-7',
-  default: 'h-button',
+  default: 'h-control',
   large: 'h-10',
 };
 
@@ -114,7 +114,7 @@ export function Combobox({
           data-zao-invalid={invalid ? '' : undefined}
           data-zao-disabled={disabled ? '' : undefined}
           className={[
-            'flex w-full items-center rounded-control border bg-canvas transition-colors duration-fast data-disabled:bg-field-disabled',
+            'construction-well field-well flex w-full items-center rounded-control border bg-canvas transition-colors duration-fast data-disabled:bg-field-disabled',
             invalid ? 'border-field-invalid' : 'border-field',
             !invalid && !disabled ? 'hover:border-strong' : null,
             heightClasses[size],
@@ -151,7 +151,11 @@ export function Combobox({
             </svg>
           </BaseCombobox.Trigger>
         </BaseCombobox.InputGroup>
-        <BaseCombobox.Portal container={portalContainer} data-zao-slot="portal">
+        <BaseCombobox.Portal
+          container={portalContainer}
+          data-zao-slot="portal"
+          className="contents"
+        >
           <BaseCombobox.Positioner
             side="bottom"
             align="start"
@@ -162,7 +166,7 @@ export function Combobox({
           >
             <BaseCombobox.Popup
               data-zao-slot="popup"
-              className="construction-shading relative material-overlay min-w-0 text-default outline-focus"
+              className="construction-shading relative material-overlay popup-construction construction-planes min-w-0 text-default outline-focus"
               style={{ maxWidth: 'var(--available-width)', maxHeight: 'var(--available-height)' }}
             >
               <div

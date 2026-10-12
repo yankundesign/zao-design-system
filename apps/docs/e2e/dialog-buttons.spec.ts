@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { expectFocusBrackets } from './focus-mark';
 
 const modes = ['light', 'dark'] as const;
 const sizes = [
@@ -86,9 +87,7 @@ async function keyboardFocus(page: Page, button: Locator, previous?: Locator) {
   else await expect(button).not.toBeFocused();
   await page.keyboard.press('Tab');
   await expect(button).toBeFocused();
-  await expect(button).toHaveCSS('outline-style', 'solid');
-  await expect(button).toHaveCSS('outline-width', '2px');
-  await expect(button).toHaveCSS('outline-offset', '2px');
+  await expectFocusBrackets(button);
 }
 
 async function pointerFeedback(
@@ -107,7 +106,7 @@ async function pointerFeedback(
       x: Number(style.getPropertyValue('--zao-depth-axis-x')),
       y: Number(style.getPropertyValue('--zao-depth-axis-y')),
       lift: parseFloat(style.getPropertyValue('--zao-depth-lift')),
-      contact: parseFloat(style.getPropertyValue('--zao-depth-contact')),
+      seat: parseFloat(style.getPropertyValue('--zao-depth-rest-control')),
     };
   });
   const restFill = await face(button).evaluate((node) => getComputedStyle(node).backgroundColor);
@@ -122,14 +121,17 @@ async function pointerFeedback(
     expect(hoverFill).not.toBe(restFill);
     await expect(face(button)).toHaveCSS('transform', 'none');
     await expect(face(button)).toHaveCSS('transition-property', 'none');
-    expect(await button.evaluate((node) => getComputedStyle(node, '::after').display)).toBe('none');
+    // The planes stay at rest depth; the focus brackets (::after) arrive without travel.
+    expect(
+      await button.evaluate((node) => getComputedStyle(node, '::after').transitionProperty),
+    ).toBe('none');
   }
   await page.mouse.down();
   await settle(button);
   const pressed = await bounds(face(button));
   expect(await bounds(button)).toEqual(shell);
-  expect(pressed.x - resting.x).toBeCloseTo(reducedMotion ? 0 : -tokens.x * tokens.contact, 2);
-  expect(pressed.y - resting.y).toBeCloseTo(reducedMotion ? 0 : -tokens.y * tokens.contact, 2);
+  expect(pressed.x - resting.x).toBeCloseTo(reducedMotion ? 0 : -tokens.x * tokens.seat, 2);
+  expect(pressed.y - resting.y).toBeCloseTo(reducedMotion ? 0 : -tokens.y * tokens.seat, 2);
   expect(await face(button).evaluate((node) => getComputedStyle(node).backgroundColor)).not.toBe(
     hoverFill,
   );

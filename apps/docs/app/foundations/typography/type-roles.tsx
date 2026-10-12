@@ -62,7 +62,7 @@ export function TypeRoles() {
               className="grid gap-3 border-t border-subtle py-5 md:grid-cols-[200px_minmax(0,1fr)]"
             >
               <div className="flex flex-col gap-1">
-                <p className="type-code text-accent">{utility[role]}</p>
+                <p className="type-code text-muted">{utility[role]}</p>
                 <p className="type-caption text-muted">{use}</p>
                 <p className="type-caption text-muted figures-tabular">
                   {v.fontFamily[0]} · {px}/{Math.round(px * v.lineHeight)} · {v.fontWeight} ·{' '}

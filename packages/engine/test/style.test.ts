@@ -91,6 +91,58 @@ describe('style engine', () => {
     ).toThrow(/within/);
   });
 
+  it('maps each named motion role to finish CSS and preserves supplied structural values', () => {
+    const durations = ['lift', 'seat', 'slide', 'reveal', 'reveal-exit'];
+    const easings = ['lift', 'seat', 'slide', 'reveal', 'exit'];
+    const params: Record<string, unknown> = {};
+    const expected: Record<string, string> = {};
+    for (const [index, role] of durations.entries()) {
+      const id = `motion.duration.${role}`;
+      const parameter = registryById.get(id)!;
+      expect(parameter.layer, id).toBe('finish');
+      expect(parameter.kind, id).toBe('duration');
+      expect(parameter.range, id).toEqual([0, 2000]);
+      expect(parameter.unit, id).toBe('ms');
+      params[id] = (index + 1) * 50;
+      expected[`--zao-motion-duration-${role}`] = `${(index + 1) * 50}ms`;
+      for (const value of [0, 2000])
+        expect(() => validateStyle(style('motion-roles', { [id]: value })), id).not.toThrow();
+      for (const value of [-1, 2001])
+        expect(() => validateStyle(style('motion-roles', { [id]: value })), id).toThrow(/within/);
+    }
+    for (const role of easings) {
+      const id = `motion.easing.${role}`;
+      const parameter = registryById.get(id)!;
+      expect(parameter.layer, id).toBe('finish');
+      expect(parameter.kind, id).toBe('easing');
+      params[id] = [0.2, 0, 0, 1];
+      expected[`--zao-motion-easing-${role}`] = 'cubic-bezier(0.2, 0, 0, 1)';
+      for (const value of [
+        [0.2, 0, 1],
+        [0.2, 'x', 0, 1],
+      ])
+        expect(() => validateStyle(style('motion-roles', { [id]: value })), id).toThrow(
+          /four cubic-bezier numbers/,
+        );
+    }
+    const source = style('motion-roles', params);
+    expect(() => validateStyle(source)).not.toThrow();
+    const baseVariables = {
+      '--zao-space-8': '32px',
+      '--zao-size-control-md': '34px',
+      '--zao-stroke-hairline': '1px',
+    };
+    expect(toCssVars(source, { theme: 'su', mode: 'light', baseVariables })).toEqual({
+      ...baseVariables,
+      ...expected,
+    });
+    expect(baseVariables).toEqual({
+      '--zao-space-8': '32px',
+      '--zao-size-control-md': '34px',
+      '--zao-stroke-hairline': '1px',
+    });
+  });
+
   it('resolves inheritance, reports parameter diffs and mixes groups with provenance', () => {
     const parent = style('su', { 'radius.action': 6 });
     const child = style('soft', { 'radius.surface': 10 });
@@ -465,9 +517,18 @@ describe('style engine', () => {
       '--zao-color-focus-ring': '#000000',
       '--zao-color-fg-on-accent': '#ffffff',
       '--zao-color-accent-solid': '#000000',
+      '--zao-color-seal-ink-text': '#000000',
+      '--zao-color-seal-azurite-text': '#000000',
+      '--zao-color-border-field': '#555555',
+      '--zao-color-border-field-invalid': '#555555',
+      '--zao-color-seal-ink-on': '#ffffff',
+      '--zao-color-seal-ink-solid': '#000000',
+      '--zao-color-seal-azurite-on': '#ffffff',
+      '--zao-color-seal-azurite-solid': '#000000',
     };
     const results = evaluateContrast(variables);
-    expect(results).toHaveLength(15);
+    // Text, semantic text, seal text and field edges on two surfaces, plus three on-solid pairs.
+    expect(results).toHaveLength(25);
     expect(results.every((result) => result.pass)).toBe(true);
   });
 });

@@ -179,7 +179,7 @@ export function StorageRingStudy() {
             y="77"
             width="6"
             height="6"
-            fill="var(--zao-color-accent-solid)"
+            fill="var(--zao-color-fg-default)"
           />
         </svg>
         <div className="figure-mark flex min-w-0 flex-col gap-1">

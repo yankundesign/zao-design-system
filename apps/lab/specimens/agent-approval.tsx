@@ -95,14 +95,14 @@ export default function AgentApprovalSpecimen() {
           <button
             type="button"
             onClick={() => setDecision('approved')}
-            className="h-8 rounded-action bg-accent px-3 type-label trim-label text-on-accent transition-colors duration-fast hover:bg-accent-hover"
+            className="h-control rounded-action bg-accent px-3 type-label trim-label text-on-accent transition-colors duration-fast hover:bg-accent-hover"
           >
             Approve 3 changes
           </button>
           <button
             type="button"
             onClick={() => setDecision('rejected')}
-            className="h-8 rounded-action border border-default bg-surface px-3 type-label trim-label transition-colors duration-base ease-standard hover:bg-hover"
+            className="h-control rounded-action border border-default bg-surface px-3 type-label trim-label transition-colors duration-base ease-standard hover:bg-hover"
           >
             Reject 3 changes
           </button>
