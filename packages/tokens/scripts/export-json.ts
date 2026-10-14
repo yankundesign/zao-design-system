@@ -6,7 +6,7 @@
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { defineConfig, parse, type TokenNormalized } from '@terrazzo/parser';
-import { contexts, cssVar, foldCurve } from '../contexts.ts';
+import { contexts, cssVar, motionCurve } from '../contexts.ts';
 
 const root = new URL('../', import.meta.url);
 const resolverUrl = new URL('src/zao.resolver.json', root);
@@ -43,7 +43,7 @@ export function cssValue(token: TokenNormalized): string {
     case 'fontFamily':
       return (v as string[]).map((f) => (/\s/.test(f) ? `"${f}"` : f)).join(', ');
     case 'cubicBezier':
-      return foldCurve(token) ?? `cubic-bezier(${(v as number[]).join(', ')})`;
+      return motionCurve(token) ?? `cubic-bezier(${(v as number[]).join(', ')})`;
     case 'shadow':
       return (v as Array<Record<string, unknown>>)
         .map((s) =>
@@ -95,6 +95,9 @@ async function main() {
             type: t.$type,
             cssVar: cssVar(t.id),
             value: t.$type === 'typography' ? t.$value : cssValue(aliasTarget(t, tokens)),
+            ...(aliasTarget(t, tokens).$extensions?.['dev.zao.motion']
+              ? { motion: aliasTarget(t, tokens).$extensions?.['dev.zao.motion'] }
+              : {}),
             ...(t.aliasOf ? { aliasOf: t.aliasOf } : {}),
             ...(t.$description ? { description: t.$description } : {}),
           },

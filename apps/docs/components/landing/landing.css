@@ -97,10 +97,19 @@
 /*
  * On wide screens the stage keeps the window's own height in both poses, so the page never
  * reflows. A narrow stage draws the parts smaller and shortens in the Parts pose.
+ *
+ * Oct 13 (Yankun, A): the stage and its 00 canvas plate sit on the sunken ground, a step below
+ * the window's surface, so the parts stand off it instead of meeting it in hairlines only. An
+ * existing semantic role; the stage still follows the page's mode (L9).
  */
 .landing-hero .exploded-stage {
   padding: var(--zao-space-6) var(--zao-space-4) var(--zao-space-8);
+  background-color: var(--zao-color-bg-sunken);
   box-shadow: inset 0 0 0 var(--zao-stroke-hairline) var(--zao-color-border-subtle);
+}
+
+.landing-hero .exploded-plate {
+  background-color: var(--zao-color-bg-sunken);
 }
 
 @media (min-width: 48rem) {

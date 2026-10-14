@@ -78,6 +78,14 @@ export type {
   MessageKind,
   MessageStatus,
 } from './components/message.js';
+export { Plan } from './components/plan.js';
+export type { PlanRootProps, PlanStepProps, PlanStepStatus } from './components/plan.js';
+export { ApprovalGate } from './components/approval-gate.js';
+export type {
+  ApprovalGateProps,
+  ApprovalFact,
+  ApprovalDecision,
+} from './components/approval-gate.js';
 
 export type Theme = 'su' | 'yu';
 export type Mode = 'light' | 'dark';

@@ -19,10 +19,12 @@ export interface MotionInput {
   rafters: number;
   /** Milliseconds per 寸 of 材 height. */
   gradeUnit: number;
+  /** Discrete ink bands for safety holds and seal impressions. */
+  bands: { hold: number; impress: number };
 }
 
 export const motion: Record<'su' | 'yu', MotionInput> = {
-  su: { rafters: 10, gradeUnit: 30 },
+  su: { rafters: 10, gradeUnit: 30, bands: { hold: 4, impress: 3 } },
   // Completeness entry so every finish ships the same motion tokens; not Yu design work.
-  yu: { rafters: 10, gradeUnit: 30 },
+  yu: { rafters: 10, gradeUnit: 30, bands: { hold: 4, impress: 3 } },
 };

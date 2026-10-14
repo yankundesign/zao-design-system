@@ -2,6 +2,7 @@
 
 import { forwardRef, useEffect, useId, useRef } from 'react';
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { LoadingIndicator } from './button.js';
 import { useConversationAnnouncement } from './conversation.js';
 
 export type MessageKind = 'user' | 'assistant';
@@ -21,7 +22,10 @@ export interface MessageRootProps extends ComponentPropsWithoutRef<'article'> {
 }
 
 export type MessageContentProps = ComponentPropsWithoutRef<'div'>;
-export type MessageActionsProps = ComponentPropsWithoutRef<'div'>;
+export interface MessageActionsProps extends ComponentPropsWithoutRef<'div'> {
+  /** Place compact response utilities in the author row; task actions remain at the end. */
+  placement?: 'end' | 'header';
+}
 
 function classes(base: string, extra?: string) {
   return extra ? `${base} ${extra}` : base;
@@ -78,10 +82,17 @@ const Root = forwardRef<HTMLElement, MessageRootProps>(function MessageRoot(
       data-zao-slot="root"
       data-zao-kind={kind}
       data-zao-status={status}
-      className={classes('zao-message', className)}
+      className={classes(
+        `zao-message ${kind === 'user' ? 'construction-shading construction-planes' : ''}`,
+        className,
+      )}
     >
       <header data-zao-slot="header" className="flex min-w-0 flex-wrap items-baseline gap-2">
-        <span id={authorId} data-zao-slot="author" className="type-label font-medium text-default">
+        <span
+          id={authorId}
+          data-zao-slot="author"
+          className={`type-label font-medium ${kind === 'user' ? 'sr-only' : 'text-muted'}`}
+        >
           {author}
         </span>
         {metadata ? (
@@ -94,6 +105,7 @@ const Root = forwardRef<HTMLElement, MessageRootProps>(function MessageRoot(
             data-zao-slot="status"
             className={`type-caption ${status === 'error' ? 'text-danger' : 'text-muted'}`}
           >
+            {status === 'streaming' ? <LoadingIndicator /> : null}
             {statusLabels[status]}
           </span>
         ) : null}
@@ -123,7 +135,7 @@ const Content = forwardRef<HTMLDivElement, MessageContentProps>(function Message
 });
 
 const Actions = forwardRef<HTMLDivElement, MessageActionsProps>(function MessageActions(
-  { className, ...props },
+  { className, placement = 'end', ...props },
   ref,
 ) {
   return (
@@ -131,6 +143,7 @@ const Actions = forwardRef<HTMLDivElement, MessageActionsProps>(function Message
       {...props}
       ref={ref}
       data-zao-slot="actions"
+      data-zao-placement={placement}
       className={classes('flex min-w-0 flex-wrap items-center gap-2', className)}
     />
   );

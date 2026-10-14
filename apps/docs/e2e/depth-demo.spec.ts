@@ -152,7 +152,8 @@ async function paint(part: Locator, name: Part) {
         style(target.querySelector('[data-zao-slot="track"]')!, '::before').boxShadow,
       ).slice(0, 2);
     } else if (kind === 'composer') {
-      offset = shadow(style(target).boxShadow).slice(0, 2);
+      // The tray's side slot paints construction planes from its rest depth.
+      offset = rest(target);
     } else {
       offset = rest(target.querySelector('[data-zao-slot="popup"]')!);
     }

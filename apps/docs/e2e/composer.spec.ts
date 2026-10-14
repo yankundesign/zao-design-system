@@ -75,9 +75,12 @@ async function dimensionToken(element: Locator, token: string) {
   }, token);
 }
 
-async function contactShadow(form: Locator, color: string) {
-  const contact = (await dimensionToken(form, '--zao-space-0-5')) / 2;
-  return `${await colorToken(form, color)} ${-contact}px ${contact}px 0px 0px`;
+async function expectComposerBrackets(form: Locator, visible: boolean) {
+  await expect
+    .poll(() =>
+      form.evaluate((node) => Number.parseFloat(getComputedStyle(node, '::after').opacity)),
+    )
+    .toBe(visible ? 1 : 0);
 }
 
 async function inputMetrics(input: Locator) {
@@ -215,61 +218,63 @@ for (const context of contexts) {
       expect(bounds!.height).toBeLessThanOrEqual(1);
       await expect(hidden).not.toHaveAttribute('aria-hidden', 'true');
     }
-    await expect(form).toHaveCSS('border-radius', '0px');
-    await expect(input).toHaveCSS(
-      'background-color',
-      await colorToken(input, '--zao-color-bg-canvas'),
+    await expect(form).toHaveCSS('border-top-left-radius', '0px');
+    await expect(form).toHaveCSS(
+      'border-top-right-radius',
+      `${await dimensionToken(form, '--zao-radius-facet')}px`,
     );
+    await expect(form.locator(':scope > [data-zao-slot="side"]')).toHaveCount(1);
+    await expect(form.locator(':scope > [data-zao-slot="side"]')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    await expect(input).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await expect(input).toHaveCSS('color', await colorToken(input, '--zao-color-fg-default'));
     await expect(form).toHaveCSS(
       'border-color',
       await colorToken(form, '--zao-color-border-subtle'),
     );
-    const restingShadow = await contactShadow(form, '--zao-color-border-default');
-    const writingShadow = await contactShadow(form, '--zao-color-border-strong');
     await input.evaluate((node) => (node as HTMLTextAreaElement).blur());
-    await expect(form).toHaveCSS('box-shadow', restingShadow);
     await expect(form).toHaveCSS('transform', 'none');
-    await expect(form).toHaveCSS('transition-duration', '0s');
+    await expect(form).toHaveCSS('transition-property', 'border-color');
+    await expect(form).toHaveCSS(
+      '--zao-plane-rest',
+      `${await dimensionToken(form, '--zao-depth-rest-surface')}px`,
+    );
     await expect(form).toHaveCSS('overflow', 'visible');
     const restingBounds = await form.boundingBox();
-    // Read in the same task as focus so a delayed transition cannot satisfy the assertion.
-    expect(
-      await input.evaluate((node) => {
-        (node as HTMLTextAreaElement).focus();
-        return getComputedStyle(node.closest('form')!).boxShadow;
-      }),
-    ).toBe(writingShadow);
+    await input.focus();
     expect(await form.boundingBox()).toEqual(restingBounds);
-    await expect(input).toHaveCSS('outline-style', 'solid');
-    await expect(input).toHaveCSS(
-      'outline-color',
-      await colorToken(input, '--zao-color-focus-ring'),
-    );
+    await expect(input).toHaveCSS('outline-style', 'none');
+    await expectComposerBrackets(form, true);
     await input.click();
     await expect(input).toBeFocused();
     await expect(input).toHaveCSS('outline-style', 'none');
-    await expect(form).toHaveCSS('box-shadow', writingShadow);
+    await expectComposerBrackets(form, false);
     await expect(form).toHaveCSS(
       'border-color',
-      await colorToken(form, '--zao-color-border-subtle'),
+      await colorToken(form, '--zao-color-border-default'),
     );
     await input.press('End');
     await input.pressSequentially(' with another detail');
     await expect(input).toHaveValue('A short request with another detail');
     await expect(input).toHaveCSS('outline-style', 'none');
+    await expectComposerBrackets(form, false);
     await input.press('Tab');
     const attach = form.getByRole('button', { name: 'Attach files', exact: true });
     await expect(attach).toBeFocused();
-    await expect(form).toHaveCSS('box-shadow', restingShadow);
+    await expect(form).toHaveCSS(
+      'border-color',
+      await colorToken(form, '--zao-color-border-subtle'),
+    );
     await attach.press('Shift+Tab');
     await expect(input).toBeFocused();
-    await expect(input).toHaveCSS('outline-style', 'solid');
-    await expect(input).toHaveCSS(
-      'outline-color',
-      await colorToken(input, '--zao-color-focus-ring'),
+    await expect(input).toHaveCSS('outline-style', 'none');
+    await expectComposerBrackets(form, true);
+    await expect(form).toHaveCSS(
+      'border-color',
+      await colorToken(form, '--zao-color-border-subtle'),
     );
-    await expect(form).toHaveCSS('box-shadow', writingShadow);
     const contextItems = form.getByRole('list', { name: 'Included context' }).getByRole('listitem');
     await expect(contextItems).toHaveCount(2);
     for (const item of await contextItems.all()) {
@@ -301,13 +306,22 @@ for (const context of contexts) {
     const firstRemove = contextItems.nth(0).getByRole('button');
     const secondRemove = contextItems.nth(1).getByRole('button');
     await firstRemove.focus();
-    await expect(form).toHaveCSS('box-shadow', restingShadow);
+    await expect(form).toHaveCSS(
+      'border-color',
+      await colorToken(form, '--zao-color-border-subtle'),
+    );
     await firstRemove.press('Tab');
     await expect(secondRemove).toBeFocused();
-    await expect(form).toHaveCSS('box-shadow', restingShadow);
+    await expect(form).toHaveCSS(
+      'border-color',
+      await colorToken(form, '--zao-color-border-subtle'),
+    );
     await secondRemove.press('Tab');
     await expect(input).toBeFocused();
-    await expect(form).toHaveCSS('box-shadow', writingShadow);
+    await expect(form).toHaveCSS(
+      'border-color',
+      await colorToken(form, '--zao-color-border-subtle'),
+    );
     await expect(form.locator('kbd')).toHaveCount(0);
     await expect(form.getByText(/^(Sending|Responding|Stopping)[….]*$/)).toHaveCount(0);
     await expect(form.getByRole('status')).toHaveCount(0);
@@ -378,19 +392,21 @@ for (const context of contexts) {
     await expect(disabled.getByRole('textbox')).toBeDisabled();
     await expect(disabled.getByRole('button', { name: 'Send', exact: true })).toBeDisabled();
     await expect(disabled.getByRole('button', { name: 'Attach files' })).toBeDisabled();
-    const disabledShadow = await contactShadow(disabled, '--zao-color-border-subtle');
     await expect(disabled).toHaveCSS(
       'background-color',
       await colorToken(disabled, '--zao-color-bg-sunken'),
     );
-    await expect(disabled).toHaveCSS('box-shadow', disabledShadow);
+    await expect(disabled).toHaveCSS(
+      'border-color',
+      await colorToken(disabled, '--zao-color-border-subtle'),
+    );
+    await expect(disabled).toHaveCSS('--zao-plane-rest', '0px');
     await disabled.hover();
-    expect(
-      await disabled.getByRole('textbox').evaluate((node) => {
-        (node as HTMLTextAreaElement).focus();
-        return getComputedStyle(node.closest('form')!).boxShadow;
-      }),
-    ).toBe(disabledShadow);
+    await disabled.getByRole('textbox').focus();
+    await expect(disabled).toHaveCSS(
+      'border-color',
+      await colorToken(disabled, '--zao-color-border-subtle'),
+    );
     await expect(disabled.getByRole('textbox')).not.toBeFocused();
 
     const { violations } = await new AxeBuilder({ page })
@@ -448,6 +464,22 @@ test('compact icon actions retain keyboard labels and Escape-dismissible tooltip
   await expect(attach).toBeFocused();
 });
 
+test('forced colors replace Composer brackets with the system textarea outline', async ({
+  page,
+}) => {
+  const form = await openPage(page);
+  const input = form.getByRole('textbox', { name: 'Request', exact: true });
+  await page.emulateMedia({ forcedColors: 'active' });
+  await input.focus();
+  await expect(input).toHaveCSS('outline-style', 'solid');
+  await expect(input).toHaveCSS('outline-width', '2px');
+  await expect(form).toHaveCSS('border-style', 'solid');
+  await expect(form).toHaveCSS('border-width', '1px');
+  await expect
+    .poll(() => form.evaluate((node) => getComputedStyle(node, '::after').display))
+    .toBe('none');
+});
+
 test('context chips can be removed by pointer and keyboard without sending or changing the draft', async ({
   page,
 }) => {
@@ -479,13 +511,44 @@ test('context chips can be removed by pointer and keyboard without sending or ch
   await expect(context).toHaveCount(0);
   await expect(form.locator('[data-zao-slot="context"]')).toHaveCount(0);
   await expect(input).toBeFocused();
-  await expect(input).toHaveCSS('outline-style', 'solid');
-  await expect(input).toHaveCSS('outline-color', await colorToken(input, '--zao-color-focus-ring'));
+  await expect(input).toHaveCSS('outline-style', 'none');
+  await expectComposerBrackets(form, true);
   await expect(input).toHaveValue(draft);
   await expect(form.locator('[data-zao-slot="attachment-name"]')).toHaveText('retained.txt');
   await expect(form.getByRole('button', { name: 'Send', exact: true })).toBeEnabled();
   await expect(form).not.toHaveAttribute('data-zao-pending', '');
   await expectReady(form);
+});
+
+test('removed files and context draw inertly for one Lift beat', async ({ page }) => {
+  const form = await openPage(page);
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 1000));
+  await form.locator('input[type="file"]').setInputFiles({
+    name: 'one-beat.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('Temporary drawing'),
+  });
+  const tile = form.locator('[data-zao-slot="attachments"] > li');
+  await expect(tile).toHaveAttribute('data-zao-entering', '');
+  await page.clock.runFor(200);
+  await tile.getByRole('button', { name: 'Remove one-beat.txt' }).click();
+  await expect(tile).toHaveAttribute('data-zao-removing', '');
+  await expect(tile).toHaveAttribute('aria-hidden', 'true');
+  await expect(tile).toHaveAttribute('inert', '');
+  await page.clock.runFor(200);
+  await expect(form.locator('[data-zao-slot="attachments"]')).toHaveCount(0);
+
+  const chip = form.locator('[data-zao-slot="context-chip"]').first();
+  const label = await chip.locator('.composer-context-label').innerText();
+  const removal = form.getByRole('button', { name: `Remove ${label} context`, exact: true });
+  await removal.click();
+  await expect(chip).toHaveAttribute('data-zao-removing', '');
+  await expect(chip).toHaveAttribute('aria-hidden', 'true');
+  await expect(form.getByText(label, { exact: true })).toHaveCount(1);
+  await page.clock.runFor(200);
+  await expect(form.getByText(label, { exact: true })).toHaveCount(0);
+  await expect(form.getByRole('textbox')).toBeFocused();
 });
 
 test('empty guards, ordinary Enter, multiline paste, and shortcut share native submission behavior', async ({
@@ -635,6 +698,7 @@ test('pending Stop keeps its control busy until host confirmation and preserves 
   await page.clock.pauseAt(new Date(Date.now() + 1000));
   await countAcceptances(form);
   await input.fill('The accepted request');
+  await send.evaluate((node) => node.setAttribute('data-test-submit-node', ''));
   await send.click();
   await expect(send).toBeDisabled();
   await expect(send).toHaveAttribute('aria-busy', 'true');
@@ -643,6 +707,7 @@ test('pending Stop keeps its control busy until host confirmation and preserves 
   await expect(form.getByText(/^(Sending|Responding|Stopping)[….]*$/)).toHaveCount(0);
   await page.clock.runFor(750);
   const stop = form.getByRole('button', { name: 'Stop response', exact: true });
+  await expect(stop).toHaveAttribute('data-test-submit-node', '');
   await expect(stop).toBeEnabled();
   await expect(stop).not.toHaveAttribute('aria-busy', 'true');
   await expect(form).toHaveAttribute('data-zao-responding', '');

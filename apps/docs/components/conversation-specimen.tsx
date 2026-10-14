@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import { Copy, Database } from 'iconoir-react';
+import { Copy, Database, Page } from 'iconoir-react';
 import Markdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import {
@@ -26,6 +26,7 @@ type TranscriptMessage = {
   error?: string;
   rich?: boolean;
   lateResults?: number;
+  sentWith?: { id: string; label: string; icon: typeof Database }[];
 };
 
 const markdownComponents: Components = {
@@ -62,6 +63,7 @@ const initialMessages: TranscriptMessage[] = [
     id: 'request-1',
     kind: 'user',
     text: 'Summarize storage usage for the North workspace.',
+    sentWith: [{ id: 'request-1-context', label: 'Storage snapshot', icon: Database }],
   },
   {
     id: 'response-1',
@@ -249,16 +251,21 @@ export function ConversationSpecimen() {
       }, 400);
     });
     if (!mounted.current) return;
+    const sentWith = [
+      ...contextItems.map((item) => ({ ...item })),
+      ...draft.attachments.map((attachment) => ({
+        id: attachment.id,
+        label: attachment.file.name,
+        icon: Page,
+      })),
+    ];
     setMessages((current) => [
       ...current,
       {
         id: `request-${id}`,
         kind: 'user',
         text: draft.text || 'Review the attached files.',
-        metadata:
-          draft.attachments.length > 0
-            ? `Selected files: ${draft.attachments.map((attachment) => attachment.file.name).join(', ')} (local preview only)`
-            : 'Example request',
+        sentWith,
       },
       {
         id: `response-${id}`,
@@ -325,7 +332,7 @@ export function ConversationSpecimen() {
         className="card-construction min-w-0 border border-subtle bg-canvas"
         data-zao-example="assistant-panel"
       >
-        <header className="flex min-w-0 flex-wrap items-baseline justify-between gap-2 border-b border-subtle px-3 py-2">
+        <header className="flex min-w-0 flex-wrap items-baseline justify-between gap-2 px-3 py-2">
           <h3 className="type-label font-medium">ZAO assistant</h3>
           <p className="type-caption text-muted">North workspace</p>
         </header>
@@ -347,7 +354,29 @@ export function ConversationSpecimen() {
                     <Message.Content>
                       <div className="flex min-w-0 flex-col gap-3 break-words">
                         {message.kind === 'user' ? (
-                          <p className="whitespace-pre-wrap type-body">{message.text}</p>
+                          <>
+                            <p className="whitespace-pre-wrap type-body">{message.text}</p>
+                            {message.sentWith && message.sentWith.length > 0 ? (
+                              <ul
+                                aria-label="Sent with this request"
+                                className="flex min-w-0 flex-wrap gap-1.5"
+                              >
+                                {message.sentWith.map(({ id, label, icon: SentIcon }) => (
+                                  <li
+                                    key={id}
+                                    className="inline-flex min-h-6 min-w-0 max-w-full items-center gap-1.5 bg-sunken px-2 type-caption"
+                                  >
+                                    <SentIcon
+                                      aria-hidden="true"
+                                      focusable="false"
+                                      className="h-4 w-4 shrink-0 text-muted"
+                                    />
+                                    <span className="min-w-0 break-words">{label}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </>
                         ) : (
                           <Markdown components={markdownComponents}>{message.text}</Markdown>
                         )}
@@ -364,39 +393,43 @@ export function ConversationSpecimen() {
                         ))}
                       </div>
                     </Message.Content>
-                    {message.kind === 'assistant' && message.text && (
-                      <Message.Actions>
-                        <IconButton
-                          icon={Copy}
-                          aria-label="Copy response"
-                          variant="quiet"
-                          size="small"
-                          disabled={message.status === 'streaming'}
-                          onClick={() => void copyResponse(message)}
-                        />
-                        {copyFeedback?.id === message.id && (
-                          <span role="status" className="type-caption text-muted">
-                            {copyFeedback.text}
-                          </span>
-                        )}
-                        {message.status === 'error' && (
-                          <Button
-                            variant="secondary"
+                    {message.kind === 'assistant' && message.text ? (
+                      <>
+                        <Message.Actions placement="header">
+                          <IconButton
+                            icon={Copy}
+                            aria-label="Copy response"
+                            variant="quiet"
                             size="small"
-                            disabled={accepting || run !== null}
-                            onClick={() => retry(message.id)}
-                          >
-                            Retry response
-                          </Button>
-                        )}
-                      </Message.Actions>
-                    )}
+                            disabled={message.status === 'streaming'}
+                            onClick={() => void copyResponse(message)}
+                          />
+                          {copyFeedback?.id === message.id && (
+                            <span role="status" className="type-caption text-muted">
+                              {copyFeedback.text}
+                            </span>
+                          )}
+                        </Message.Actions>
+                        {message.status === 'error' ? (
+                          <Message.Actions>
+                            <Button
+                              variant="secondary"
+                              size="small"
+                              disabled={accepting || run !== null}
+                              onClick={() => retry(message.id)}
+                            >
+                              Retry response
+                            </Button>
+                          </Message.Actions>
+                        ) : null}
+                      </>
+                    ) : null}
                   </Message.Root>
                 </Conversation.Item>
               ))}
             </Conversation.List>
           </Conversation.Viewport>
-          <Conversation.Latest className="ml-3" />
+          <Conversation.Latest />
         </Conversation.Root>
 
         <div className="p-3">

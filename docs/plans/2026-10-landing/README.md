@@ -90,7 +90,7 @@ Composition is L5 B: copy left, figure right, from 64rem. At 1440×900 the first
 
 ### 2. Showcase (L15, WP 8)
 
-- **Stage (L8 A, L9).** A square stage in the main column, ruled by a subtle hairline, in the page's own mode: light on a light page, dark on a dark page. It inherits the landing island's finish and mode instead of setting its own. No new colors or tokens.
+- **Stage (L8 A, L9).** A square stage in the main column, ruled by a subtle hairline, in the page's own mode: light on a light page, dark on a dark page. It inherits the landing island's finish and mode instead of setting its own. No new colors or tokens. Its ground and the 00 canvas plate are `bg-sunken` (L18, Oct 13).
 - **Copy.** Eyebrow "Built with ZAO". Heading "One workspace, built from shared parts." Sentence: "A working workspace and its assistant, made from 11 ZAO components. Approve the waiting requests, then show the parts." The count comes from the same list that labels the parts. From 64rem the heading and sentence sit side by side, so the window starts high.
 - **Window.** One Card-built frame (`card-shaded-construction`, subtle border, `bg-surface`). The bar holds the workspace name, primary Tabs (Overview, Requests, Members, Settings), a View Menu and a settings IconButton; Menu and IconButton switch views or reset the example.
 - **Overview.** A Storage Card with the 68% ring, a Seats Card with Progress (48 of 60), a short reading list and an Email updates Switch, and the six requests in a Table with D10's status glyphs. Other views take the overview's height, so switching tabs never resizes the window.
@@ -172,6 +172,12 @@ Rules:
 | V10 | Bracket set                | **Beside the headline (A, Oct 11, later).** First moved to Explore and the nav; Yankun then put it back at the top, smaller (256px), split beside the copy. It keeps L14's answer and L17's ghosting. |
 | —   | Showcase                   | **Merged into the hero.** Supersedes L15's separate section; the window, its components and its sample data are unchanged. L8 (stage in the main column) and L9 stay.                                 |
 | —   | Motion on the landing page | The hero's moves are the Parts/Built change (grade 1, 举折 enter and exit curves), the pick and the keyboard. The bracket set keeps its own answer beside the headline.                               |
+
+### Decided Oct 13
+
+| #   | Decision     | Outcome                                                                                                                                                                                                       |
+| --- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L18 | Stage ground | **A, sunken.** The stage and its 00 canvas plate use `bg-sunken`, a step below the window's surface, so the parts stand off the ground in both poses. Existing role, no new colors; L9 stays. B–E unselected. |
 
 ### Still open
 

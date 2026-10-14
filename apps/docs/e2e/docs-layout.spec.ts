@@ -164,7 +164,7 @@ for (const width of [1440, 1920, 768, 360]) {
     expect(preview.width).toBeCloseTo(mainBox.width, 1);
 
     const sections = main.locator('.docs-detail-section');
-    await expect(sections).toHaveCount(4);
+    await expect(sections).toHaveCount(5);
     const contentStarts: number[] = [];
     for (const section of await sections.all()) {
       const heading = await bounds(section.locator(':scope > h2'));

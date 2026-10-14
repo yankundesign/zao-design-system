@@ -51,6 +51,10 @@ async function tokenValue(element: Locator, token: string, property: 'color' | '
   );
 }
 
+async function composerBrackets(form: Locator) {
+  return form.evaluate((node) => Number.parseFloat(getComputedStyle(node, '::after').opacity));
+}
+
 test('new component pages are discoverable and server render named native content', async ({
   page,
   request,
@@ -77,7 +81,12 @@ test('chronological rich content has explicit authorship and separate lifecycle 
   expect(await list.locator(':scope > li').count()).toBeGreaterThan(4);
   await expect(viewport).toHaveAttribute('tabindex', '0');
   expect(await viewport.getAttribute('aria-label')).toBeTruthy();
-  await expect(list.locator('[data-zao-slot="author"]').first()).toBeVisible();
+  await expect(
+    list.locator('[data-zao-kind="assistant"] [data-zao-slot="author"]').first(),
+  ).toBeVisible();
+  const request = list.locator('[data-zao-kind="user"]').first();
+  await expect(request).toHaveAccessibleName('You');
+  await expect(request.locator('[data-zao-slot="author"]')).toBeHidden();
   await expect(list.locator('[data-zao-component="card"]')).toHaveCount(1);
   await expect(list.locator('table')).toHaveCount(1);
   await expect(list.locator('[aria-live]')).toHaveCount(0);
@@ -86,6 +95,86 @@ test('chronological rich content has explicit authorship and separate lifecycle 
     'polite',
   );
   await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
+});
+
+test('requests read as trailing slips with exchange rhythm and scroll eaves', async ({ page }) => {
+  const { conversation, viewport } = await openConversation(page);
+  const list = conversation.locator('ol[data-zao-slot="list"]');
+  const request = list.locator('[data-zao-kind="user"]').first();
+  const answer = list.locator('[data-zao-kind="assistant"]').first();
+  const nextRequest = list.locator('[data-zao-kind="user"]').nth(1);
+  await expect(request).toHaveAccessibleName('You');
+  await expect(request.locator('[data-zao-slot="author"]')).toBeHidden();
+  await expect(request).not.toHaveAttribute('data-zao-entering', '');
+  const positions = await Promise.all(
+    [request, answer, nextRequest].map((item) => item.boundingBox()),
+  );
+  expect(positions.every(Boolean)).toBe(true);
+  expect(positions[1]!.y - positions[0]!.y - positions[0]!.height).toBeCloseTo(16, 0);
+  expect(positions[2]!.y - positions[1]!.y - positions[1]!.height).toBeCloseTo(32, 0);
+  const listBounds = (await list.boundingBox())!;
+  const listInset = Number.parseFloat(await tokenValue(list, '--zao-space-3', 'width'));
+  expect(positions[0]!.x + positions[0]!.width).toBeCloseTo(
+    listBounds.x + listBounds.width - listInset,
+    0,
+  );
+
+  const eaves = await viewport.evaluate((node) => ({
+    supported: CSS.supports('animation-timeline', 'scroll()'),
+    top: getComputedStyle(node, '::before').animationName,
+    bottom: getComputedStyle(node, '::after').animationName,
+  }));
+  if (eaves.supported) {
+    expect(eaves.top).toBe('zao-conversation-eave-in');
+    expect(eaves.bottom).toBe('zao-conversation-eave-out');
+    const readEaves = () =>
+      viewport.evaluate((node) => ({
+        top: Number.parseFloat(getComputedStyle(node, '::before').opacity),
+        bottom: Number.parseFloat(getComputedStyle(node, '::after').opacity),
+      }));
+    await viewport.evaluate((node) => {
+      node.scrollTop = 0;
+    });
+    await expect.poll(async () => (await readEaves()).top).toBeCloseTo(0, 1);
+    await expect.poll(async () => (await readEaves()).bottom).toBeCloseTo(1, 1);
+    await viewport.evaluate((node) => {
+      node.scrollTop = node.scrollHeight / 2;
+    });
+    await expect.poll(async () => (await readEaves()).top).toBeCloseTo(1, 1);
+    await expect.poll(async () => (await readEaves()).bottom).toBeCloseTo(1, 1);
+    await viewport.evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
+    await expect.poll(async () => (await readEaves()).top).toBeCloseTo(1, 1);
+    await expect.poll(async () => (await readEaves()).bottom).toBeCloseTo(0, 1);
+    await page.emulateMedia({ forcedColors: 'active' });
+    await expect(viewport).toHaveCSS('display', 'block');
+    expect(await viewport.evaluate((node) => getComputedStyle(node, '::before').display)).toBe(
+      'none',
+    );
+  } else {
+    expect(eaves.top).toBe('none');
+    expect(eaves.bottom).toBe('none');
+  }
+
+  await page.emulateMedia({ forcedColors: 'none' });
+  await conversation.evaluate((node) => node.setAttribute('dir', 'rtl'));
+  const rtlRequest = list.locator('[data-zao-kind="user"]').first();
+  const rtlBounds = (await rtlRequest.boundingBox())!;
+  const rtlListBounds = (await list.boundingBox())!;
+  expect(rtlBounds.x).toBeCloseTo(rtlListBounds.x + listInset, 0);
+  await viewport.evaluate((node) => {
+    node.scrollTop = 0;
+  });
+  const latest = conversation.getByRole('button', { name: 'Latest response', exact: true });
+  await expect(latest).toBeVisible();
+  const latestBounds = (await latest.boundingBox())!;
+  const conversationBounds = (await conversation.boundingBox())!;
+  expect(latestBounds.x).toBeCloseTo(
+    conversationBounds.x + conversationBounds.width - latestBounds.width - listInset,
+    0,
+  );
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 test('removing follow-up context preserves the next draft, selected files, and conversation history', async ({
@@ -111,6 +200,7 @@ test('removing follow-up context preserves the next draft, selected files, and c
   await input.click();
   await expect(input).toBeFocused();
   await expect(input).toHaveCSS('outline-style', 'none');
+  await expect.poll(() => composerBrackets(form)).toBe(0);
   await input.press('End');
   await input.pressSequentially('with details');
   await expect(input).toHaveCSS('outline-style', 'none');
@@ -120,7 +210,8 @@ test('removing follow-up context preserves the next draft, selected files, and c
   await expect(attach).toBeFocused();
   await attach.press('Shift+Tab');
   await expect(input).toBeFocused();
-  await expect(input).toHaveCSS('outline-style', 'solid');
+  await expect(input).toHaveCSS('outline-style', 'none');
+  await expect.poll(() => composerBrackets(form)).toBe(1);
   await form.getByRole('button', { name: 'Remove Storage snapshot context', exact: true }).click();
   await expect(form.getByRole('list', { name: 'Included context' })).toHaveCount(0);
   await expect(form.locator('[data-zao-slot="context"]')).toHaveCount(0);
@@ -146,11 +237,15 @@ test('reading earlier content survives late results and Latest keeps keyboard fo
 }) => {
   const { specimen, conversation, viewport } = await openConversation(page);
   await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
+  const viewportHeight = await viewport.evaluate((element) => element.clientHeight);
   await viewport.evaluate((element) => {
     element.scrollTop = 0;
   });
   const latest = conversation.getByRole('button', { name: 'Latest response', exact: true });
   await expect(latest).toBeVisible();
+  await expect(latest).toHaveCSS('position', 'absolute');
+  await expect(latest).toHaveAttribute('data-zao-variant', 'secondary');
+  expect(await viewport.evaluate((element) => element.clientHeight)).toBe(viewportHeight);
   const before = await viewport.evaluate((element) => ({
     top: element.scrollTop,
     height: element.scrollHeight,
@@ -164,6 +259,8 @@ test('reading earlier content survives late results and Latest keeps keyboard fo
   await latest.press('Enter');
   await expect(latest).toBeFocused();
   await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
+  await latest.evaluate((element) => (element as HTMLElement).blur());
+  await expect(latest).toHaveCount(0);
 });
 
 test('streaming follows at the end, preserves a next draft, and stopping keeps partial output', async ({
@@ -176,7 +273,18 @@ test('streaming follows at the end, preserves a next draft, and stopping keeps p
   const partial = conversation
     .locator('[data-zao-kind="assistant"][data-zao-status="streaming"]')
     .last();
+  const request = conversation.locator('[data-zao-kind="user"]').last();
   await expect(partial).toBeVisible();
+  await expect(request.locator('xpath=..')).toHaveAttribute('data-zao-entering', '');
+  await expect(partial.locator('[data-zao-slot="status"] .button-loading-indicator')).toHaveCount(
+    1,
+  );
+  const constructionLine = await partial.evaluate((node) => ({
+    width: getComputedStyle(node, '::before').width,
+    background: getComputedStyle(node, '::before').backgroundImage,
+  }));
+  expect(constructionLine.width).toBe('1px');
+  expect(constructionLine.background).toContain('repeating-linear-gradient');
   await expect.poll(() => partial.locator('[data-zao-slot="content"]').innerText()).not.toBe('');
   await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
   await input.fill('Prepare another question.');
@@ -378,6 +486,17 @@ test('keyboard scroll-back suspends following', async ({ page }) => {
   await expect(viewport).toBeFocused();
 });
 
+test('reduced motion keeps a new request at rest instead of revealing it', async ({ page }) => {
+  const { specimen, conversation } = await openConversation(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const input = specimen.getByRole('textbox', { name: 'Follow-up request', exact: true });
+  await input.fill('A reduced-motion hand-off.');
+  await input.press('Control+Enter');
+  const request = conversation.locator('[data-zao-kind="user"]').last();
+  await expect(request.locator('xpath=..')).toHaveAttribute('data-zao-entering', '');
+  await expect(request).toHaveCSS('transition-property', 'none');
+});
+
 for (const context of contexts) {
   test(`${context.name}: rich messages are accessible, stationary, and fit a narrow viewport`, async ({
     page,
@@ -433,7 +552,8 @@ for (const context of contexts) {
     await remove.press('Tab');
     const input = form.getByRole('textbox', { name: 'Follow-up request', exact: true });
     await expect(input).toBeFocused();
-    await expect(input).toHaveCSS('outline-style', 'solid');
+    await expect(input).toHaveCSS('outline-style', 'none');
+    await expect.poll(() => composerBrackets(form)).toBe(1);
     await input.press('Tab');
     await expect(form.getByRole('button', { name: 'Attach files', exact: true })).toBeFocused();
     await expect(form.locator('kbd')).toHaveCount(0);

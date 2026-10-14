@@ -76,7 +76,11 @@ async function build(page: Page) {
     Promise.all(
       node
         .getAnimations({ subtree: true })
-        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .filter(
+          (animation) =>
+            animation.timeline instanceof DocumentTimeline &&
+            animation.effect?.getTiming().iterations !== Infinity,
+        )
         .map((animation) => animation.finished.catch(() => undefined)),
     ),
   );
@@ -347,6 +351,17 @@ test.describe('the workspace', () => {
     await expect(liveWindow(page)).toBeHidden();
     await expect(page.getByRole('button', { name: 'Approve 2 requests' })).toHaveCount(0);
     await expect(drawing.locator('.exploded-layer')).toHaveCount(6);
+    const cards = drawing.locator('.exploded-layer[data-layer="card"] [data-exploded-copy]');
+    await expect(cards.locator('[data-zao-component="composer"]')).toHaveCSS(
+      'visibility',
+      'visible',
+    );
+    await expect(
+      cards.locator('[data-zao-component="message"][data-zao-kind="user"]').first(),
+    ).toHaveCSS('visibility', 'visible');
+    for (const control of await cards.locator('[data-zao-component="icon-button"]').all()) {
+      await expect(control).toHaveCSS('visibility', 'hidden');
+    }
     await expect(drawing.locator('.exploded-tag-name')).toHaveText([
       /^00 canvas/,
       /^01 surface/,
@@ -454,7 +469,7 @@ test('explore tiles are whole links and lift one drawn part', async ({ page }) =
   await expect(tiles.nth(0)).toHaveAttribute('href', '/foundations/color');
   await expect(tiles.nth(1)).toHaveAttribute('href', '/components/button');
   await expect(tiles.nth(2)).toHaveAttribute('href', '/charts');
-  await expect(tiles.nth(1)).toContainText('14 parts, one construction.');
+  await expect(tiles.nth(1)).toContainText('16 parts, one construction.');
   const figure = tiles.nth(1).locator('svg');
   await expect(figure).toHaveAttribute('aria-hidden', 'true');
   await tiles.nth(1).hover();

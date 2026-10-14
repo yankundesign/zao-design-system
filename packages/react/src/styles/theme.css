@@ -431,6 +431,471 @@
   --zao-face-offset: 0px;
 }
 
+@property --zao-plan-fill {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+@property --zao-plan-draw {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@utility zao-plan {
+  min-width: 0;
+
+  & .zao-plan-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--zao-space-1) var(--zao-space-3);
+    margin-block-end: var(--zao-space-2);
+  }
+
+  & .zao-plan-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & .zao-plan-step {
+    position: relative;
+    min-width: 0;
+    padding-block-end: var(--zao-space-1);
+    padding-inline-start: var(--zao-space-6);
+  }
+
+  & .zao-plan-step::before {
+    position: absolute;
+    inset-block-start: calc(var(--zao-space-2) + (var(--zao-space-5) - var(--zao-space-2)) / 2);
+    inset-inline-start: 0;
+    z-index: 1;
+    width: var(--zao-space-2);
+    height: var(--zao-space-2);
+    border: var(--zao-stroke-hairline) solid var(--zao-color-border-default);
+    background: var(--zao-color-bg-canvas);
+    content: '';
+    transition:
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      border-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+  }
+
+  & .zao-plan-step::after {
+    position: absolute;
+    inset-block-start: calc(
+      var(--zao-space-2) + (var(--zao-space-5) - var(--zao-space-2)) / 2 + var(--zao-space-2)
+    );
+    inset-block-end: calc(
+      -1 * (var(--zao-space-1) + var(--zao-space-2) + (var(--zao-space-5) - var(--zao-space-2)) / 2)
+    );
+    inset-inline-start: calc(var(--zao-space-1) - var(--zao-stroke-hairline) / 2);
+    width: var(--zao-stroke-hairline);
+    background:
+      linear-gradient(
+        to bottom,
+        var(--zao-color-fg-default) 0 var(--zao-plan-fill),
+        transparent var(--zao-plan-fill)
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        var(--zao-color-border-default) 0 var(--zao-space-1),
+        transparent var(--zao-space-1) var(--zao-space-2)
+      );
+    content: '';
+    transition: --zao-plan-fill var(--zao-motion-duration-slide) var(--zao-motion-easing-slide);
+  }
+
+  & .zao-plan-step[data-zao-last]::after {
+    display: none;
+  }
+
+  & .zao-plan-step[data-zao-status='done']::before,
+  & .zao-plan-step[data-zao-status='declined']::before {
+    border-color: var(--zao-color-fg-default);
+    background: var(--zao-color-fg-default);
+  }
+
+  & .zao-plan-step[data-zao-status='running']::before,
+  & .zao-plan-step[data-zao-status='waiting']::before {
+    border-color: var(--zao-color-fg-default);
+  }
+
+  & .zao-plan-step[data-zao-status='failed']::before {
+    border-color: var(--zao-color-danger-border);
+    background: var(--zao-color-danger-subtle);
+  }
+
+  & .zao-plan-step[data-zao-status='skipped']::before {
+    border-color: var(--zao-color-border-subtle);
+  }
+  & .zao-plan-step[data-zao-status='skipped']::after {
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--zao-color-border-subtle) 0 var(--zao-space-1),
+      transparent var(--zao-space-1) var(--zao-space-2)
+    );
+  }
+
+  & .zao-plan-row {
+    display: grid;
+    grid-template-columns: var(--zao-space-5) minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: var(--zao-space-3);
+    padding-block: var(--zao-space-2);
+  }
+
+  & .zao-plan-index {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  & .zao-plan-copy {
+    grid-column: 2;
+    min-width: 0;
+  }
+  & .zao-plan-title {
+    display: block;
+  }
+  & .zao-plan-detail {
+    margin-block-start: var(--zao-space-0-5);
+  }
+  & .zao-plan-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--zao-space-1-5);
+    white-space: nowrap;
+    color: var(--zao-color-fg-muted);
+  }
+  & [data-zao-status='running'] .zao-plan-status,
+  & [data-zao-status='waiting'] .zao-plan-status,
+  & [data-zao-status='failed'] .zao-plan-status {
+    color: var(--zao-color-fg-default);
+    font-weight: 500;
+  }
+  & [data-zao-status='failed'] .zao-plan-status {
+    color: var(--zao-color-danger-text);
+  }
+  & [data-zao-status='planned'] .zao-plan-title,
+  & [data-zao-status='skipped'] .zao-plan-title {
+    color: var(--zao-color-fg-muted);
+  }
+  & .zao-plan-status .button-loading-indicator {
+    width: var(--zao-space-3);
+    height: var(--zao-space-3);
+  }
+  & .zao-plan-body {
+    margin-block-start: var(--zao-space-2);
+    padding-inline-start: calc(var(--zao-space-5) + var(--zao-space-3));
+  }
+  & .zao-plan-pen {
+    display: none;
+  }
+
+  & .zao-plan-step[data-zao-draw] {
+    --zao-plan-draw: 1;
+    clip-path: inset(
+      calc(-1 * var(--zao-space-1))
+        calc((1 - var(--zao-plan-draw)) * (100% + var(--zao-space-1)) - var(--zao-space-1))
+        calc(-1 * var(--zao-space-1)) calc(-1 * var(--zao-space-1))
+    );
+    transition: --zao-plan-draw var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+      var(--zao-plan-delay);
+  }
+  & .zao-plan-step[data-zao-draw] .zao-plan-pen {
+    position: absolute;
+    z-index: 2;
+    inset-block: calc(-1 * var(--zao-stroke-hairline));
+    inset-inline-start: calc(var(--zao-plan-draw) * 100%);
+    display: block;
+    width: var(--zao-stroke-hairline);
+    background: var(--zao-color-fg-default);
+    opacity: clamp(0, (1 - var(--zao-plan-draw)) * 6, 1);
+    pointer-events: none;
+  }
+  @starting-style {
+    & .zao-plan-step[data-zao-draw] {
+      --zao-plan-draw: 0;
+    }
+  }
+  &:dir(rtl) .zao-plan-step[data-zao-draw] {
+    clip-path: inset(
+      calc(-1 * var(--zao-space-1)) calc(-1 * var(--zao-space-1)) calc(-1 * var(--zao-space-1))
+        calc((1 - var(--zao-plan-draw)) * (100% + var(--zao-space-1)) - var(--zao-space-1))
+    );
+  }
+  @media (prefers-reduced-motion: reduce) {
+    & .zao-plan-step::before {
+      transition: none;
+    }
+    & .zao-plan-step::after {
+      transition: none;
+    }
+    & .zao-plan-step[data-zao-draw] {
+      clip-path: none;
+      transition: none;
+    }
+    & .zao-plan-step[data-zao-draw] .zao-plan-pen {
+      display: none;
+    }
+  }
+  @media (forced-colors: active) {
+    & .zao-plan-step::before,
+    & .zao-plan-step::after {
+      border-color: CanvasText;
+      background-color: Canvas;
+    }
+    & .zao-plan-step[data-zao-status='done']::before,
+    & .zao-plan-step[data-zao-status='declined']::before {
+      background-color: CanvasText;
+    }
+    & .zao-plan-step[data-zao-status='failed']::before {
+      border-color: CanvasText;
+      background-color: Canvas;
+    }
+    & .zao-plan-step::after {
+      background: CanvasText;
+    }
+    & .zao-plan-pen {
+      background: CanvasText;
+    }
+  }
+}
+
+@utility approval-gate-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-3);
+}
+
+@utility approval-gate-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--zao-space-1) var(--zao-space-3);
+}
+
+@utility approval-gate-facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--zao-space-1) var(--zao-space-4);
+  margin: 0;
+}
+
+@utility approval-gate-fact {
+  display: contents;
+}
+
+@utility approval-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zao-space-2) var(--zao-space-3);
+  min-block-size: var(--zao-size-control-md);
+  padding-block-start: var(--zao-space-3);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+@utility approval-gate-actions-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zao-space-2);
+}
+
+@utility approval-gate-record {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--zao-space-3);
+  width: 100%;
+  text-align: end;
+  &[data-zao-new] {
+    opacity: 1;
+    transition: opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+    @starting-style {
+      opacity: 0;
+    }
+  }
+  &[data-zao-new] [data-zao-slot='impression'] {
+    opacity: 1;
+    transition: opacity var(--zao-motion-duration-impress) var(--zao-motion-easing-impress);
+    @starting-style {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &[data-zao-new],
+    &[data-zao-new] [data-zao-slot='impression'] {
+      transition: none;
+    }
+  }
+}
+
+@utility approval-gate-record-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-0-5);
+}
+
+@utility approval-gate-impression {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--zao-size-control-md);
+  height: var(--zao-size-control-md);
+  color: var(--zao-color-bg-surface);
+  background: var(--zao-color-accent-solid);
+  font-family:
+    var(--zao-font-family-display), 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', serif;
+  font-size: calc(var(--zao-size-control-md) * 0.62);
+  font-weight: var(--zao-font-weight-strong);
+  line-height: 1;
+  @supports (corner-shape: bevel) {
+    border-top-right-radius: var(--zao-radius-facet);
+    corner-shape: bevel;
+  }
+  & > span {
+    color: var(--zao-color-bg-surface);
+    transform: translateY(calc(var(--zao-size-control-md) * 0.02));
+  }
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    color: Canvas;
+    background: CanvasText;
+    & > span {
+      color: Canvas;
+    }
+  }
+}
+
+@utility construction-drawing {
+  --zao-plane-rest: 0px !important;
+  --zao-construction-face: transparent;
+  border-color: var(--zao-color-fg-default) !important;
+  background: transparent !important;
+  transition: none !important;
+
+  & :where(*) {
+    color: transparent !important;
+  }
+  & :where(*) {
+    text-decoration-line: underline overline;
+    text-decoration-color: var(--zao-color-border-default);
+    text-decoration-style: solid;
+    text-decoration-thickness: var(--zao-stroke-hairline);
+    text-decoration-skip-ink: none;
+    text-underline-offset: 0.18em;
+  }
+  & :where(svg) {
+    color: var(--zao-color-border-default) !important;
+  }
+  & :where(*) {
+    transition: none !important;
+    animation: none !important;
+  }
+  & :where(.construction-well, .field-well, [role='progressbar'], .progress-track, meter) {
+    border: var(--zao-stroke-hairline) solid var(--zao-color-border-default) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  & :where(button, [data-zao-component='button']) {
+    --zao-plane-rest: 0px !important;
+    --zao-face-offset: 0px !important;
+    border-color: var(--zao-color-border-default) !important;
+    background: transparent !important;
+  }
+  & :where([data-zao-component='button'] > [data-zao-slot='face']) {
+    background: transparent !important;
+    box-shadow: inset 0 0 0 var(--zao-stroke-hairline) var(--zao-color-border-default) !important;
+    transform: none !important;
+  }
+  &
+    :where(
+      .progress-construction > [data-zao-slot='track'],
+      .progress-construction [data-zao-slot='indicator']
+    ) {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  & :where(.progress-construction > [data-zao-slot='track'])::before {
+    border-color: var(--zao-color-border-default) !important;
+    box-shadow: none !important;
+  }
+  & :where(.progress-construction [data-zao-slot='indicator'])::after {
+    display: none;
+  }
+  &
+    :where(
+      table > tbody > tr:hover,
+      table > tbody > tr:focus-within,
+      table > tbody > tr[data-selected]
+    ) {
+    background: transparent !important;
+  }
+  & :where(table > thead, table > tbody + tbody, table > tbody > tr + tr, table > tfoot) {
+    border-color: var(--zao-color-border-subtle);
+  }
+  @media (forced-colors: active) {
+    border-color: CanvasText !important;
+    & :where(*) {
+      text-decoration-color: CanvasText;
+    }
+    & :where(svg) {
+      color: CanvasText !important;
+    }
+  }
+}
+
+[data-zao-building] {
+  transition:
+    --zao-plane-rest var(--zao-motion-duration-lift) var(--zao-motion-easing-lift)
+      calc(var(--zao-motion-duration-reveal-exit) + var(--zao-motion-duration-reveal) / 2),
+    background-color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+      var(--zao-motion-duration-reveal-exit),
+    border-color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+      var(--zao-motion-duration-reveal-exit);
+  & :where(*) {
+    text-decoration-line: underline overline;
+    text-decoration-color: transparent;
+    text-decoration-style: solid;
+    text-decoration-thickness: var(--zao-stroke-hairline);
+    text-decoration-skip-ink: none;
+    text-underline-offset: 0.18em;
+    transition:
+      --zao-plane-rest var(--zao-motion-duration-lift) var(--zao-motion-easing-lift)
+        calc(var(--zao-motion-duration-reveal-exit) + var(--zao-motion-duration-reveal) / 2),
+      color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-reveal-exit),
+      background-color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-reveal-exit),
+      border-color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-reveal-exit),
+      box-shadow var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-reveal-exit),
+      text-decoration-color var(--zao-motion-duration-reveal-exit) var(--zao-motion-easing-exit);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-zao-building],
+  [data-zao-building] :where(*) {
+    transition: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  [data-zao-drawing] {
+    border-color: CanvasText !important;
+  }
+  [data-zao-drawing] :where(*) {
+    text-decoration-color: CanvasText !important;
+  }
+}
+
 /* Focus arrives as four ink brackets that close in from a few pixels out over a control's
  * grade duration, then hold still outside the part (V12, V1c). They never move with the
  * face. Each bracket is a corner of an outline, cut out by an even-odd polygon, so focus adds

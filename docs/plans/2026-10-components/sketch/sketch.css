@@ -1,0 +1,1268 @@
+/*
+ * Reference only: the recipes from the Oct 13 Plan, Seal and Drawing sketch, scoped under
+ * .sk[data-sk-<row>='<option>']. It is not built or published with ZAO. Port the recipes into
+ * components as the plan describes; don't copy the selectors.
+ */
+@import 'tailwindcss';
+@import '@zao/react/fonts.css';
+@import '@zao/react/theme.css';
+
+@source '../../../packages/react/src';
+@source './';
+
+/* The seal's mark: one glyph, 准, subset from Noto Serif SC Bold (SIL OFL). */
+@font-face {
+  font-family: 'ZAO Seal';
+  src: url('./seal-glyph.woff2') format('woff2');
+  font-weight: 700;
+  font-display: block;
+  unicode-range: U+51C6;
+}
+
+/*
+ * Page shell. Layout: a two-column review bench (live specimen | proposal rail) under a plain
+ * header, with the written review below. Every color and type role comes from ZAO.
+ */
+:root {
+  --sk-gutter: var(--zao-space-4);
+  --sk-rail: 22.5rem;
+}
+
+html,
+body {
+  background: var(--zao-color-bg-canvas);
+  color: var(--zao-color-fg-default);
+}
+
+body {
+  margin: 0;
+  font-family: var(--zao-font-family-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+code {
+  font-family: var(--zao-font-family-mono);
+  font-size: 0.875em;
+}
+
+.sk-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-10);
+  max-inline-size: calc(var(--zao-space-1) * 330);
+  margin-inline: auto;
+  padding-inline: var(--sk-gutter);
+  padding-block: var(--zao-space-8) var(--zao-space-16);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --sk-gutter: var(--zao-space-8);
+  }
+}
+
+.sk-eyebrow {
+  @apply type-caption;
+  color: var(--zao-color-fg-muted);
+  letter-spacing: 0.02em;
+}
+
+.sk-lede {
+  max-inline-size: 42rem;
+}
+
+.sk-top {
+  display: grid;
+  gap: var(--zao-space-6);
+  padding-block-end: var(--zao-space-6);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+@media (min-width: 64rem) {
+  .sk-top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+}
+
+.sk-globals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zao-space-4) var(--zao-space-5);
+  align-items: end;
+}
+
+.sk-global {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-1-5);
+}
+
+.sk-global-label {
+  @apply type-caption;
+  color: var(--zao-color-fg-muted);
+}
+
+/* Segmented radio: a recessed track holding one built face for the current choice. */
+.sk-seg {
+  @apply construction-well;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--zao-space-0-5);
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  padding: var(--zao-space-0-5);
+  border: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  background: var(--zao-color-bg-sunken);
+}
+
+.sk-seg-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zao-space-1-5);
+  min-block-size: var(--zao-space-6);
+  padding-inline: var(--zao-space-2);
+  @apply type-caption;
+  color: var(--zao-color-fg-muted);
+  cursor: pointer;
+  user-select: none;
+
+  & input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  &:hover:not([data-checked]) {
+    color: var(--zao-color-fg-default);
+  }
+
+  &[data-checked] {
+    color: var(--zao-color-fg-default);
+    background: var(--zao-color-bg-surface);
+    box-shadow:
+      inset 0 0 0 var(--zao-stroke-hairline) var(--zao-color-border-default),
+      calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+        calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+        var(--zao-color-border-default);
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--zao-color-focus-ring);
+    outline-offset: 2px;
+    z-index: 1;
+  }
+}
+
+/* The lean marker: one small ink square. */
+.sk-lean {
+  inline-size: var(--zao-space-1);
+  block-size: var(--zao-space-1);
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.sk-main {
+  display: grid;
+  gap: var(--zao-space-8);
+  align-items: start;
+}
+
+@media (min-width: 64rem) {
+  .sk-main {
+    grid-template-columns: minmax(0, 1fr) var(--sk-rail);
+  }
+
+  .sk-side {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + var(--zao-space-4));
+    max-block-size: calc(100dvh - var(--zao-space-8));
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+.sk-stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-8);
+  min-inline-size: 0;
+}
+
+.sk-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-6);
+  min-inline-size: 0;
+  padding-inline-end: var(--zao-space-1);
+}
+
+.sk-side-group {
+  padding-block-end: var(--zao-space-2);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-default);
+}
+
+.sk-prop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-2);
+  padding-block: var(--zao-space-4);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.sk-code {
+  @apply type-code figures-id;
+  color: var(--zao-color-fg-muted);
+  flex-shrink: 0;
+  min-inline-size: 1.75rem;
+}
+
+.sk-prop[data-changed] .sk-code {
+  color: var(--zao-color-fg-default);
+}
+
+.sk-decided {
+  @apply type-caption;
+  margin-inline-start: auto;
+  padding-inline: var(--zao-space-1-5);
+  border: var(--zao-stroke-hairline) solid var(--zao-color-border-default);
+  color: var(--zao-color-fg-default);
+  white-space: nowrap;
+}
+
+.sk-try {
+  color: var(--zao-color-fg-muted);
+  font-style: italic;
+}
+
+.sk-prose {
+  max-inline-size: 42rem;
+  text-wrap: pretty;
+}
+
+.sk-panel {
+  min-inline-size: 0;
+}
+
+.sk-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-4);
+  min-inline-size: 0;
+  padding: var(--zao-space-3);
+}
+
+.sk-bench {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-4);
+  min-inline-size: 0;
+  padding-block-start: var(--zao-space-6);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.sk-bench-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-1);
+}
+
+.sk-gate-grid,
+.sk-load-grid {
+  display: grid;
+  gap: var(--zao-space-6) var(--zao-space-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
+  align-items: start;
+}
+
+.sk-gate-label {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--zao-size-control-sm);
+}
+
+.sk-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-8);
+  padding-block-start: var(--zao-space-8);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.sk-notes-grid {
+  display: grid;
+  gap: var(--zao-space-8);
+}
+
+@media (min-width: 64rem) {
+  .sk-notes-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sk-findings {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-finding {
+  display: flex;
+  gap: var(--zao-space-3);
+  padding-block: var(--zao-space-3);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+/* Slow motion for review: every role this sketch reads, at four times its duration. */
+.sk[data-sk-speed='quarter'] {
+  --zao-motion-duration-fast: calc(80ms * 4);
+  --zao-motion-duration-grade-1: calc(270ms * 4);
+  --zao-motion-duration-grade-3: calc(225ms * 4);
+  --zao-motion-duration-grade-5: calc(198ms * 4);
+  --zao-motion-duration-grade-7: calc(157.5ms * 4);
+  --zao-motion-duration-grade-8: calc(135ms * 4);
+  --zao-motion-duration-lift: calc(157.5ms * 4);
+  --zao-motion-duration-slide: calc(157.5ms * 4);
+  --zao-motion-duration-reveal: calc(198ms * 4);
+  --zao-motion-duration-seat: calc(80ms * 4);
+  --zao-motion-duration-reveal-exit: calc(80ms * 4);
+}
+
+/* ===================================================================== P · Plan */
+
+.sk-plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-2);
+  min-inline-size: 0;
+}
+
+.sk-plan-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--zao-space-1) var(--zao-space-3);
+}
+
+.sk-steps {
+  --sk-pad-x: var(--zao-space-3);
+  --sk-marker: var(--zao-space-5);
+  --sk-col-gap: var(--zao-space-3);
+  --sk-lead: 0px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-2);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-2);
+  min-inline-size: 0;
+  padding-inline-start: var(--sk-lead);
+}
+
+.sk-step-part {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--sk-marker) minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: var(--sk-col-gap);
+  min-inline-size: 0;
+  padding: var(--zao-space-2) var(--sk-pad-x);
+}
+
+.sk-step-marker {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--zao-space-5);
+}
+
+.sk-step-index {
+  color: var(--zao-color-fg-muted);
+}
+
+.sk-step-glyph {
+  display: none;
+  inline-size: var(--zao-size-icon-sm);
+  block-size: var(--zao-size-icon-sm);
+
+  & svg {
+    inline-size: 100%;
+    block-size: 100%;
+    stroke-width: 1.5;
+  }
+}
+
+.sk-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-0-5);
+  min-inline-size: 0;
+}
+
+.sk-step-detail {
+  color: var(--zao-color-fg-muted);
+}
+
+.sk-step-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zao-space-1-5);
+  min-block-size: var(--zao-space-5);
+  color: var(--zao-color-fg-muted);
+  white-space: nowrap;
+}
+
+.sk-arc {
+  inline-size: var(--zao-space-3);
+  block-size: var(--zao-space-3);
+  flex-shrink: 0;
+}
+
+.sk-step:is([data-status='running'], [data-status='waiting']) .sk-step-status {
+  color: var(--zao-color-fg-default);
+  font-weight: var(--zao-font-weight-medium);
+}
+
+.sk-step[data-status='failed'] .sk-step-status {
+  color: var(--zao-color-danger-text);
+  font-weight: var(--zao-font-weight-medium);
+}
+
+.sk-step:is([data-status='planned'], [data-status='skipped']) .sk-step-title {
+  color: var(--zao-color-fg-muted);
+}
+
+/* What a step produced sits under the step, aligned with its title. */
+.sk-step-body {
+  min-inline-size: 0;
+  padding-inline-start: calc(var(--sk-pad-x) + var(--sk-marker) + var(--sk-col-gap));
+}
+
+.sk-step-pen {
+  display: none;
+}
+
+/* P1 · List: the baseline. A glyph and a word, rows divided by fine rules. ---------- */
+
+.sk[data-sk-step='list'] {
+  & .sk-steps {
+    --sk-pad-x: var(--zao-space-1);
+    --sk-marker: var(--zao-size-icon-sm);
+    gap: 0;
+    border-block: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  }
+
+  & .sk-step + .sk-step {
+    border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  }
+
+  & .sk-step-body {
+    padding-block-end: var(--zao-space-3);
+  }
+
+  & .sk-step-index {
+    display: none;
+  }
+
+  & .sk-step-glyph {
+    display: inline-flex;
+    color: var(--zao-color-fg-muted);
+  }
+
+  &
+    .sk-step:is([data-status='done'], [data-status='running'], [data-status='waiting'])
+    .sk-step-glyph {
+    color: var(--zao-color-fg-default);
+  }
+
+  & .sk-step[data-status='failed'] .sk-step-glyph {
+    color: var(--zao-color-danger-text);
+  }
+}
+
+/* P1 · Rail: flat steps on a ruler whose marks fill in as steps finish. ----------------- */
+
+@property --sk-fill {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+.sk[data-sk-step='rail'] {
+  & .sk-steps {
+    --sk-lead: var(--zao-space-6);
+    --sk-pad-x: 0px;
+    gap: 0;
+  }
+
+  & .sk-step {
+    --sk-mark-edge: var(--zao-color-border-default);
+    --sk-mark-fill: var(--zao-color-bg-canvas);
+    --sk-seg-ink: var(--zao-color-border-default);
+    padding-block-end: var(--zao-space-1);
+  }
+
+  /* The mark: one square on the rail, level with the step's title. */
+  & .sk-step::before {
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: 0;
+    inset-block-start: calc(var(--zao-space-2) + (var(--zao-space-5) - var(--zao-space-2)) / 2);
+    box-sizing: border-box;
+    inline-size: var(--zao-space-2);
+    block-size: var(--zao-space-2);
+    border: var(--zao-stroke-hairline) solid var(--sk-mark-edge);
+    background: var(--sk-mark-fill);
+    transition:
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      border-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+    content: '';
+  }
+
+  /* The segment to the next mark: dashed until the step is done, then drawn solid from the top. */
+  & .sk-step::after {
+    --sk-fill: 0%;
+    position: absolute;
+    inset-inline-start: calc(var(--zao-space-1) - var(--zao-stroke-hairline) / 2);
+    inset-block-start: calc(var(--zao-space-2) + (var(--zao-space-5) + var(--zao-space-2)) / 2);
+    inset-block-end: calc(
+      -1 * (var(--zao-space-2) + (var(--zao-space-5) - var(--zao-space-2)) / 2)
+    );
+    inline-size: var(--zao-stroke-hairline);
+    background:
+      linear-gradient(var(--zao-color-fg-default), var(--zao-color-fg-default)) top / 100%
+        var(--sk-fill) no-repeat,
+      repeating-linear-gradient(
+        to bottom,
+        var(--sk-seg-ink) 0 var(--zao-space-1),
+        transparent var(--zao-space-1) var(--zao-space-2)
+      );
+    transition: --sk-fill var(--zao-motion-duration-slide) var(--zao-motion-easing-slide);
+    content: '';
+  }
+
+  & .sk-step:last-child::after {
+    display: none;
+  }
+
+  & .sk-step:is([data-status='running'], [data-status='waiting']) {
+    --sk-mark-edge: var(--zao-color-fg-default);
+  }
+
+  & .sk-step:is([data-status='done'], [data-status='declined']) {
+    --sk-mark-edge: var(--zao-color-fg-default);
+    --sk-mark-fill: var(--zao-color-fg-default);
+
+    &::after {
+      --sk-fill: 100%;
+    }
+  }
+
+  & .sk-step[data-status='failed'] {
+    --sk-mark-edge: var(--zao-color-danger-border);
+    --sk-mark-fill: var(--zao-color-danger-subtle);
+  }
+
+  & .sk-step[data-status='skipped'] {
+    --sk-mark-edge: var(--zao-color-border-subtle);
+    --sk-seg-ink: var(--zao-color-border-subtle);
+  }
+
+  @media (forced-colors: active) {
+    & .sk-step::before {
+      border-color: CanvasText;
+    }
+    & .sk-step:is([data-status='done'], [data-status='declined'])::before {
+      background: CanvasText;
+    }
+    & .sk-step::after {
+      background: CanvasText;
+    }
+  }
+}
+
+/* P1 · Built: each step is a drawing until it is done, then a small built part. ---------- */
+
+.sk[data-sk-step='built'] {
+  & .sk-step-part {
+    @apply construction-shading construction-planes;
+    isolation: isolate;
+    --zao-construction-face: var(--zao-color-bg-surface);
+    --zao-plane-strength: 6%;
+    --zao-plane-rest: 0px;
+    --zao-face-offset: 0px;
+    border: var(--zao-stroke-hairline) dashed var(--zao-color-border-default);
+    background-color: transparent;
+    transition:
+      --zao-plane-rest var(--zao-motion-duration-lift) var(--zao-motion-easing-lift)
+        var(--zao-motion-duration-fast),
+      background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
+      border-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+
+    @supports (corner-shape: bevel) {
+      border-top-right-radius: var(--zao-radius-facet);
+      corner-shape: bevel;
+    }
+  }
+
+  /* Under construction: the drawing's edge is in ink while the step runs or waits for you. */
+  & .sk-step:is([data-status='running'], [data-status='waiting']) .sk-step-part {
+    border-color: var(--zao-color-fg-default);
+  }
+
+  & .sk-step[data-status='failed'] .sk-step-part {
+    border-color: var(--zao-color-danger-border);
+  }
+
+  & .sk-step[data-status='skipped'] .sk-step-part {
+    border-color: var(--zao-color-border-subtle);
+  }
+
+  /* Built: a solid perimeter, the surface face, and planes at the slip's small rest depth. */
+  & .sk-step:is([data-status='done'], [data-status='declined']) .sk-step-part {
+    --zao-plane-rest: var(--zao-depth-rest-small);
+    border-style: solid;
+    border-color: var(--zao-color-border-subtle);
+    background-color: var(--zao-color-bg-surface);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    & .sk-step-part {
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    & .sk-step:is([data-status='done'], [data-status='declined']) .sk-step-part {
+      border-color: CanvasText;
+    }
+  }
+}
+
+/* P2 · Drawn in: a pen line draws each step from its leading edge, in order. ------------ */
+
+@property --sk-draw {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sk[data-sk-arrival='drawn'] .sk-plan[data-entering] .sk-step {
+    --sk-draw: 1;
+    clip-path: inset(
+      calc(-1 * var(--zao-space-1))
+        calc((1 - var(--sk-draw)) * (100% + var(--zao-space-1)) - var(--zao-space-1))
+        calc(-1 * var(--zao-space-1)) calc(-1 * var(--zao-space-1))
+    );
+    transition: --sk-draw var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+      calc(var(--sk-i) * var(--zao-motion-duration-fast));
+
+    @starting-style {
+      --sk-draw: 0;
+    }
+
+    & .sk-step-pen {
+      position: absolute;
+      z-index: 1;
+      display: block;
+      inset-block: calc(-1 * var(--zao-stroke-hairline));
+      inset-inline-start: calc(var(--sk-draw) * 100%);
+      inline-size: var(--zao-stroke-hairline);
+      background: var(--zao-color-fg-default);
+      opacity: clamp(0, (1 - var(--sk-draw)) * 6, 1);
+      pointer-events: none;
+    }
+  }
+}
+
+/* ===================================================================== A · Seal and gate */
+
+.sk-facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--zao-space-1) var(--zao-space-4);
+  margin: 0;
+
+  & > div {
+    display: contents;
+  }
+
+  & dt {
+    @apply type-caption;
+    color: var(--zao-color-fg-muted);
+  }
+
+  & dd {
+    @apply type-caption;
+    margin: 0;
+    color: var(--zao-color-fg-default);
+  }
+}
+
+.sk-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zao-space-2) var(--zao-space-3);
+  min-block-size: var(--zao-size-control-md);
+  padding-block-start: var(--zao-space-3);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.sk-gate-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zao-space-2);
+  margin-inline-start: auto;
+}
+
+/* The record replaces the actions in place: the same verb, who, when, and the seal's mark. */
+.sk-record {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--zao-space-3);
+  min-inline-size: 0;
+  margin-inline-start: auto;
+  text-align: end;
+  outline: none;
+  animation: sk-fade-in var(--zao-motion-duration-fast) var(--zao-motion-easing-standard) both;
+
+  &:focus-visible {
+    outline: 2px solid var(--zao-color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.sk-record-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-0-5);
+  min-inline-size: 0;
+}
+
+.sk-record-glyph {
+  display: inline-flex;
+  inline-size: var(--zao-size-icon-sm);
+  block-size: var(--zao-size-icon-sm);
+
+  & svg {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+}
+
+@keyframes sk-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.sk-mark-glyph {
+  font-family: 'ZAO Seal', 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', serif;
+  font-size: calc(var(--zao-size-control-md) * 0.62);
+  font-weight: 700;
+  line-height: 1;
+  /* Optical center: the glyph's ink sits a little high in its em box. */
+  translate: 0 calc(var(--zao-size-control-md) * 0.02);
+}
+
+/* The impression: a flat print of the seal's face, facet and all. Paper is the card's face. */
+.sk-mark {
+  --sk-paper: var(--zao-color-bg-surface);
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: var(--zao-size-control-md);
+  block-size: var(--zao-size-control-md);
+
+  @supports (corner-shape: bevel) {
+    border-top-right-radius: var(--zao-radius-facet);
+    corner-shape: bevel;
+  }
+
+  &[data-cut='solid'] {
+    background: var(--zao-color-accent-solid);
+    color: var(--sk-paper);
+  }
+
+  &[data-cut='outline'] {
+    box-shadow: inset 0 0 0 var(--zao-space-0-5) var(--zao-color-accent-solid);
+    color: var(--zao-color-accent-solid);
+  }
+
+  /* Ink lands in three stepped bands (叠晕), not a smooth fade. */
+  &[data-impressed] {
+    animation: sk-ink-in var(--zao-motion-duration-reveal) steps(3, jump-start) both;
+  }
+
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background: CanvasText;
+    color: Canvas;
+    box-shadow: none;
+  }
+}
+
+@keyframes sk-ink-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The seal control: a visible label and the seal itself, one native button. */
+.sk-seal-button {
+  --sk-hold: calc(var(--zao-motion-duration-grade-1) * 4);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zao-space-3);
+  min-block-size: var(--zao-size-control-md);
+  margin: 0;
+  padding: 0;
+  padding-inline-start: var(--zao-space-1);
+  border: 0;
+  background: transparent;
+  color: var(--zao-color-fg-default);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+
+  &:disabled {
+    cursor: not-allowed;
+    color: var(--zao-color-fg-disabled);
+  }
+}
+
+.sk-seal-label {
+  white-space: nowrap;
+}
+
+@property --sk-ink {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+/*
+ * The seal is a built part like Button: a face a control depth above its base, banded planes
+ * toward the depth axis, and the facet. Hover lifts it; press seats it on its base.
+ */
+.sk-seal {
+  @apply construction-shading;
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  flex-shrink: 0;
+  inline-size: var(--zao-size-control-md);
+  block-size: var(--zao-size-control-md);
+  --zao-plane-rest: var(--zao-depth-rest-control);
+  --zao-face-offset: 0px;
+  --sk-ink: 0;
+  --sk-seal-duration: var(--zao-motion-duration-lift);
+  --sk-seal-easing: var(--zao-motion-easing-lift);
+  --sk-paper: var(--zao-color-bg-surface);
+  transition:
+    --zao-face-offset var(--sk-seal-duration) var(--sk-seal-easing),
+    --sk-ink var(--zao-motion-duration-fast) var(--zao-motion-easing-exit);
+}
+
+.sk-seal-side {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.sk-seal-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  inline-size: 100%;
+  block-size: 100%;
+  background: var(--sk-face-fill);
+  color: var(--sk-face-ink);
+  box-shadow: inset 0 0 0 var(--sk-face-edge-width, var(--zao-stroke-hairline)) var(--sk-face-edge);
+  transform: translate(
+    calc(var(--zao-depth-axis-x) * var(--zao-face-offset)),
+    calc(var(--zao-depth-axis-y) * var(--zao-face-offset))
+  );
+
+  @supports (corner-shape: bevel) {
+    border-top-right-radius: var(--zao-radius-facet);
+    corner-shape: bevel;
+  }
+}
+
+/* The ink that fills a held seal: stepped bands (叠晕), darkest at the bottom. */
+.sk-seal-ink {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: linear-gradient(
+    to top,
+    var(--zao-color-accent-solid) 0 25%,
+    color-mix(in oklab, var(--zao-color-accent-solid), var(--sk-paper) 12%) 25% 50%,
+    color-mix(in oklab, var(--zao-color-accent-solid), var(--sk-paper) 24%) 50% 75%,
+    color-mix(in oklab, var(--zao-color-accent-solid), var(--sk-paper) 36%) 75% 100%
+  );
+  color: var(--sk-paper);
+  clip-path: inset(calc((1 - var(--sk-ink)) * 100%) 0 0 0);
+}
+
+/* Solid cut 白文: the face is the seal color, the mark is cut through to the paper. */
+.sk-seal-button[data-cut='solid'] .sk-seal {
+  --zao-construction-face: var(--zao-color-accent-solid);
+  --sk-face-fill: var(--zao-color-accent-solid);
+  --sk-face-ink: var(--zao-color-fg-on-accent);
+  --sk-face-edge: var(--zao-color-accent-solid);
+  --zao-plane-x-near: color-mix(in oklch, var(--zao-construction-face), black 14%);
+  --zao-plane-x-far: color-mix(in oklch, var(--zao-construction-face), black 24%);
+  --zao-plane-y-near: color-mix(in oklch, var(--zao-construction-face), black 21%);
+  --zao-plane-y-far: color-mix(in oklch, var(--zao-construction-face), black 28%);
+}
+
+/* Outline cut 朱文, and every held seal before it fills: the frame and mark carry the ink. */
+.sk-seal-button:is([data-cut='outline'], [data-mode='hold']) .sk-seal {
+  --zao-construction-face: var(--zao-color-bg-surface);
+  --zao-plane-strength: 8%;
+  --sk-face-fill: var(--zao-color-bg-surface);
+  --sk-face-ink: var(--zao-color-accent-solid);
+  --sk-face-edge: var(--zao-color-accent-solid);
+  --sk-face-edge-width: var(--zao-space-0-5);
+  --zao-plane-x-near: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black 8%),
+    color-mix(in oklch, var(--zao-construction-face), white 14%)
+  );
+  --zao-plane-x-far: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black 14%),
+    color-mix(in oklch, var(--zao-construction-face), white 9%)
+  );
+  --zao-plane-y-near: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black 12%),
+    color-mix(in oklch, var(--zao-construction-face), white 11%)
+  );
+  --zao-plane-y-far: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black 16%),
+    color-mix(in oklch, var(--zao-construction-face), white 7%)
+  );
+}
+
+.sk-seal-button[data-mode='hold'] .sk-seal-ink {
+  display: grid;
+}
+
+/* A held seal fills one band per grade-1 beat; letting go drains it on the exit curve. */
+.sk-seal-button[data-mode='hold'][data-holding] .sk-seal {
+  --sk-ink: 1;
+  transition:
+    --zao-face-offset var(--zao-motion-duration-seat) var(--zao-motion-easing-seat),
+    --sk-ink var(--sk-hold) steps(4, jump-end);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sk-seal-button:enabled:hover .sk-seal {
+    --zao-face-offset: var(--zao-depth-lift);
+  }
+
+  .sk-seal-button:enabled:active:hover .sk-seal {
+    --sk-seal-duration: var(--zao-motion-duration-seat);
+    --sk-seal-easing: var(--zao-motion-easing-seat);
+    --zao-face-offset: calc(-1 * var(--zao-plane-rest));
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .sk-seal-button:enabled:active .sk-seal {
+    --sk-seal-duration: var(--zao-motion-duration-seat);
+    --sk-seal-easing: var(--zao-motion-easing-seat);
+    --zao-face-offset: calc(-1 * var(--zao-plane-rest));
+  }
+}
+
+.sk-seal-button:enabled[data-zao-pressed] .sk-seal {
+  --sk-seal-duration: var(--zao-motion-duration-seat);
+  --sk-seal-easing: var(--zao-motion-easing-seat);
+  --zao-face-offset: calc(-1 * var(--zao-plane-rest));
+}
+
+.sk-seal-button:disabled .sk-seal {
+  --zao-plane-rest: 0px;
+  --sk-face-fill: var(--zao-color-bg-sunken);
+  --sk-face-ink: var(--zao-color-fg-disabled);
+  --sk-face-edge: var(--zao-color-border-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-seal,
+  .sk-seal-button[data-mode='hold'][data-holding] .sk-seal {
+    transition: none;
+  }
+
+  .sk-seal-button .sk-seal,
+  .sk-seal-button:enabled:hover .sk-seal,
+  .sk-seal-button:enabled:active .sk-seal,
+  .sk-seal-button:enabled[data-zao-pressed] .sk-seal {
+    --zao-face-offset: 0px;
+  }
+
+  .sk-mark[data-impressed],
+  .sk-record {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .sk-seal-face {
+    forced-color-adjust: none;
+    transform: none;
+    background: ButtonFace;
+    color: ButtonText;
+    box-shadow: inset 0 0 0 2px ButtonText;
+  }
+
+  .sk-seal-ink {
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* ===================================================================== L · Loading */
+
+.sk-load {
+  position: relative;
+  min-inline-size: 0;
+}
+
+.sk-load-frame {
+  position: relative;
+  min-inline-size: 0;
+}
+
+.sk-load[data-dims] {
+  padding-block-start: var(--zao-space-6);
+  padding-inline-start: var(--zao-space-8);
+}
+
+/* The Seats card's reading: a recessed track and an ink face (data keeps ink). */
+.sk-meter {
+  position: relative;
+  block-size: var(--zao-space-2);
+  background: var(--zao-color-bg-sunken);
+  box-shadow: inset calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+    color-mix(in oklch, var(--zao-color-bg-sunken), black 18%);
+
+  & > span {
+    display: block;
+    block-size: 100%;
+    background: var(--zao-color-fg-default);
+  }
+}
+
+/* L1 · Drawing: the frame in ink, no face, no planes; text becomes its lettering guidelines. */
+.sk[data-sk-loading='drawing'] .sk-load[data-state='loading'] .sk-load-frame {
+  & > :is([data-zao-component='card'], [data-zao-component='table']) {
+    --zao-plane-rest: 0px;
+    border-color: var(--zao-color-fg-default);
+    background-color: transparent;
+    transition: none;
+  }
+
+  & :is([data-zao-component='card'], [data-zao-component='table']) * {
+    color: transparent;
+    text-decoration-line: underline overline;
+    text-decoration-style: solid;
+    text-decoration-color: var(--zao-color-border-default);
+    text-decoration-thickness: var(--zao-stroke-hairline);
+    text-decoration-skip-ink: none;
+    text-underline-offset: 0.18em;
+    transition: none;
+  }
+
+  & svg {
+    color: var(--zao-color-border-default);
+  }
+
+  /* A drawing has no state fills: row hover and selection wait for the built table. */
+  & tr {
+    background-color: transparent !important;
+  }
+
+  & .sk-meter {
+    background: transparent;
+    box-shadow: inset 0 0 0 var(--zao-stroke-hairline) var(--zao-color-border-default);
+
+    & > span {
+      background: transparent;
+    }
+  }
+}
+
+/* Built: the guidelines withdraw, then the ink and face arrive, then the planes rise. */
+.sk[data-sk-loading='drawing'] .sk-load[data-state='building'] .sk-load-frame {
+  & > :is([data-zao-component='card'], [data-zao-component='table']) {
+    transition:
+      --zao-plane-rest var(--zao-motion-duration-lift) var(--zao-motion-easing-lift)
+        calc(var(--zao-motion-duration-fast) + var(--zao-motion-duration-reveal) / 2),
+      background-color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-fast),
+      border-color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-fast);
+  }
+
+  & :is([data-zao-component='card'], [data-zao-component='table']) * {
+    text-decoration-line: underline overline;
+    text-decoration-thickness: var(--zao-stroke-hairline);
+    text-decoration-skip-ink: none;
+    text-underline-offset: 0.18em;
+    text-decoration-color: transparent;
+    transition:
+      text-decoration-color var(--zao-motion-duration-reveal-exit) linear,
+      color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-fast),
+      background-color var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-fast),
+      box-shadow var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+        var(--zao-motion-duration-fast);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk .sk-load .sk-load-frame,
+  .sk .sk-load .sk-load-frame * {
+    transition: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .sk[data-sk-loading='drawing'] .sk-load[data-state='loading'] .sk-load-frame * {
+    text-decoration-color: CanvasText;
+  }
+}
+
+/* L1 · Shimmer: the common skeleton, for contrast. Bars where text will be, and a sweep. */
+@keyframes sk-shimmer {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -130% 0;
+  }
+}
+
+.sk[data-sk-loading='shimmer'] .sk-load[data-state='loading'] .sk-load-frame {
+  & :is([data-zao-component='card'], [data-zao-component='table']) * {
+    color: transparent;
+    text-decoration-line: line-through;
+    text-decoration-thickness: 0.9em;
+    text-decoration-color: var(--zao-color-bg-sunken);
+    text-decoration-skip-ink: none;
+  }
+
+  & svg {
+    color: transparent;
+  }
+
+  & .sk-meter > span {
+    background: transparent;
+  }
+
+  &::after {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(
+        100deg,
+        transparent 35%,
+        color-mix(in oklch, var(--zao-color-bg-canvas), transparent 30%) 50%,
+        transparent 65%
+      )
+      0 0 / 250% 100%;
+    animation: sk-shimmer 1.4s linear infinite;
+    content: '';
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      animation: none;
+      background: none;
+    }
+  }
+}
+
+/* L2 · Dimensions: the drawing's size in fen, outside its frame, only while it waits. */
+.sk-dims {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--zao-motion-duration-fast) linear;
+}
+
+.sk[data-sk-loading='drawing'] .sk-load[data-state='loading'] .sk-dims {
+  opacity: 1;
+  transition-delay: var(--zao-motion-duration-fast);
+}
+
+.sk-dim-w,
+.sk-dim-h {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--zao-color-fg-muted);
+  line-height: 1;
+
+  & > span {
+    padding: 0 var(--zao-space-1);
+    background: var(--zao-color-bg-canvas);
+  }
+}
+
+.sk-dim-w {
+  inset-inline: 0;
+  inset-block-start: calc(-1 * var(--zao-space-6));
+  block-size: var(--zao-space-4);
+  border-inline: var(--zao-stroke-hairline) solid var(--zao-color-fg-muted);
+  background: linear-gradient(var(--zao-color-fg-muted), var(--zao-color-fg-muted)) center / 100%
+    var(--zao-stroke-hairline) no-repeat;
+}
+
+.sk-dim-h {
+  /* Physical sides: the label is set vertically, so logical sides would turn with it. */
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--zao-space-8));
+  width: var(--zao-space-4);
+  border-top: var(--zao-stroke-hairline) solid var(--zao-color-fg-muted);
+  border-bottom: var(--zao-stroke-hairline) solid var(--zao-color-fg-muted);
+  background: linear-gradient(var(--zao-color-fg-muted), var(--zao-color-fg-muted)) center /
+    var(--zao-stroke-hairline) 100% no-repeat;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}

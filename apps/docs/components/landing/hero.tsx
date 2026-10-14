@@ -27,7 +27,12 @@ const layers: ExplodedLayer[] = [
     name: '02 cards · 三等 · 4px',
     detail:
       '02 Cards: Storage, Seats and Requests, third-grade timber resting 4px above their base.',
-    selectors: ['[data-zao-component="card"]', '[data-zao-component="table"]'],
+    selectors: [
+      '[data-zao-component="card"]',
+      '[data-zao-component="table"]',
+      '[data-zao-component="composer"]',
+      '[data-zao-component="message"][data-zao-kind="user"]',
+    ],
   },
   {
     id: 'control',
@@ -39,7 +44,6 @@ const layers: ExplodedLayer[] = [
       '[data-zao-component="icon-button"]',
       '[data-zao-component="switch"]',
       '[data-zao-component="progress"]',
-      '[data-zao-component="composer"]',
       '[data-zao-component="menu"]',
       '.tabs-list',
     ],

@@ -16,6 +16,8 @@ const roleLabels: Record<MotionRole, string> = {
   slide: 'Slide',
   reveal: 'Reveal',
   'reveal-exit': 'Reveal exit',
+  hold: 'Hold',
+  impress: 'Impress',
 };
 
 function subscribeReducedMotion(notify: () => void) {
@@ -31,6 +33,7 @@ function reducedMotionSnapshot() {
 /** Keep the private editor within curves that have no overshoot. */
 export function validMotionEasing(value: string) {
   if (['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out'].includes(value.trim())) return true;
+  if (/^steps\([1-9]\d*,\s*jump-(?:start|end)\)$/.test(value.trim())) return true;
   // 举折 curves are faceted linear() curves; every stop must stay within 0 and 1.
   const linear = value.trim().match(/^linear\(([^)]+)\)$/);
   if (linear) {
@@ -265,11 +268,11 @@ export function MotionDemo({
                 <TextField
                   label={label + ' easing'}
                   value={easingDrafts[role]}
-                  description="Use an easing keyword, cubic-bezier with four values from 0 to 1, or linear() with stops from 0 to 1."
+                  description="Use an easing keyword, cubic-bezier with four values from 0 to 1, linear() with stops from 0 to 1, or steps() with jump-start or jump-end."
                   error={
                     validMotionEasing(easingDrafts[role])
                       ? undefined
-                      : 'Enter a supported easing keyword, four cubic-bezier values from 0 to 1, or linear() stops from 0 to 1.'
+                      : 'Enter an easing keyword, cubic-bezier or linear() values from 0 to 1, or steps() with jump-start or jump-end.'
                   }
                   onChange={(event) => {
                     const draft = event.currentTarget.value;

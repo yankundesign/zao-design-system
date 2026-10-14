@@ -23,6 +23,7 @@ import { useFinish } from './use-finish';
 import { TableSpecimen } from './table-specimen';
 import { ComposerSpecimen } from './composer-specimen';
 import { ConversationSpecimen } from './conversation-specimen';
+import { ApprovalGateSpecimen, PlanSpecimen } from './workflow-specimens';
 import type { ComponentId } from './component-detail';
 
 const specimens = {
@@ -31,6 +32,8 @@ const specimens = {
   'text-field': TextFieldSpecimen,
   composer: ComposerSpecimen,
   conversation: ConversationSpecimen,
+  plan: PlanSpecimen,
+  'approval-gate': ApprovalGateSpecimen,
   card: CardSpecimen,
   combobox: ComboboxSpecimen,
   dialog: DialogSpecimen,

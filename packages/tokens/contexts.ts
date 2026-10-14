@@ -20,3 +20,10 @@ export function foldCurve(token: { $extensions?: Record<string, unknown> }): str
   const motion = token.$extensions?.['dev.zao.motion'] as { linear?: string } | undefined;
   return motion?.linear;
 }
+
+/** Exact CSS timing function for generated fold and stepped motion roles. */
+export function motionCurve(token: { $extensions?: Record<string, unknown> }): string | undefined {
+  const motion = token.$extensions?.['dev.zao.motion'] as
+    { linear?: string; css?: string } | undefined;
+  return motion?.linear ?? motion?.css;
+}

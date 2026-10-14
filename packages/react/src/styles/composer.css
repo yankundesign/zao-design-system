@@ -1,16 +1,39 @@
-/* A quiet perimeter and one joined contact edge form a stationary raised writing tray. */
+/* The tray is a stationary surface above two painted construction planes. */
 [data-zao-component='composer'].composer-construction {
-  --composer-contact-color: var(--zao-color-border-default);
-  box-shadow: calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
-    calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0 0 var(--composer-contact-color);
+  --zao-construction-face: var(--zao-color-bg-surface);
+  --zao-plane-strength: 6%;
+  --zao-plane-rest: var(--zao-depth-rest-surface);
+  --zao-face-offset: 0px;
+  position: relative;
+  isolation: isolate;
   overflow: visible;
+  border-top-right-radius: var(--zao-radius-facet);
+  transition: border-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+
+  @supports (corner-shape: bevel) {
+    corner-shape: bevel;
+  }
 }
 
-/* Only entering the draft emphasizes the edge; controls retain their own focus treatment. */
+[data-zao-component='composer'] > [data-zao-slot='side'] {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Pointer entry strengthens the perimeter; keyboard entry brackets the whole tray. */
 [data-zao-component='composer'].composer-construction:not([data-zao-disabled]):has(
-    .composer-input:focus
+    .composer-input[data-zao-pointer-focus]:focus
   ) {
-  --composer-contact-color: var(--zao-color-border-strong);
+  border-color: var(--zao-color-border-default);
+}
+
+[data-zao-component='composer'].composer-construction:has(
+    .composer-input:focus-visible:not([data-zao-pointer-focus])
+  )::after {
+  --zao-bracket-offset: var(--zao-bracket-gap);
+  opacity: 1;
 }
 
 [data-zao-component='composer'] .composer-input {
@@ -26,10 +49,20 @@
   border-radius: var(--zao-radius-none);
   overflow-wrap: anywhere;
   transition: none;
+  outline: none;
 }
 
-/* Text inputs also match :focus-visible on pointer focus; keep the outline for keyboard entry. */
-[data-zao-component='composer'] .composer-input[data-zao-pointer-focus]:focus {
+[data-zao-component='composer'][data-zao-invalid] {
+  border-color: var(--zao-color-border-field-invalid);
+}
+
+[data-zao-component='composer'][data-zao-disabled] {
+  --zao-plane-rest: 0px;
+  border-color: var(--zao-color-border-subtle);
+  background-color: var(--zao-color-bg-sunken);
+}
+
+[data-zao-component='composer'] .composer-input:focus-visible:not([data-zao-pointer-focus]) {
   outline: none;
 }
 
@@ -67,7 +100,119 @@
 }
 
 [data-zao-component='composer'] .composer-attachment {
+  --zao-construction-face: var(--zao-color-bg-surface);
+  --zao-plane-rest: var(--zao-depth-rest-small);
+  --zao-face-offset: 0px;
+  position: relative;
+  isolation: isolate;
   max-inline-size: min(100%, calc(var(--zao-space-20) * 3));
+  border-top-right-radius: var(--zao-radius-facet);
+  transition: --zao-plane-rest var(--zao-motion-duration-lift) var(--zao-motion-easing-lift);
+
+  @supports (corner-shape: bevel) {
+    corner-shape: bevel;
+  }
+
+  @starting-style {
+    &[data-zao-entering] {
+      --zao-plane-rest: 0px;
+    }
+  }
+}
+
+[data-zao-component='composer'] .composer-attachment[data-zao-removing] {
+  --zao-plane-rest: 0px;
+  border-color: var(--zao-color-border-default);
+  border-style: dashed;
+  background: transparent;
+  transition-timing-function: var(--zao-motion-easing-exit);
+
+  & > * {
+    visibility: hidden;
+  }
+}
+
+[data-zao-component='composer'] .composer-context-chip[data-zao-removing] {
+  border-color: var(--zao-color-border-default);
+  border-style: dashed;
+  background: transparent;
+  transition:
+    border-color var(--zao-motion-duration-lift) var(--zao-motion-easing-exit),
+    background-color var(--zao-motion-duration-lift) var(--zao-motion-easing-exit);
+
+  & > * {
+    visibility: hidden;
+  }
+}
+
+[data-zao-component='composer'] .composer-context-chip:not([data-zao-removing]) {
+  transition:
+    border-color var(--zao-motion-duration-lift) var(--zao-motion-easing-lift),
+    background-color var(--zao-motion-duration-lift) var(--zao-motion-easing-lift);
+}
+
+[data-zao-component='composer'] .composer-submit {
+  transition-property: --zao-plane-rest, --zao-face-offset;
+  transition-duration: var(--zao-motion-duration-lift);
+  transition-timing-function: var(--zao-motion-easing-lift);
+}
+
+[data-zao-component='composer'] .composer-submit:disabled:not([aria-busy]) {
+  transition-duration: var(--zao-motion-duration-lift);
+  transition-timing-function: var(--zao-motion-easing-exit);
+}
+
+[data-zao-component='composer'][data-zao-pending]
+  .composer-submit[data-zao-action='send'][aria-busy] {
+  --zao-plane-rest: var(--zao-depth-rest-control);
+  --zao-face-offset: calc(-1 * var(--zao-plane-rest));
+  --button-fill: var(--zao-color-accent-solid-hover);
+  --button-face-fill: var(--zao-color-accent-solid-hover);
+  --button-ink: var(--zao-color-fg-on-accent);
+  --button-edge: var(--zao-color-accent-solid);
+  --button-spatial-duration: var(--zao-motion-duration-seat);
+  --button-spatial-easing: var(--zao-motion-easing-seat);
+  transition-timing-function: var(--zao-motion-easing-seat);
+}
+
+[data-zao-component='composer'] .composer-submit[data-zao-action='stop'][aria-busy] {
+  --zao-plane-rest: var(--zao-depth-rest-control);
+  --zao-face-offset: calc(-1 * var(--zao-plane-rest));
+  --button-fill: var(--zao-color-bg-active);
+  --button-face-fill: var(--zao-color-bg-active);
+  --button-spatial-duration: var(--zao-motion-duration-seat);
+  --button-spatial-easing: var(--zao-motion-easing-seat);
+  transition-timing-function: var(--zao-motion-easing-seat);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-zao-component='composer'] .composer-submit {
+    transition: none;
+  }
+
+  [data-zao-component='composer'][data-zao-pending]
+    .composer-submit[data-zao-action='send'][aria-busy],
+  [data-zao-component='composer'] .composer-submit[data-zao-action='stop'][aria-busy] {
+    --zao-face-offset: 0px;
+  }
+
+  [data-zao-component='composer'] .composer-context-chip,
+  [data-zao-component='composer'] .composer-attachment {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  [data-zao-component='composer'] .composer-input:focus-visible:not([data-zao-pointer-focus]) {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  [data-zao-component='composer'].composer-construction:has(
+      .composer-input:focus-visible:not([data-zao-pointer-focus])
+    )::after {
+    display: none;
+  }
 }
 
 [data-zao-component='composer'] [data-zao-slot='tooltip'] {
@@ -75,9 +220,6 @@
 }
 
 [data-zao-component='composer'][data-zao-disabled] {
-  --composer-contact-color: var(--zao-color-border-subtle);
-  background-color: var(--zao-color-bg-sunken);
-
   & [data-zao-slot='label'],
   & [data-zao-slot='attachment-name'] {
     color: var(--zao-color-fg-disabled);

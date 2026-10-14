@@ -107,6 +107,21 @@ async function geometry(container: Locator) {
   );
 }
 
+async function tabGeometry(list: Locator) {
+  return list.evaluate((node) => {
+    const origin = node.getBoundingClientRect();
+    return [...node.querySelectorAll('[role="tab"]')].map((tab) => {
+      const bounds = tab.getBoundingClientRect();
+      return {
+        x: bounds.x - origin.x,
+        y: bounds.y - origin.y,
+        width: bounds.width,
+        height: bounds.height,
+      };
+    });
+  });
+}
+
 async function outsideFocus(target: Locator) {
   await expect(target).toBeFocused();
   await settle(target);
@@ -305,23 +320,23 @@ for (const paint of paints)
         const archive = list.getByRole('tab', { name: 'Archive', exact: true });
         await overview.scrollIntoViewIfNeeded();
         await settle(list);
-        const targets = await list.getByRole('tab').all();
-        const initial = await Promise.all(targets.map(box));
+        // Measure native targets against their rail, independent of Anatomy reflow above it.
+        const initial = await tabGeometry(list);
         await page.keyboard.press('Tab');
         await overview.focus();
         await outsideFocus(overview);
         await page.keyboard.down('Space');
         await settle(list);
-        expect(await Promise.all(targets.map(box))).toEqual(initial);
+        expect(await tabGeometry(list)).toEqual(initial);
         await page.keyboard.up('Space');
         // Native scroll-into-view is allowed in the narrow tab rail; snapshot after it.
         await archive.scrollIntoViewIfNeeded();
         await settle(list);
-        const disabledTargets = await Promise.all(targets.map(box));
+        const disabledTargets = await tabGeometry(list);
         await archive.hover();
         await expect(archive).toBeDisabled();
         await settle(list);
-        expect(await Promise.all(targets.map(box))).toEqual(disabledTargets);
+        expect(await tabGeometry(list)).toEqual(disabledTargets);
       });
     }
 

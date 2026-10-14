@@ -37,8 +37,8 @@ export default async function MotionPage() {
         <p className="type-body text-muted">
           ZAO’s motion is derived, not picked. Curves come from the Song roof-fold rule, 举折;
           durations come from the eight timber grades, 材分八等. Lift, seat, slide and reveal are
-          roles that point at them. Only paint moves: targets, focus brackets and neighboring layout
-          stay fixed.
+          roles that point at them. Plan arrival follows Reveal; Hold and Impress land in discrete
+          bands. Only paint moves: targets, focus brackets and neighboring layout stay fixed.
         </p>
       </header>
       <section className="flex flex-col gap-4" aria-labelledby="fold-heading">

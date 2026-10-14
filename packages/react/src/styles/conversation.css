@@ -1,5 +1,7 @@
 /* Composer-independent transcript structure; the host supplies the bounded height. */
 .zao-conversation {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: var(--zao-space-3);
@@ -21,14 +23,20 @@
 .zao-conversation-list {
   display: flex;
   flex-direction: column;
-  gap: var(--zao-space-5);
+  gap: var(--zao-space-4);
   min-width: 0;
   margin: 0;
   padding: var(--zao-space-3);
   list-style: none;
 }
 
+.zao-conversation-list > li:has(> .zao-message[data-zao-kind='user']):not(:first-child) {
+  margin-block-start: var(--zao-space-4);
+}
+
 .zao-message {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: var(--zao-space-1-5);
@@ -39,10 +47,153 @@
 }
 
 .zao-message[data-zao-kind='user'] {
+  --zao-construction-face: var(--zao-color-bg-surface);
+  --zao-plane-strength: 6%;
+  --zao-plane-rest: var(--zao-depth-rest-small);
+  --zao-face-offset: 0px;
+  --zao-conversation-reveal-progress: 1;
+  --conversation-reveal-inset: calc(
+    (1 - var(--zao-conversation-reveal-progress)) * 100% - var(--zao-stroke-hairline)
+  );
+  --zao-conversation-reveal-edge: var(--zao-color-border-strong);
   inline-size: fit-content;
-  max-inline-size: 100%;
+  max-inline-size: min(85%, calc(var(--zao-space-1) * 136));
+  margin-inline-start: auto;
+  border: 1px solid var(--zao-color-border-subtle);
+  border-top-right-radius: var(--zao-radius-facet);
   background: var(--zao-color-bg-surface);
-  border-inline-start: 1px solid var(--zao-color-border-subtle);
+  clip-path: inset(
+    var(--conversation-reveal-inset) calc(-1 * var(--zao-space-1)) calc(-1 * var(--zao-space-1))
+      calc(-1 * var(--zao-space-1))
+  );
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--conversation-reveal-inset) - var(--zao-stroke-hairline)),
+    var(--zao-conversation-reveal-edge) var(--conversation-reveal-inset),
+    transparent calc(var(--conversation-reveal-inset) + var(--zao-stroke-hairline))
+  );
+  transition: --zao-conversation-reveal-progress var(--zao-motion-duration-reveal)
+    var(--zao-motion-easing-reveal);
+
+  @supports (corner-shape: bevel) {
+    corner-shape: bevel;
+  }
+
+  @starting-style {
+    &[data-zao-entering] {
+      --zao-conversation-reveal-progress: 0;
+    }
+  }
+}
+
+.zao-message[data-zao-kind='assistant'] [data-zao-slot='author'] {
+  color: var(--zao-color-fg-muted);
+}
+
+.zao-message[data-zao-kind='user']
+  > [data-zao-slot='header']:not(:has([data-zao-slot='metadata'])):not(
+    :has([data-zao-slot='status'])
+  ) {
+  display: none;
+}
+
+.zao-message[data-zao-kind='assistant'][data-zao-status='streaming'],
+.zao-message[data-zao-kind='assistant'][data-zao-status='stopped'],
+.zao-message[data-zao-kind='assistant'][data-zao-status='error'] {
+  --message-construction-line: var(--zao-color-fg-default);
+}
+
+.zao-message[data-zao-kind='assistant'][data-zao-status='stopped'] {
+  --message-construction-line: var(--zao-color-fg-muted);
+}
+
+.zao-message[data-zao-kind='assistant'][data-zao-status='error'] {
+  --message-construction-line: var(--zao-color-danger-text);
+}
+
+.zao-message[data-zao-kind='assistant'][data-zao-status='streaming']::before,
+.zao-message[data-zao-kind='assistant'][data-zao-status='stopped']::before,
+.zao-message[data-zao-kind='assistant'][data-zao-status='error']::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--zao-stroke-hairline);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--message-construction-line) 0 var(--zao-space-1),
+    transparent var(--zao-space-1) var(--zao-space-2)
+  );
+  content: '';
+}
+
+.zao-message [data-zao-slot='header'] {
+  grid-column: 1;
+}
+
+.zao-message [data-zao-slot='actions'][data-zao-placement='header'] {
+  grid-column: 2;
+  grid-row: 1;
+  justify-content: flex-end;
+}
+
+.zao-message:has([data-zao-slot='actions'][data-zao-placement='header']) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.zao-message:has([data-zao-slot='actions'][data-zao-placement='header'])
+  > :not([data-zao-slot='header']):not([data-zao-slot='actions'][data-zao-placement='header']) {
+  grid-column: 1 / -1;
+}
+
+.zao-conversation-list
+  > li:not(:last-child)
+  > .zao-message
+  > [data-zao-slot='actions'][data-zao-placement='header'] {
+  opacity: 0;
+  transition: opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .zao-conversation-list
+    > li:not(:last-child):is(:hover, :focus-within)
+    > .zao-message
+    > [data-zao-slot='actions'][data-zao-placement='header'] {
+    opacity: 1;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .zao-conversation-list
+    > li:not(:last-child)
+    > .zao-message
+    > [data-zao-slot='actions'][data-zao-placement='header'] {
+    opacity: 1;
+  }
+}
+
+@media (forced-colors: active) {
+  .zao-message[data-zao-kind='user'] {
+    background-image: none;
+    clip-path: none;
+    transition: none;
+  }
+
+  .zao-message[data-zao-kind='assistant'][data-zao-status='streaming']::before,
+  .zao-message[data-zao-kind='assistant'][data-zao-status='stopped']::before,
+  .zao-message[data-zao-kind='assistant'][data-zao-status='error']::before {
+    background: repeating-linear-gradient(
+      to bottom,
+      CanvasText 0 var(--zao-space-1),
+      transparent var(--zao-space-1) var(--zao-space-2)
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zao-message[data-zao-kind='user'] {
+    transition: none;
+  }
 }
 
 .zao-message [data-zao-slot='metadata'] {
@@ -81,8 +232,120 @@
 
 /* Rich-result authors provide a named, focusable region for overflowing code and data. */
 .zao-message-content pre {
+  @apply construction-well;
   max-width: 100%;
   overflow-x: auto;
   white-space: pre;
   overflow-wrap: normal;
+}
+
+.zao-message [data-zao-slot='status']::before {
+  background: currentColor;
+}
+
+.zao-message[data-zao-status='streaming'] [data-zao-slot='status']::before {
+  display: none;
+}
+
+.zao-message [data-zao-slot='status'] .button-loading-indicator {
+  inline-size: var(--zao-space-3);
+  block-size: var(--zao-space-3);
+}
+
+.zao-conversation [data-zao-slot='latest'].conversation-latest-construction {
+  --zao-conversation-latest-progress: 1;
+  --latest-reveal-inset: calc(
+    (1 - var(--zao-conversation-latest-progress)) * 100% - var(--zao-stroke-hairline)
+  );
+  position: absolute;
+  z-index: 2;
+  inset-block-end: var(--zao-space-3);
+  inset-inline-start: var(--zao-space-3);
+  clip-path: inset(var(--latest-reveal-inset) calc(-1 * var(--zao-space-1)) 0);
+  transition: --zao-conversation-latest-progress var(--zao-motion-duration-reveal)
+    var(--zao-motion-easing-reveal);
+
+  &[data-zao-exiting] {
+    --zao-conversation-latest-progress: 0;
+    transition-duration: var(--zao-motion-duration-reveal-exit);
+    transition-timing-function: var(--zao-motion-easing-exit);
+  }
+
+  @starting-style {
+    --zao-conversation-latest-progress: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &[data-zao-exiting] {
+      clip-path: none;
+    }
+  }
+}
+
+@property --zao-conversation-reveal-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --zao-conversation-latest-progress {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@supports (animation-timeline: scroll()) {
+  .zao-conversation-viewport {
+    &::before,
+    &::after {
+      position: sticky;
+      z-index: 1;
+      display: block;
+      block-size: var(--zao-stroke-hairline);
+      margin-block-end: calc(-1 * var(--zao-stroke-hairline));
+      background: var(--zao-color-border-subtle);
+      pointer-events: none;
+      content: '';
+    }
+
+    &::before {
+      inset-block-start: 0;
+      animation: zao-conversation-eave-in 1 both;
+      animation-timeline: scroll(nearest block);
+      animation-range: 0px var(--zao-space-4);
+    }
+
+    &::after {
+      inset-block-end: 0;
+      animation: zao-conversation-eave-out 1 both;
+      animation-timeline: scroll(nearest block);
+      animation-range: calc(100% - var(--zao-space-4)) 100%;
+    }
+  }
+}
+
+@keyframes zao-conversation-eave-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zao-conversation-eave-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (forced-colors: active) {
+  .zao-conversation-viewport::before,
+  .zao-conversation-viewport::after {
+    display: none;
+  }
 }

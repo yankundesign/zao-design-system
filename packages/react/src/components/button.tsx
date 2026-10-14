@@ -39,7 +39,7 @@ const sizeClasses: Record<ButtonSize, string> = {
   large: 'h-10 px-4',
 };
 
-function LoadingIndicator() {
+export function LoadingIndicator() {
   return (
     <svg
       data-zao-slot="spinner"

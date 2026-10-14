@@ -17,6 +17,9 @@ composes-with:
 parts: []
 motions:
   - seat
+  - reveal
+  - reveal-exit
+  - lift
 tokens:
   - unit
   - space.4
@@ -51,13 +54,14 @@ Sources: [Card and its type](../../packages/react/src/components/card.tsx), [sha
 
 ## States
 
-| State                                           | Current contract                                                                                                                                            |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rest                                            | One complete, grounded content plane and two banded planes at surface rest depth.                                                                           |
-| Hover or focus within                           | Card gains no hover movement, raised border, or focus treatment of its own. Descendant controls keep their own feedback.                                    |
-| Descendant action press                         | The V11 load-path response reduces the painted rest depth by `depth.contact` (currently 4px to 3px). The Card content/native box itself remains stationary. |
-| Loading, selected, invalid, disabled, read-only | No Card state API. The host owns the content and its semantics; nested controls retain their individual states.                                             |
-| Narrow layout                                   | Host content determines fit, wrapping, and action-row layout. The package does not impose a width or breakpoint.                                            |
+| State                                  | Current contract                                                                                                                                                                          |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rest                                   | One complete, grounded content plane and two banded planes at surface rest depth.                                                                                                         |
+| Hover or focus within                  | Card gains no hover movement, raised border, or focus treatment of its own. Descendant controls keep their own feedback.                                                                  |
+| Descendant action press                | The V11 load-path response reduces the painted rest depth by `depth.contact` (currently 4px to 3px). The Card content/native box itself remains stationary.                               |
+| Drawing/loading                        | `drawing` marks a still construction drawing, sets `aria-busy`, makes descendants inert/hidden, and announces `drawingLabel`. The host supplies placeholder-shaped or last-known content. |
+| Selected, invalid, disabled, read-only | No Card state API. The host owns the content and its semantics; nested controls retain their individual states.                                                                           |
+| Narrow layout                          | Host content determines fit, wrapping, and action-row layout. The package does not impose a width or breakpoint.                                                                          |
 
 The press selector observes a descendant button, button role, or link in `:active` or the held-input marker, excluding native `:disabled`. It changes plane paint; it does not activate that descendant or model the host's pending/disabled state. This describes the selector's actual scope, not an additional public state prop.
 
@@ -65,7 +69,7 @@ The storage ring at 68% and the four layout compositions are docs specimens, not
 
 ## Interaction
 
-`CardProps` is `ComponentPropsWithRef<'div'>`: children, className, ref, and native div attributes are accepted. It has no variant, size, `onValueChange`, loading, or whole-card action API. `className` appends host layout classes to the shared treatment. Use semantic tokens and preserve the approved passive frame.
+`CardProps` accepts `drawing?: boolean` and `drawingLabel?: string` (default `Loading`) in addition to children, className, ref, and native div attributes. `drawing` changes paint and accessibility state only; the host supplies placeholder content and owns fetching. Once drawing changes to built after mount, Card removes `data-zao-building` after the role-derived build sequence. It has no variant, size, `onValueChange`, fetch, or whole-card action API. `className` appends host layout classes to the shared treatment.
 
 The host supplies headings, metadata, content, and the bottom action row. Keep keyboard and pointer activation on an explicit Button, IconButton, or link with its own accessible name. Card does not provide keyboard activation, selection, dismissal, focus trapping, or asynchronous work. A native div event handler does not establish an approved whole-card interaction.
 
@@ -89,9 +93,9 @@ Here `openSettings` is owned by the product. Progress, Table, and rich Message c
 
 The Card face does not move on hover or press. Its V11 load-path paint transitions `--zao-plane-rest` with `motion.duration.seat` / `motion.easing.seat` (currently fast 80ms / standard), both on press and release. The planes follow that rest-depth value without their own independent transition. This change is paint only; reading geometry and neighboring layout remain fixed.
 
-Reduced motion removes the transition, making the rest-depth paint change immediate. Forced colors suppress the decorative planes through the shared utility, retaining the native content and border. The unsupported facet stays square.
+Reduced motion removes the transition, making the rest-depth paint change immediate. Drawing itself is still; after loading, the guidelines withdraw on Reveal exit, then ink and face arrive on Reveal and planes rise on Lift. The total build duration is read from those computed roles. Forced colors suppress the decorative planes through the shared utility, retaining the native content and border. The unsupported facet stays square.
 
-The Card page's drawn → built/loading/removal demonstration uses separate docs-local components under V8. Card exports no loading animation or build/remove prop. Those local grade-3 demonstrations do not change Card's published seat-role response.
+The Card page uses the published `drawing` state for Load and Build. Its Remove phase and fen dimensions stay docs-local; the package exports no fetch or removal behavior.
 
 Sources: [motion rules](../motion.md), [Card construction CSS](../../packages/react/src/styles/theme.css), and the [docs-only states demonstration](../../apps/docs/components/construction-states.tsx).
 
@@ -104,7 +108,7 @@ Sources: [motion rules](../motion.md), [Card construction CSS](../../packages/re
 - RTL content follows native layout and logical utilities. The physical screen axis and leading facet retain their right/up direction.
 - The host owns text overflow, responsive action wrapping, chart accessibility, busy announcements, and recovery. Card's native props alone do not implement those behaviors.
 
-Existing coverage: [Card construction](../../apps/docs/e2e/card-construction.spec.ts), [layout compositions](../../apps/docs/e2e/card-layouts.spec.ts), [storage ring study](../../apps/docs/e2e/storage-ring-study.spec.ts), and [Anatomy](../../apps/docs/e2e/anatomy.spec.ts). This documentation change was grounded in source; no fresh test pass or measured usability improvement is claimed.
+Coverage: [Card construction](../../apps/docs/e2e/card-construction.spec.ts), [layout compositions](../../apps/docs/e2e/card-layouts.spec.ts), [storage ring study](../../apps/docs/e2e/storage-ring-study.spec.ts), [Anatomy](../../apps/docs/e2e/anatomy.spec.ts), and [drawing/loading](../../apps/docs/e2e/plan-gate-drawing.spec.ts). Fresh drawing-state verification and full-suite limits are recorded in the [components progress](../plans/2026-10-components/PROGRESS.md). No measured usability improvement is claimed.
 
 ## Decisions
 
@@ -126,3 +130,5 @@ From [BRIEF.md](../../BRIEF.md#current-design-direction-quiet-construction), tra
 | Oct 11 V11, [finish decisions](../plans/2026-10-finish/decision-drafts.md)                                                                                                                | Descendant action press reduces contact/rest paint; core content and targets remain fixed.                                                                           | Source reason: the surface answers the weight of its actions.                                                    |
 
 The authorized [finish rules](../../AGENTS.md#current-design-direction-quiet-construction) take precedence only where they reopen earlier choices. This spec records existing construction and composition; it proposes no new Card interaction or claim about better understanding.
+
+Oct 13 L1–L2, [components plan](../plans/2026-10-components/README.md): `drawing` becomes a published loading treatment; Card remains passive, and the host keeps data ownership. The old local-only finish V8 restriction no longer applies.

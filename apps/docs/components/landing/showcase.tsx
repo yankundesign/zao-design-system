@@ -471,7 +471,7 @@ export function ShowcaseWindow({
                     ))}
                   </Conversation.List>
                 </Conversation.Viewport>
-                <Conversation.Latest className="ml-3" />
+                <Conversation.Latest />
               </Conversation.Root>
             </Part>
             <div className="p-3">

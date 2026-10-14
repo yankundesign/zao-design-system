@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { wcagContrast, type Color } from 'culori';
 import type { TokenNormalized, TokenNormalizedSet } from '@terrazzo/parser';
 import { contexts } from '../contexts.ts';
-import { loadResolver } from '../scripts/export-json.ts';
+import { cssValue, loadResolver } from '../scripts/export-json.ts';
 import { contrastCases, contrastPromises } from '@zao/engine/contrast';
 
 const resolved: Record<string, TokenNormalizedSet> = {};
@@ -312,6 +312,42 @@ describe('motion comes from rules (finish plan V5, V6)', () => {
       expect(theme.motion.duration[role].$description).toMatch(/completeness entry.*deferred/i);
     for (const role of Object.keys(suEasings))
       expect(theme.motion.easing[role].$description).toMatch(/completeness entry.*deferred/i);
+  });
+});
+
+describe('stepped hold and impression motion', () => {
+  it('derives the hold from four grade-1 beats and aliases the impression to Reveal', () => {
+    for (const ctx of contexts) {
+      const set = resolved[ctx.id]!;
+      const hold = set['motion.duration.hold']!;
+      expect(hold.$value, ctx.id).toEqual({ value: 1080, unit: 'ms' });
+      expect(hold.$extensions?.['dev.zao.motion']).toMatchObject({ bands: 4 });
+      expect(set['motion.duration.impress']?.$value, ctx.id).toEqual(
+        set['motion.duration.reveal']?.$value,
+      );
+    }
+  });
+
+  it('exports exact stepped easing CSS and band metadata for every finish', () => {
+    const expected = {
+      hold: 'steps(4, jump-end)',
+      impress: 'steps(3, jump-start)',
+    };
+    for (const ctx of contexts) {
+      const set = resolved[ctx.id]!;
+      for (const [role, value] of Object.entries(expected)) {
+        const token = set[`motion.easing.${role}`]!;
+        expect(cssValue(token), `${role} CSS in ${ctx.id}`).toBe(value);
+        expect(
+          token.$extensions?.['dev.zao.motion'],
+          `${role} metadata in ${ctx.id}`,
+        ).toMatchObject({
+          css: value,
+          bands: role === 'hold' ? 4 : 3,
+          jump: role === 'hold' ? 'end' : 'start',
+        });
+      }
+    }
   });
 });
 

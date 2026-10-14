@@ -4,6 +4,8 @@ import { getQuietInstrumentStudy } from '@/lib/style-studies';
 import { anatomyKinds, type AnatomyKind } from '@/lib/anatomy';
 import { Anatomy } from './anatomy';
 import { ConstructionStates } from './construction-states';
+import { PlanSpecimen, ApprovalGateSpecimen } from './workflow-specimens';
+import { TableDrawingStates } from './drawing-state-demo';
 import './anatomy.css';
 
 export type ComponentId =
@@ -12,6 +14,8 @@ export type ComponentId =
   | 'text-field'
   | 'composer'
   | 'conversation'
+  | 'plan'
+  | 'approval-gate'
   | 'card'
   | 'combobox'
   | 'dialog'
@@ -33,6 +37,62 @@ interface ComponentDefinition {
 }
 
 const definitions: Record<ComponentId, ComponentDefinition> = {
+  plan: {
+    title: 'Plan',
+    description: 'A named run of steps drawn on a rail, with each step’s current state visible.',
+    usage: [
+      'Use Plan to show a host-owned sequence of work. The component renders statuses; the host runs, retries, and changes steps.',
+      'Give the section a visible label. Keep each step title concrete and use detail for its scope or output.',
+      'Nest the product that a step produced under that step. A waiting step needs the person; a declined step counts as resolved.',
+      'Use entering for newly proposed plans. Pass entering={false} when restoring a plan from history.',
+    ],
+    accessibility:
+      'Plan is a named section containing an ordered list. Every status word is visible; running and waiting steps expose aria-current="step". Status changes announce inside Conversation only when announce is enabled. Reduced motion removes arrival and rail travel; RTL places the rail at inline start.',
+    example: `import { Plan } from '@zao/react';\n\n<Plan.Root label="Remove inactive seats">\n  <Plan.Step status="done" title="Read seat assignments" detail="412 assigned seats" />\n  <Plan.Step status="waiting" title="Review the removal list">\n    {/* The host-provided ApprovalGate */}\n  </Plan.Step>\n</Plan.Root>`,
+    props: [
+      { name: 'Root label', values: 'visible string', defaultValue: 'required' },
+      {
+        name: 'Root entering / announce',
+        values: 'boolean / boolean',
+        defaultValue: 'conversation arrival / true',
+      },
+      {
+        name: 'Step title / status',
+        values: 'string / planned | running | waiting | done | declined | failed | skipped',
+        defaultValue: 'required',
+      },
+      { name: 'Step detail / children', values: 'ReactNode', defaultValue: '—' },
+    ],
+  },
+  'approval-gate': {
+    title: 'ApprovalGate',
+    description: 'A host-owned request that becomes a sealed record when a person decides.',
+    usage: [
+      'Use it when a consequential action needs an explicit approval or decline.',
+      'Keep title, facts, and note specific to the requested change. Nothing changes until the host accepts the callback and supplies a decision.',
+      'Pass mark for the approved record impression. The host owns the decision wording, person, and time.',
+      'Pending disables Decline and puts the Approve action into Button loading. A decision replaces the actions in place.',
+    ],
+    accessibility:
+      'The component composes a passive Card and native Buttons. A decision record is a status region; focus moves from its action row to the record only when a decision replaces a focused action. The seal impression is decorative. Buttons retain their native keyboard and disabled behavior.',
+    example: `import { ApprovalGate } from '@zao/react';\n\n<ApprovalGate\n  title="Remove 38 seats"\n  approveLabel="Approve removal"\n  approvedLabel="Approved removal"\n  declineLabel="Decline"\n  declinedLabel="Declined removal"\n  mark="准"\n  decision={decision}\n  onApprove={approve}\n  onDecline={decline}\n/>`,
+    props: [
+      {
+        name: 'title / labels',
+        values: 'string; request title and both action/result verbs',
+        defaultValue: 'required',
+      },
+      { name: 'mark', values: 'one or two characters', defaultValue: 'required' },
+      { name: 'decision', values: 'null | { kind, by, at }', defaultValue: 'required' },
+      {
+        name: 'facts / note / reference',
+        values: 'ApprovalFact[] / ReactNode / string',
+        defaultValue: '—',
+      },
+      { name: 'pending / disabled', values: 'boolean / boolean', defaultValue: 'false / false' },
+      { name: 'onApprove / onDecline', values: '() => void', defaultValue: 'required' },
+    ],
+  },
   composer: {
     title: 'Composer',
     description: 'A compact raised writing tray for a request, its context, and local attachments.',
@@ -234,6 +294,11 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
     props: [
       { name: 'children', values: 'ReactNode', defaultValue: '—' },
       { name: 'className', values: 'string', defaultValue: '—' },
+      {
+        name: 'drawing / drawingLabel',
+        values: 'boolean / string',
+        defaultValue: 'false / Loading',
+      },
       { name: 'div props', values: 'HTML div attributes', defaultValue: '—' },
     ],
   },
@@ -397,6 +462,11 @@ const definitions: Record<ComponentId, ComponentDefinition> = {
       { name: 'Root aria-label', values: 'string', defaultValue: 'required' },
       { name: 'Root className', values: 'outer frame layout classes', defaultValue: '—' },
       { name: 'Root tableClassName', values: 'native table classes', defaultValue: '—' },
+      {
+        name: 'Root drawing / drawingLabel',
+        values: 'boolean / string',
+        defaultValue: 'false / Loading',
+      },
       { name: 'Caption', values: 'native caption props', defaultValue: '—' },
       { name: 'Header / Body / Footer', values: 'native table section props', defaultValue: '—' },
       { name: 'Row selected', values: 'boolean; visual selection', defaultValue: 'false' },
@@ -481,6 +551,7 @@ export async function ComponentDetail({
       />
 
       {component === 'card' && <ConstructionStates />}
+      {component === 'table' && <TableDrawingStates />}
 
       <section className="docs-detail-section grid gap-5 border-t border-subtle pt-5">
         <h2 className="type-heading">Usage</h2>

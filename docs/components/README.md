@@ -4,26 +4,28 @@ Full reference contracts for the existing `@zao/react` exports, using the [appro
 
 ## Coverage
 
-The [package entry point](../../packages/react/src/index.ts) exports **16 UI components**. Compound members are documented in their parent's spec. ComposerContextChip has its own spec because it is a separate export, even though its implementation shares the Composer source file. The `finish` function is a finish utility, not another UI component.
+The [package entry point](../../packages/react/src/index.ts) exports **18 UI components**. Compound members are documented in their parent's spec. ComposerContextChip has its own spec because it is a separate export, even though its implementation shares the Composer source file. The `finish` function is a finish utility, not another UI component.
 
-| Export              | Spec                                            | Implementation                                                           |
-| ------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
-| Button              | [Button](button.md)                             | [button.tsx](../../packages/react/src/components/button.tsx)             |
-| IconButton          | [IconButton](icon-button.md)                    | [icon-button.tsx](../../packages/react/src/components/icon-button.tsx)   |
-| Card                | [Card](card.md)                                 | [card.tsx](../../packages/react/src/components/card.tsx)                 |
-| Table               | [Table](table.md)                               | [table.tsx](../../packages/react/src/components/table.tsx)               |
-| TextField           | [TextField](text-field.md)                      | [text-field.tsx](../../packages/react/src/components/text-field.tsx)     |
-| Select              | [Select](select.md)                             | [select.tsx](../../packages/react/src/components/select.tsx)             |
-| Combobox            | [Combobox](combobox.md)                         | [combobox.tsx](../../packages/react/src/components/combobox.tsx)         |
-| Menu                | [Menu](menu.md)                                 | [menu.tsx](../../packages/react/src/components/menu.tsx)                 |
-| Dialog              | [Dialog](dialog.md)                             | [dialog.tsx](../../packages/react/src/components/dialog.tsx)             |
-| Switch              | [Switch](switch.md)                             | [switch.tsx](../../packages/react/src/components/switch.tsx)             |
-| Tabs                | [Tabs](tabs.md)                                 | [tabs.tsx](../../packages/react/src/components/tabs.tsx)                 |
-| Progress            | [Progress](progress.md)                         | [progress.tsx](../../packages/react/src/components/progress.tsx)         |
-| Composer            | [Composer](composer.md)                         | [composer.tsx](../../packages/react/src/components/composer.tsx)         |
-| ComposerContextChip | [ComposerContextChip](composer-context-chip.md) | [composer.tsx](../../packages/react/src/components/composer.tsx)         |
-| Conversation        | [Conversation](conversation.md)                 | [conversation.tsx](../../packages/react/src/components/conversation.tsx) |
-| Message             | [Message](message.md)                           | [message.tsx](../../packages/react/src/components/message.tsx)           |
+| Export              | Spec                                            | Implementation                                                             |
+| ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------- |
+| Button              | [Button](button.md)                             | [button.tsx](../../packages/react/src/components/button.tsx)               |
+| IconButton          | [IconButton](icon-button.md)                    | [icon-button.tsx](../../packages/react/src/components/icon-button.tsx)     |
+| Card                | [Card](card.md)                                 | [card.tsx](../../packages/react/src/components/card.tsx)                   |
+| Table               | [Table](table.md)                               | [table.tsx](../../packages/react/src/components/table.tsx)                 |
+| TextField           | [TextField](text-field.md)                      | [text-field.tsx](../../packages/react/src/components/text-field.tsx)       |
+| Select              | [Select](select.md)                             | [select.tsx](../../packages/react/src/components/select.tsx)               |
+| Combobox            | [Combobox](combobox.md)                         | [combobox.tsx](../../packages/react/src/components/combobox.tsx)           |
+| Menu                | [Menu](menu.md)                                 | [menu.tsx](../../packages/react/src/components/menu.tsx)                   |
+| Dialog              | [Dialog](dialog.md)                             | [dialog.tsx](../../packages/react/src/components/dialog.tsx)               |
+| Switch              | [Switch](switch.md)                             | [switch.tsx](../../packages/react/src/components/switch.tsx)               |
+| Tabs                | [Tabs](tabs.md)                                 | [tabs.tsx](../../packages/react/src/components/tabs.tsx)                   |
+| Progress            | [Progress](progress.md)                         | [progress.tsx](../../packages/react/src/components/progress.tsx)           |
+| Composer            | [Composer](composer.md)                         | [composer.tsx](../../packages/react/src/components/composer.tsx)           |
+| ComposerContextChip | [ComposerContextChip](composer-context-chip.md) | [composer.tsx](../../packages/react/src/components/composer.tsx)           |
+| Conversation        | [Conversation](conversation.md)                 | [conversation.tsx](../../packages/react/src/components/conversation.tsx)   |
+| Message             | [Message](message.md)                           | [message.tsx](../../packages/react/src/components/message.tsx)             |
+| Plan                | [Plan](plan.md)                                 | [plan.tsx](../../packages/react/src/components/plan.tsx)                   |
+| ApprovalGate        | [ApprovalGate](approval-gate.md)                | [approval-gate.tsx](../../packages/react/src/components/approval-gate.tsx) |
 
 ## Reading status and ownership
 

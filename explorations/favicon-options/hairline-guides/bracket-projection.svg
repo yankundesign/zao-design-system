@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#faf9f6" />
+  <polygon
+    points="401.77,639.59 511.36,584.79 622.23,640.23 512.64,695.03"
+    fill="#767676"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="512.64,695.03 622.23,640.23 622.23,806.03 512.64,860.82"
+    fill="#4c4c4c"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="401.77,805.38 401.77,639.59 512.64,695.03 512.64,860.82"
+    fill="#212121"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="122.00,326.01 231.59,271.22 319.26,315.05 209.67,369.85"
+    fill="#767676"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="209.67,369.85 319.26,315.05 319.26,338.74 209.67,393.53"
+    fill="#4c4c4c"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="209.67,393.53 319.26,338.74 814.33,586.28 704.74,641.07"
+    fill="#767676"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="704.74,617.38 814.33,562.59 902.00,606.43 792.41,661.22"
+    fill="#767676"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="792.41,661.22 902.00,606.43 902.00,685.38 792.41,740.17"
+    fill="#4c4c4c"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="648.02,680.60 757.60,625.81 727.95,645.72 618.36,700.51"
+    fill="#4c4c4c"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="618.36,700.51 727.95,645.72 702.17,680.20 592.58,734.99"
+    fill="#4c4c4c"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="122.00,404.96 122.00,326.01 209.67,369.85 209.67,393.53 704.74,641.07 704.74,617.38 792.41,661.22 792.41,740.17 678.96,683.44 648.02,680.60 618.36,700.51 592.58,734.99 321.83,599.62 296.05,539.36 266.40,489.79 235.45,461.69"
+    fill="#212121"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="212.25,217.97 321.83,163.18 811.75,408.14 702.17,462.93"
+    fill="#767676"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="702.17,462.93 811.75,408.14 811.75,513.93 702.17,568.72"
+    fill="#4c4c4c"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="512.64,473.96 622.23,419.17 622.23,490.23 512.64,545.02"
+    fill="#4c4c4c"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <polygon
+    points="401.77,489.58 401.77,418.53 212.25,323.77 212.25,217.97 702.17,462.93 702.17,568.72 512.64,473.96 512.64,545.02"
+    fill="#212121"
+    stroke="#161616"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+</svg>

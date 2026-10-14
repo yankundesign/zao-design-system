@@ -416,11 +416,16 @@ for (const context of contexts.filter((item) => item.real)) {
       expect(await box(edge)).toEqual(edgeBox);
       await page.keyboard.press('End');
       await page.keyboard.press('Enter');
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false');
       await expect(popup).not.toBeVisible();
       await trigger.click();
+      await expect(popup).toHaveAttribute('data-open', '');
+      await settle(popup);
       await page.mouse.click(2, 2);
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      await expect(popup).not.toBeVisible();
       await trigger.click();
-      await expect(popup).toBeVisible();
+      await expect(popup).toHaveAttribute('data-open', '');
       await settle(popup);
       await expect(root.locator('[data-zao-exit-highlighted]')).toHaveCount(0);
       await page.keyboard.press('Escape');

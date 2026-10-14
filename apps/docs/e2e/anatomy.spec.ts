@@ -1127,7 +1127,13 @@ for (const mode of modes) {
     await page.keyboard.press('Escape');
     await expect(popup).toHaveCount(0);
     await expect(trigger).toBeFocused();
-    await page.mouse.wheel(0, 400);
-    await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(locked.scroll.y);
+    await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
+    // Scroll unlock can reach the compositor after popup cleanup and focus return.
+    await expect
+      .poll(async () => {
+        await page.mouse.wheel(0, 400);
+        return page.evaluate(() => scrollY);
+      })
+      .toBeGreaterThan(locked.scroll.y);
   });
 }

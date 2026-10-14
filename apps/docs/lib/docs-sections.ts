@@ -24,6 +24,8 @@ export const docsSections = [
       { href: '/components/text-field', label: 'TextField' },
       { href: '/components/composer', label: 'Composer' },
       { href: '/components/conversation', label: 'Conversation' },
+      { href: '/components/plan', label: 'Plan' },
+      { href: '/components/approval-gate', label: 'ApprovalGate' },
       { href: '/components/card', label: 'Card' },
       { href: '/components/combobox', label: 'Combobox' },
       { href: '/components/dialog', label: 'Dialog' },

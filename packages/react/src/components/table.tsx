@@ -1,4 +1,8 @@
+'use client';
+
+import { useRef } from 'react';
 import type { ComponentPropsWithRef } from 'react';
+import { useDrawingState } from './drawing.js';
 
 export interface TableRootProps extends ComponentPropsWithRef<'table'> {
   /** A name for the native table and its keyboard-accessible scroll area. */
@@ -9,6 +13,10 @@ export interface TableRootProps extends ComponentPropsWithRef<'table'> {
   tableClassName?: string;
   'data-zao-theme'?: 'su' | 'yu';
   'data-zao-mode'?: 'light' | 'dark';
+  /** Show placeholder rows as a still construction drawing while the host loads data. */
+  drawing?: boolean;
+  /** Polite loading status announced while drawing. */
+  drawingLabel?: string;
 }
 
 export type TableCaptionProps = ComponentPropsWithRef<'caption'>;
@@ -38,30 +46,47 @@ function TableRoot({
   'aria-label': label,
   'data-zao-theme': theme,
   'data-zao-mode': mode,
+  drawing = false,
+  drawingLabel = 'Loading',
   ...props
 }: TableRootProps) {
+  const root = useRef<HTMLDivElement>(null);
+  const building = useDrawingState(drawing, root);
   return (
-    <div
-      data-zao-component="table"
-      data-zao-theme={theme}
-      data-zao-mode={mode}
-      className={`card-construction construction-shading construction-planes min-w-0 rounded-none border border-subtle bg-canvas text-default${className ? ` ${className}` : ''}`}
-    >
+    <>
       <div
-        data-zao-slot="scroll-area"
-        role="region"
-        aria-label={`${label} scroll area`}
-        tabIndex={0}
-        className="overflow-x-auto outline-focus"
+        ref={root}
+        data-zao-component="table"
+        data-zao-theme={theme}
+        data-zao-mode={mode}
+        data-zao-drawing={drawing ? '' : undefined}
+        data-zao-building={building ? '' : undefined}
+        aria-hidden={drawing || undefined}
+        aria-busy={drawing || undefined}
+        inert={drawing || undefined}
+        className={`card-construction construction-shading construction-planes min-w-0 rounded-none border border-subtle bg-canvas text-default${drawing ? ' construction-drawing' : ''}${className ? ` ${className}` : ''}`}
       >
-        <table
-          {...props}
-          aria-label={label}
-          data-zao-slot="table"
-          className={`table-plane w-full border-collapse text-left${tableClassName ? ` ${tableClassName}` : ''}`}
-        />
+        <div
+          data-zao-slot="scroll-area"
+          role="region"
+          aria-label={`${label} scroll area`}
+          tabIndex={0}
+          className="overflow-x-auto outline-focus"
+        >
+          <table
+            {...props}
+            aria-label={label}
+            data-zao-slot="table"
+            className={`table-plane w-full border-collapse text-left${tableClassName ? ` ${tableClassName}` : ''}`}
+          />
+        </div>
       </div>
-    </div>
+      {drawing ? (
+        <span className="button-loading-announcement" role="status">
+          {drawingLabel}
+        </span>
+      ) : null}
+    </>
   );
 }
 

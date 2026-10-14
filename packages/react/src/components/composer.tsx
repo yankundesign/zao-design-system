@@ -12,7 +12,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode, RefCallback } from 'react';
 import { IconButton } from './icon-button.js';
 import type { IconButtonIcon } from './icon-button.js';
 import { AttachIcon, FileIcon, RemoveIcon, SendIcon, StopIcon } from './composer-icons.js';
@@ -56,14 +56,50 @@ export const ComposerContextChip = forwardRef<HTMLDivElement, ComposerContextChi
   ) {
     const composer = useContext(DraftFocusContext);
     const unavailable = disabled || composer?.disabled;
+    const [removing, setRemoving] = useState(false);
+    const removalGuard = useRef(false);
+    const removalTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(
+      () => () => {
+        if (removalTimer.current !== null) clearTimeout(removalTimer.current);
+      },
+      [],
+    );
+
+    function removeContext(pointer: boolean) {
+      if (unavailable || removalGuard.current) return;
+      removalGuard.current = true;
+      const finish = () => {
+        onRemove();
+        composer?.focusDraft(pointer);
+      };
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        finish();
+        return;
+      }
+      setRemoving(true);
+      const element = document.activeElement?.closest('[data-zao-slot="context-chip"]');
+      const duration = motionMilliseconds(
+        getComputedStyle(element ?? document.body).getPropertyValue('--zao-motion-duration-lift'),
+      );
+      removalTimer.current = setTimeout(() => {
+        removalTimer.current = null;
+        finish();
+      }, duration);
+    }
+
     return (
       <div
         {...props}
         ref={ref}
         data-zao-slot="context-chip"
         data-zao-disabled={unavailable ? '' : undefined}
+        data-zao-removing={removing ? '' : undefined}
+        aria-hidden={removing || undefined}
+        inert={removing || undefined}
         className={[
-          'inline-flex max-w-full min-w-0 items-center gap-1 rounded-none border border-transparent bg-sunken pl-2',
+          'composer-context-chip inline-flex max-w-full min-w-0 items-center gap-1 rounded-none border border-transparent bg-sunken pl-2',
           className,
         ]
           .filter(Boolean)
@@ -95,8 +131,7 @@ export const ComposerContextChip = forwardRef<HTMLDivElement, ComposerContextChi
             const pointer =
               event.detail > 0 ||
               ('pointerType' in event.nativeEvent && Boolean(event.nativeEvent.pointerType));
-            onRemove();
-            composer?.focusDraft(pointer);
+            removeContext(pointer);
           }}
         />
       </div>
@@ -137,11 +172,37 @@ export interface ComposerProps extends Omit<
   textareaProps?: ComposerTextareaProps;
 }
 
+interface AttachmentEntry {
+  attachment: ComposerAttachment;
+  state: 'placed' | 'added' | 'removing';
+}
+
+interface AttachmentState {
+  source: readonly ComposerAttachment[];
+  entries: AttachmentEntry[];
+}
+
 const emptyAttachments: readonly ComposerAttachment[] = [];
 const sendFailure = 'Could not send your request. Your draft is preserved. Try sending again.';
 const stopFailure = 'Could not stop the response. Try stopping again.';
 const fileUnits = ['bytes', 'KB', 'MB', 'GB', 'TB'] as const;
 const fileNumber = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
+
+function motionMilliseconds(value: string) {
+  const amount = Number.parseFloat(value);
+  if (!Number.isFinite(amount)) return 0;
+  return value.trim().endsWith('ms') ? amount : amount * 1000;
+}
+
+function sameAttachments(a: readonly ComposerAttachment[], b: readonly ComposerAttachment[]) {
+  return (
+    a.length === b.length &&
+    a.every((entry, index) => {
+      const other = b[index];
+      return entry.id === other?.id && entry.file === other.file;
+    })
+  );
+}
 
 function formatFileSize(bytes: number) {
   if (bytes === 1) return '1 byte';
@@ -230,6 +291,96 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
   const [stopping, setStopping] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [pointerFocus, setPointerFocus] = useState(false);
+  const [attachmentState, setAttachmentState] = useState<AttachmentState>(() => ({
+    source: attachments,
+    entries: attachments.map((attachment) => ({ attachment, state: 'placed' })),
+  }));
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const tileTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const combinedFormRef = useCallback(
+    (element: HTMLFormElement | null) => {
+      formRef.current = element;
+      if (!element) {
+        if (typeof forwardedRef === 'function') forwardedRef(null);
+        else if (forwardedRef) forwardedRef.current = null;
+        return;
+      }
+      const cleanup =
+        typeof forwardedRef === 'function'
+          ? (forwardedRef as RefCallback<HTMLFormElement>)(element)
+          : undefined;
+      if (forwardedRef && typeof forwardedRef !== 'function') forwardedRef.current = element;
+      return () => {
+        formRef.current = null;
+        if (typeof cleanup === 'function') cleanup();
+        else if (typeof forwardedRef === 'function') forwardedRef(null);
+        else if (forwardedRef) forwardedRef.current = null;
+      };
+    },
+    [forwardedRef],
+  );
+
+  if (!sameAttachments(attachmentState.source, attachments)) {
+    const previous = new Map(attachmentState.entries.map((entry) => [entry.attachment.id, entry]));
+    const currentIds = new Set(attachments.map((attachment) => attachment.id));
+    const entries: AttachmentEntry[] = [
+      ...attachments.map((attachment) => {
+        const existing = previous.get(attachment.id);
+        const state: AttachmentEntry['state'] = existing
+          ? existing.state === 'added'
+            ? 'added'
+            : 'placed'
+          : 'added';
+        return {
+          attachment,
+          state,
+        };
+      }),
+      ...attachmentState.entries
+        .filter((entry) => !currentIds.has(entry.attachment.id))
+        .map((entry) => ({ ...entry, state: 'removing' as const })),
+    ];
+    setAttachmentState({ source: attachments, entries });
+  }
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    for (const entry of attachmentState.entries) {
+      if (entry.state === 'placed' || tileTimers.current.has(entry.attachment.id)) continue;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const duration = reduced
+        ? 0
+        : motionMilliseconds(getComputedStyle(form).getPropertyValue('--zao-motion-duration-lift'));
+      const timer = setTimeout(() => {
+        tileTimers.current.delete(entry.attachment.id);
+        setAttachmentState((current) => ({
+          ...current,
+          entries:
+            entry.state === 'added'
+              ? current.entries.map((candidate) =>
+                  candidate.attachment.id === entry.attachment.id && candidate.state === 'added'
+                    ? { ...candidate, state: 'placed' }
+                    : candidate,
+                )
+              : current.entries.filter(
+                  (candidate) =>
+                    candidate.attachment.id !== entry.attachment.id ||
+                    candidate.state !== 'removing',
+                ),
+        }));
+      }, duration);
+      tileTimers.current.set(entry.attachment.id, timer);
+    }
+  }, [attachmentState]);
+
+  useEffect(
+    () => () => {
+      for (const timer of tileTimers.current.values()) clearTimeout(timer);
+      tileTimers.current.clear();
+    },
+    [],
+  );
   const displayedError = error || localError;
   const invalid = Boolean(displayedError);
   const canSend =
@@ -327,7 +478,7 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
     <DraftFocusContext.Provider value={draftFocus}>
       <form
         {...formProps}
-        ref={forwardedRef}
+        ref={combinedFormRef}
         aria-label={formProps['aria-label'] ?? label}
         data-zao-component="composer"
         data-zao-disabled={disabled ? '' : undefined}
@@ -335,7 +486,7 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
         data-zao-pending={sending ? '' : undefined}
         data-zao-responding={responding ? '' : undefined}
         className={[
-          'composer-construction flex min-w-0 flex-col gap-2 rounded-none border border-subtle bg-canvas px-4 py-3 text-default',
+          'composer-construction construction-shading focus-brackets flex min-w-0 flex-col gap-2 rounded-none border border-subtle bg-surface px-4 py-3 text-default',
           className,
         ]
           .filter(Boolean)
@@ -346,6 +497,11 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
           void sendDraft();
         }}
       >
+        <span
+          data-zao-slot="side"
+          className="composer-side construction-planes"
+          aria-hidden="true"
+        />
         {context ? (
           <div
             data-zao-slot="context"
@@ -354,16 +510,20 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
             {context}
           </div>
         ) : null}
-        {attachments.length > 0 ? (
+        {attachmentState.entries.length > 0 ? (
           <ul
             aria-label="Included attachments"
             data-zao-slot="attachments"
             className="flex min-w-0 flex-wrap gap-2"
           >
-            {attachments.map((attachment) => (
+            {attachmentState.entries.map(({ attachment, state: tileState }) => (
               <li
                 key={attachment.id}
-                className="composer-attachment flex min-w-0 items-center gap-2 border border-subtle bg-surface p-2"
+                data-zao-entering={tileState === 'added' ? '' : undefined}
+                data-zao-removing={tileState === 'removing' ? '' : undefined}
+                aria-hidden={tileState === 'removing' || undefined}
+                inert={tileState === 'removing' || undefined}
+                className="composer-attachment construction-shading construction-planes flex min-w-0 items-center gap-2 border border-subtle bg-surface p-2"
               >
                 <AttachmentPreview file={attachment.file} />
                 <div className="min-w-0 flex-1">
@@ -414,7 +574,7 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
             data-zao-slot="input"
             data-zao-pointer-focus={pointerFocus ? '' : undefined}
             className={[
-              'composer-input w-full min-w-0 bg-canvas type-body text-default outline-focus placeholder:text-muted disabled:cursor-not-allowed disabled:bg-sunken disabled:text-disabled disabled:placeholder:text-disabled',
+              'composer-input w-full min-w-0 bg-transparent type-body text-default placeholder:text-muted disabled:cursor-not-allowed disabled:text-disabled disabled:placeholder:text-disabled',
               textareaClassName,
             ]
               .filter(Boolean)
@@ -509,7 +669,9 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
             {responding ? (
               <IconButton
                 icon={StopIcon}
+                className="composer-submit"
                 aria-label="Stop response"
+                data-zao-action="stop"
                 size="small"
                 type="button"
                 variant="secondary"
@@ -524,7 +686,9 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
             ) : (
               <IconButton
                 icon={SendIcon}
+                className="composer-submit"
                 aria-label="Send"
+                data-zao-action="send"
                 variant="primary"
                 size="small"
                 type="submit"

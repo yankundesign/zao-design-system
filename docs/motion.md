@@ -1,6 +1,6 @@
 # Motion
 
-ZAO's approved spatial responses use four motions: **Lift**, **Seat**, **Slide**, and **Reveal**. A motion changes a painted part while its native target, focus outline, labels where approved, and neighboring layout remain fixed. Color emphasis, registration-tick growth, and selection-line compression are **state changes**.
+ZAO's component motions use **Lift**, **Seat**, **Slide**, **Reveal**, **Hold**, and **Impress**. Spatial motion changes a painted part while its native target, focus outline, labels where approved, and neighboring layout remain fixed. Color emphasis, registration-tick growth, and selection-line compression are **state changes**.
 
 Since October 11, 2026, motion comes from rules ([finish plan](plans/2026-10-finish/README.md), V5 and V6). Curves come from the Song roof-fold rule, 举折; durations come from the eight timber grades, 材分八等. The roles below point at them. The declaration inventory further down is the WP 3.1 record of the October 10 baseline, kept for history: its durations, curves and paint paths are superseded where this section says so.
 
@@ -34,13 +34,19 @@ A part's duration is its grade's 材 height in 寸 times one unit, k = 30ms (`mo
 
 Components read the role tokens, never a grade or a curve directly (finish plan rule 4). The exceptions are docs-local demonstrations and the focus brackets, which close in over grade 7 on the enter curve.
 
-| Role        | Duration         | Curve    | Used by                                     |
-| ----------- | ---------------- | -------- | ------------------------------------------- |
-| Lift        | Grade 7, 157.5ms | Enter    | Button and IconButton hover                 |
-| Seat        | Fast, 80ms       | Standard | Every press; Card's 1px load-path dip       |
-| Slide       | Grade 7, 157.5ms | Enter    | Switch thumb, Tabs indicator, Progress span |
-| Reveal      | Grade 5, 198ms   | Enter    | Menu, Select and Combobox popups            |
-| Reveal exit | Fast, 80ms       | Exit     | Closing popups                              |
+| Role        | Duration            | Curve                  | Used by                                                                            |
+| ----------- | ------------------- | ---------------------- | ---------------------------------------------------------------------------------- |
+| Lift        | Grade 7, 157.5ms    | Enter                  | Button and IconButton hover; Composer Send rise and placed tiles                   |
+| Seat        | Fast, 80ms          | Standard               | Every press; accepted Composer Send hold; Card's 1px load-path dip                 |
+| Slide       | Grade 7, 157.5ms    | Enter                  | Switch thumb, Tabs indicator, Progress span                                        |
+| Reveal      | Grade 5, 198ms      | Enter                  | Menu, Select and Combobox popups; entering Conversation requests and docked Latest |
+| Reveal exit | Fast, 80ms          | Exit                   | Closing popups; withdrawing docked Latest                                          |
+| Hold        | 4 × grade 1, 1080ms | `steps(4, jump-end)`   | Press-and-hold safety delay; the duration remains under reduced motion             |
+| Impress     | Grade 5, 198ms      | `steps(3, jump-start)` | ApprovalGate seal impression; first ink band lands at once                         |
+
+Plan arrival draws each initial step on Reveal, staggered by one Fast duration. The rail's completed segment fills on Slide. A step added later draws without the stagger. ApprovalGate's record replaces its actions in the same row; an approved impression uses Impress. A part's drawing stays still while loading; when it becomes built, guidelines withdraw on Reveal exit, ink and face arrive on Reveal, and planes rise on Lift. The build duration is reveal exit + half Reveal + Lift, read from the computed roles.
+
+Conversation requests reveal upward from the slip's lower edge without changing the native item box. Latest uses the same Reveal/Reveal exit roles while docked over the viewport. Composer's accepted Send seats on Seat and rises as Stop on Lift; added tiles rise on Lift, while tile and context-chip removal draw away on the exit curve for one Lift duration. The streaming Message reuses Button's existing loading role. Scroll eaves are driven by scroll position, with no duration or timed animation.
 
 Dialog stays instant (V8). Reduced motion keeps every end state and removes travel, as before.
 
@@ -194,7 +200,7 @@ The generated property list is `color, background-color, border-color, outline-c
 7. **Reduced motion differs by component intentionally.** Button and Switch replace displacement with fill feedback. Tabs still immediately changes pressed translation/line thickness; Progress immediately changes measured span. Reveal shows the complete frame. Dialog is already instant. Preserve these existing protections and report computed properties as well as timing numbers.
 8. **Color easing has a baseline mismatch.** Generated field/native-tab color transitions use Tailwind's `(0.4, 0, 0.2, 1)` default, while explicit housing/face/tick color transitions use Standard `(0.2, 0, 0, 1)`. Their Fast durations agree. Do not normalize this discrepancy in the role extraction.
 
-WP 3.2 uses `motion.duration.lift`, `.seat`, `.slide`, `.reveal`, and `.reveal-exit`, with `motion.easing.lift`, `.seat`, `.slide`, `.reveal`, plus `.exit`. Each is an alias of the baseline Fast/Base/Standard value as appropriate; Reveal exit retains its own Fast duration. Fast/Base/Standard remain available for state changes. D11 was resolved Oct 10 by retaining these current values: lift, seat, and reveal exit 80ms; slide and reveal 160ms; all role curves `cubic-bezier(0.2, 0, 0, 1)`. Future value changes require separate approval. Yu's completeness aliases retain its deferred existing values.
+WP 3.2 uses `motion.duration.lift`, `.seat`, `.slide`, `.reveal`, and `.reveal-exit`, with `motion.easing.lift`, `.seat`, `.slide`, `.reveal`, plus `.exit`. Each is an alias of the baseline Fast/Base/Standard value as appropriate; Reveal exit retains its own Fast duration. Fast/Base/Standard remain available for state changes. D11 was resolved Oct 10 by retaining these current values: lift, seat, and reveal exit 80ms; slide and reveal 160ms; all role curves `cubic-bezier(0.2, 0, 0, 1)`. Future value changes require separate approval. Yu's completeness aliases retain its deferred existing values. The Oct 13 components plan adds Hold (four grade-1 beats) and Impress (grade-5 duration); their separate `steps()` curves preserve the band counts and jump positions in the JSON export.
 
 ## WP 3.2 computed comparison checklist
 

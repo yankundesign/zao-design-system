@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -13,6 +14,7 @@ import {
 import type { ComponentPropsWithoutRef, ForwardedRef, RefCallback } from 'react';
 import { Button } from './button.js';
 import type { ButtonProps } from './button.js';
+import { ArrowDownIcon } from './conversation-icons.js';
 
 export interface ConversationRootProps extends ComponentPropsWithoutRef<'section'> {
   /** A name for this conversation and its message scroll region. */
@@ -23,11 +25,15 @@ export interface ConversationRootProps extends ComponentPropsWithoutRef<'section
 
 export type ConversationViewportProps = ComponentPropsWithoutRef<'div'>;
 export type ConversationListProps = ComponentPropsWithoutRef<'ol'>;
-export type ConversationItemProps = ComponentPropsWithoutRef<'li'>;
+export interface ConversationItemProps extends ComponentPropsWithoutRef<'li'> {
+  /** Override the post-mount hand-off reveal for host-restored transcript history. */
+  entering?: boolean;
+}
 export type ConversationLatestProps = Omit<ButtonProps, 'variant'>;
 
 interface ScrollContextValue {
   label: string;
+  didCommit: boolean;
   atLatest: boolean;
   registerViewport: (element: HTMLDivElement | null) => void;
   registerList: (element: HTMLOListElement | null) => void;
@@ -36,6 +42,12 @@ interface ScrollContextValue {
 
 const ScrollContext = createContext<ScrollContextValue | null>(null);
 const AnnouncementContext = createContext<((message: string) => void) | null>(null);
+
+function motionMilliseconds(value: string) {
+  const amount = Number.parseFloat(value);
+  if (!Number.isFinite(amount)) return 0;
+  return value.trim().endsWith('ms') ? amount : amount * 1000;
+}
 
 function useConversationScroll() {
   const context = useContext(ScrollContext);
@@ -46,6 +58,11 @@ function useConversationScroll() {
 /** Internal bridge for Message lifecycle feedback; transcript text never becomes a live region. */
 export function useConversationAnnouncement() {
   return useContext(AnnouncementContext);
+}
+
+/** Whether a parent Conversation has committed its initial render, for arrival-only children. */
+export function useConversationDidCommit() {
+  return useContext(ScrollContext)?.didCommit ?? false;
 }
 
 function classes(base: string, extra?: string) {
@@ -102,11 +119,16 @@ const Root = forwardRef<HTMLElement, ConversationRootProps>(function Conversatio
   const [viewport, registerViewport] = useState<HTMLDivElement | null>(null);
   const [list, registerList] = useState<HTMLOListElement | null>(null);
   const [atLatest, setAtLatest] = useState(true);
+  const [didCommit, setDidCommit] = useState(false);
   const [automaticAnnouncement, setAutomaticAnnouncement] = useState('');
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const following = useRef(true);
   const previousGeometry = useRef<Geometry | null>(null);
   const writtenTop = useRef<number | null>(null);
+
+  useLayoutEffect(() => {
+    setDidCommit(true);
+  }, []);
 
   const scrollToLatest = useCallback(() => {
     const element = viewportRef.current;
@@ -230,8 +252,8 @@ const Root = forwardRef<HTMLElement, ConversationRootProps>(function Conversatio
   }, [viewport, list, scrollToLatest]);
 
   const scrollContext = useMemo(
-    () => ({ label, atLatest, registerViewport, registerList, scrollToLatest }),
-    [label, atLatest, scrollToLatest],
+    () => ({ label, atLatest, didCommit, registerViewport, registerList, scrollToLatest }),
+    [label, atLatest, didCommit, scrollToLatest],
   );
 
   return (
@@ -297,10 +319,21 @@ const List = forwardRef<HTMLOListElement, ConversationListProps>(function Conver
 });
 
 const Item = forwardRef<HTMLLIElement, ConversationItemProps>(function ConversationItem(
-  { className, ...props },
+  { className, entering, ...props },
   ref,
 ) {
-  return <li {...props} ref={ref} data-zao-slot="item" className={classes('min-w-0', className)} />;
+  const { didCommit } = useConversationScroll();
+  const [mountedAfterCommit] = useState(didCommit);
+  const isEntering = entering ?? mountedAfterCommit;
+  return (
+    <li
+      {...props}
+      ref={ref}
+      data-zao-slot="item"
+      data-zao-entering={isEntering ? '' : undefined}
+      className={classes('min-w-0', className)}
+    />
+  );
 });
 
 const Latest = forwardRef<HTMLElement, ConversationLatestProps>(function ConversationLatest(
@@ -309,16 +342,66 @@ const Latest = forwardRef<HTMLElement, ConversationLatestProps>(function Convers
 ) {
   const { atLatest, scrollToLatest } = useConversationScroll();
   const [focused, setFocused] = useState(false);
-  // Keep the activated control in place until focus leaves it.
-  if (atLatest && !focused) return null;
+  const [mounted, setMounted] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestElement = useRef<HTMLElement | null>(null);
+  const combinedRef = useRegisteredRef(ref, (element) => {
+    latestElement.current = element;
+  });
+
+  useEffect(() => {
+    if (exitTimer.current !== null) clearTimeout(exitTimer.current);
+    exitTimer.current = null;
+    if (!atLatest) {
+      setMounted(true);
+      setLeaving(false);
+      return;
+    }
+    if (!mounted || focused) return;
+    if (!leaving) {
+      setLeaving(true);
+      return;
+    }
+
+    const element = latestElement.current;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !element) {
+      setMounted(false);
+      setLeaving(false);
+      return;
+    }
+    const duration = motionMilliseconds(
+      getComputedStyle(element).getPropertyValue('--zao-motion-duration-reveal-exit'),
+    );
+    exitTimer.current = setTimeout(() => {
+      setMounted(false);
+      setLeaving(false);
+      exitTimer.current = null;
+    }, duration);
+    return () => {
+      if (exitTimer.current !== null) clearTimeout(exitTimer.current);
+      exitTimer.current = null;
+    };
+  }, [atLatest, focused, leaving, mounted]);
+
+  useEffect(
+    () => () => {
+      if (exitTimer.current !== null) clearTimeout(exitTimer.current);
+    },
+    [],
+  );
+
+  if (!mounted) return null;
   return (
     <Button
       {...props}
-      ref={ref}
-      variant="quiet"
+      ref={combinedRef}
+      variant="secondary"
       size={size}
       data-zao-slot="latest"
-      className={classes('self-start', className)}
+      data-zao-exiting={leaving ? '' : undefined}
+      className={classes('conversation-latest-construction', className)}
+      trailingAction={ArrowDownIcon}
       onClick={(event) => {
         onClick?.(event);
         if (!event.defaultPrevented) scrollToLatest();

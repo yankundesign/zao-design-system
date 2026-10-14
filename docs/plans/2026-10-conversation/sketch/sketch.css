@@ -1,0 +1,953 @@
+/*
+ * Reference only: the recipes from the Oct 12 Conversation and Composer sketch, scoped under
+ * .sk[data-sk-<row>='<option>']. It is not built or published. Port the recipes into the
+ * components as ../README.md describes; don't copy the selectors or the aria-label hooks.
+ */
+@import 'tailwindcss';
+@import '@zao/react/fonts.css';
+@import '@zao/react/theme.css';
+
+@source '../../../packages/react/src';
+@source './';
+
+/*
+ * Page shell. Layout: a two-column review bench (live specimen | proposal rail) under a
+ * plain header, with the written review below. Every color and type role comes from ZAO.
+ */
+:root {
+  --sk-gutter: var(--zao-space-4);
+  --sk-rail: 22.5rem;
+}
+
+html,
+body {
+  background: var(--zao-color-bg-canvas);
+  color: var(--zao-color-fg-default);
+}
+
+body {
+  margin: 0;
+  font-family: var(--zao-font-family-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+code {
+  font-family: var(--zao-font-family-mono);
+  font-size: 0.875em;
+}
+
+.sk-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-10);
+  max-inline-size: calc(var(--zao-space-1) * 330);
+  margin-inline: auto;
+  padding-inline: var(--sk-gutter);
+  padding-block: var(--zao-space-8) var(--zao-space-16);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --sk-gutter: var(--zao-space-8);
+  }
+}
+
+.sk-eyebrow {
+  @apply type-caption;
+  color: var(--zao-color-fg-muted);
+  letter-spacing: 0.02em;
+}
+
+.sk-lede {
+  max-inline-size: 40rem;
+}
+
+.sk-top {
+  display: grid;
+  gap: var(--zao-space-6);
+  padding-block-end: var(--zao-space-6);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+@media (min-width: 64rem) {
+  .sk-top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+}
+
+.sk-globals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zao-space-4) var(--zao-space-5);
+  align-items: end;
+}
+
+.sk-global {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-1-5);
+}
+
+.sk-global-label {
+  @apply type-caption;
+  color: var(--zao-color-fg-muted);
+}
+
+/* Segmented radio: a recessed track holding one built face for the current choice. */
+.sk-seg {
+  @apply construction-well;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--zao-space-0-5);
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  padding: var(--zao-space-0-5);
+  border: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  background: var(--zao-color-bg-sunken);
+}
+
+.sk-seg-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zao-space-1-5);
+  min-block-size: var(--zao-space-6);
+  padding-inline: var(--zao-space-2);
+  @apply type-caption;
+  color: var(--zao-color-fg-muted);
+  cursor: pointer;
+  user-select: none;
+
+  & input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  &:hover:not([data-checked]) {
+    color: var(--zao-color-fg-default);
+  }
+
+  &[data-checked] {
+    color: var(--zao-color-fg-default);
+    background: var(--zao-color-bg-surface);
+    box-shadow:
+      inset 0 0 0 var(--zao-stroke-hairline) var(--zao-color-border-default),
+      calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
+        calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
+        var(--zao-color-border-default);
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--zao-color-focus-ring);
+    outline-offset: 2px;
+    z-index: 1;
+  }
+}
+
+/* The lean marker: one small ink square, the Message status mark's shape. */
+.sk-lean {
+  inline-size: var(--zao-space-1);
+  block-size: var(--zao-space-1);
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.sk-main {
+  display: grid;
+  gap: var(--zao-space-8);
+  align-items: start;
+}
+
+@media (min-width: 64rem) {
+  .sk-main {
+    grid-template-columns: minmax(0, 1fr) var(--sk-rail);
+  }
+
+  .sk-side {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + var(--zao-space-4));
+    max-block-size: calc(100dvh - var(--zao-space-8));
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+.sk-stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-6);
+  min-inline-size: 0;
+}
+
+.sk-compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-5);
+}
+
+.sk-compare-grid {
+  display: grid;
+  gap: var(--zao-space-8) var(--zao-space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+}
+
+.sk-compare-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-3);
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.sk-compare-viewport {
+  block-size: 34rem;
+  max-block-size: 72dvh;
+}
+
+.sk-asset-grid {
+  display: grid;
+  gap: var(--zao-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+}
+
+.sk-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-6);
+  min-inline-size: 0;
+  padding-inline-end: var(--zao-space-1);
+}
+
+.sk-side-group {
+  padding-block-end: var(--zao-space-2);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-default);
+}
+
+.sk-prop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-2);
+  padding-block: var(--zao-space-4);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.sk-code {
+  @apply type-code figures-id;
+  color: var(--zao-color-fg-muted);
+  flex-shrink: 0;
+  min-inline-size: 1.75rem;
+}
+
+.sk-prop[data-changed] .sk-code {
+  color: var(--zao-color-fg-default);
+}
+
+.sk-try {
+  color: var(--zao-color-fg-muted);
+  font-style: italic;
+}
+
+.sk-viewport {
+  block-size: 27rem;
+  max-block-size: 62dvh;
+}
+
+.sk-states {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-3);
+}
+
+.sk-states-grid {
+  display: grid;
+  gap: var(--zao-space-5);
+}
+
+@media (min-width: 48rem) {
+  .sk-states-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.sk-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-8);
+  padding-block-start: var(--zao-space-8);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.sk-notes-grid {
+  display: grid;
+  gap: var(--zao-space-8);
+}
+
+@media (min-width: 64rem) {
+  .sk-notes-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sk-prose {
+  max-inline-size: 42rem;
+  text-wrap: pretty;
+
+  & em {
+    font-style: normal;
+    color: var(--zao-color-fg-default);
+  }
+}
+
+.sk-findings {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-finding {
+  display: flex;
+  gap: var(--zao-space-3);
+  padding-block: var(--zao-space-3);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+/* What a request was sent with: flat chips inlaid in its slip. */
+.sk-sent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zao-space-1-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-sent-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zao-space-1-5);
+  min-block-size: var(--zao-space-6);
+  max-inline-size: 100%;
+  padding-inline: var(--zao-space-2);
+  background: var(--zao-color-bg-sunken);
+  @apply type-caption;
+  color: var(--zao-color-fg-default);
+  overflow-wrap: anywhere;
+}
+
+.sk-sent-icon {
+  flex-shrink: 0;
+  inline-size: var(--zao-size-icon-sm);
+  block-size: var(--zao-size-icon-sm);
+  color: var(--zao-color-fg-muted);
+}
+
+.sk-decided {
+  @apply type-caption;
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--zao-space-2);
+  padding-inline: var(--zao-space-1-5);
+  background: var(--zao-color-bg-sunken);
+  color: var(--zao-color-fg-default);
+  font-weight: var(--zao-font-weight-regular);
+}
+
+/* Slow motion for review: every role this sketch reads, at four times its duration. */
+.sk[data-sk-speed='quarter'] {
+  --zao-motion-duration-fast: calc(80ms * 4);
+  --zao-motion-duration-grade-5: calc(198ms * 4);
+  --zao-motion-duration-grade-7: calc(157.5ms * 4);
+  --zao-motion-duration-grade-8: calc(135ms * 4);
+  --zao-motion-duration-lift: calc(157.5ms * 4);
+  --zao-motion-duration-slide: calc(157.5ms * 4);
+  --zao-motion-duration-reveal: calc(198ms * 4);
+  --zao-motion-duration-seat: calc(80ms * 4);
+  --zao-motion-duration-reveal-exit: calc(80ms * 4);
+}
+
+/* ===================================================================== proposals */
+
+/* C1 · Tray material ------------------------------------------------------------ */
+
+.sk:is([data-sk-tray='raised'], [data-sk-tray='well'])
+  [data-zao-component='composer']
+  .composer-input {
+  background-color: transparent;
+}
+
+.sk[data-sk-tray='raised'] [data-zao-component='composer'].composer-construction {
+  @apply construction-shading construction-planes;
+  position: relative;
+  isolation: isolate;
+  --zao-construction-face: var(--zao-color-bg-surface);
+  --zao-plane-strength: 6%;
+  --zao-plane-rest: var(--zao-depth-rest-surface);
+  --zao-face-offset: 0px;
+  background-color: var(--zao-color-bg-surface);
+  border-color: var(--zao-color-border-subtle);
+  box-shadow: none;
+  transition: border-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+
+  @supports (corner-shape: bevel) {
+    border-top-right-radius: var(--zao-radius-facet);
+    corner-shape: bevel;
+  }
+
+  &:has(.composer-input:focus) {
+    border-color: var(--zao-color-border-default);
+  }
+
+  &[data-zao-invalid] {
+    border-color: var(--zao-color-border-field-invalid);
+  }
+
+  /* Unavailable parts sit flat on their base, like a disabled Button. */
+  &[data-zao-disabled] {
+    --zao-plane-rest: 0px;
+    background-color: var(--zao-color-bg-sunken);
+    border-color: var(--zao-color-border-subtle);
+  }
+}
+
+.sk[data-sk-tray='well'] [data-zao-component='composer'].composer-construction {
+  @apply construction-well field-well;
+  background-color: var(--zao-color-bg-canvas);
+  border-color: var(--zao-color-border-field);
+  transition: border-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+
+  &:has(.composer-input:focus) {
+    border-color: var(--zao-color-border-strong);
+  }
+
+  &[data-zao-invalid] {
+    border-color: var(--zao-color-border-field-invalid);
+  }
+
+  &[data-zao-disabled] {
+    background-color: var(--zao-color-bg-field-disabled);
+    border-color: var(--zao-color-border-subtle);
+  }
+}
+
+/* C2 · Keyboard focus: brackets around the tray ---------------------------------- */
+
+.sk[data-sk-focus='brackets'] .sk-tray {
+  position: relative;
+  @apply focus-brackets;
+
+  &:has(.composer-input:focus-visible:not([data-zao-pointer-focus]))::after {
+    --zao-bracket-offset: var(--zao-bracket-gap);
+    opacity: 1;
+  }
+
+  & .composer-input:focus-visible {
+    outline: none;
+  }
+
+  @media (forced-colors: active) {
+    & .composer-input:focus-visible {
+      outline: 2px solid CanvasText;
+      outline-offset: 2px;
+    }
+  }
+}
+
+/* C3 · Send and Stop: one part, seated while accepted ------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .sk[data-sk-send='story']
+    [data-zao-component='composer']
+    :is(button[aria-label='Send'], button[aria-label='Stop response']) {
+    --sk-rest-easing: var(--zao-motion-easing-lift);
+    transition:
+      --zao-face-offset var(--button-spatial-duration) var(--button-spatial-easing),
+      --zao-plane-rest var(--zao-motion-duration-lift) var(--sk-rest-easing);
+
+    /* Going flat (the draft emptied) leaves on the exit fold. */
+    &:disabled {
+      --sk-rest-easing: var(--zao-motion-easing-exit);
+    }
+  }
+
+  /* Accepted: the face stays seated on its base until the host answers. */
+  .sk[data-sk-send='story']
+    [data-zao-component='composer']
+    :is(button[aria-label='Send'], button[aria-label='Stop response'])[aria-busy='true'] {
+    --zao-plane-rest: var(--zao-depth-rest-control);
+    --zao-face-offset: calc(-1 * var(--zao-depth-rest-control));
+    --button-spatial-duration: var(--zao-motion-duration-seat);
+    --button-spatial-easing: var(--zao-motion-easing-seat);
+  }
+
+  .sk[data-sk-send='story']
+    [data-zao-component='composer']
+    button[aria-label='Send'][aria-busy='true'] {
+    --button-fill: var(--zao-color-accent-solid-hover);
+    --button-ink: var(--zao-color-fg-on-accent);
+    --button-edge: var(--zao-color-accent-solid);
+  }
+
+  .sk[data-sk-send='story']
+    [data-zao-component='composer']
+    button[aria-label='Stop response'][aria-busy='true'] {
+    --button-fill: var(--zao-color-bg-active);
+    --button-ink: var(--zao-color-fg-default);
+    --button-edge: var(--zao-color-border-default);
+  }
+}
+
+/* C4 · Files and context: placed parts, drawn on removal --------------------------- */
+
+.sk[data-sk-parts='placed'] [data-zao-component='composer'] .composer-attachment {
+  @apply construction-shading construction-planes;
+  position: relative;
+  isolation: isolate;
+  --zao-construction-face: var(--zao-color-bg-surface);
+  --zao-plane-rest: var(--zao-depth-rest-small);
+  --zao-face-offset: 0px;
+
+  @supports (corner-shape: bevel) {
+    border-top-right-radius: var(--zao-radius-facet);
+    corner-shape: bevel;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: --zao-plane-rest var(--zao-motion-duration-grade-8)
+      var(--zao-motion-easing-fold-enter);
+
+    @starting-style {
+      --zao-plane-rest: 0px;
+    }
+  }
+}
+
+.sk[data-sk-parts='placed'] [data-zao-component='composer'] .composer-attachment[data-sk-removing],
+.sk[data-sk-parts='placed'] [data-zao-slot='context-chip'].sk-removing {
+  --zao-plane-rest: 0px;
+  transition-timing-function: var(--zao-motion-easing-fold-exit);
+  background-color: transparent;
+  border-style: dashed;
+  border-color: var(--zao-color-border-default);
+
+  & > * {
+    visibility: hidden;
+  }
+}
+
+/* T1 · Transcript structure -------------------------------------------------------- */
+
+/* Each Conversation.Item holds one exchange: a request and its answer. */
+.sk .sk-exchange {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-5);
+  min-inline-size: 0;
+}
+
+/* Shared by every proposed structure: quieter authors, code in a well, older actions on demand. */
+.sk:not([data-sk-structure='today']) {
+  & .zao-message > [data-zao-slot='header'] > [data-zao-slot='author'] {
+    color: var(--zao-color-fg-muted);
+  }
+
+  & .zao-message-content pre {
+    @apply construction-well;
+  }
+
+  /* Actions join the author row, so they never add a trailing row under a card or table. */
+  & .zao-message[data-zao-kind='assistant']:not([data-zao-status='error']) {
+    position: relative;
+
+    & > [data-zao-slot='header'] {
+      padding-inline-end: calc(var(--zao-size-control-sm) + var(--zao-space-2));
+    }
+
+    & > [data-zao-slot='actions'] {
+      position: absolute;
+      inset-block-start: var(--zao-space-1);
+      inset-inline-end: var(--zao-space-2);
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    & .zao-conversation-list > li:not(:last-child) .zao-message > [data-zao-slot='actions'] {
+      opacity: 0;
+      transition: opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+    }
+
+    &
+      .zao-conversation-list
+      > li:not(:last-child):is(:hover, :focus-within)
+      .zao-message
+      > [data-zao-slot='actions'] {
+      opacity: 1;
+    }
+  }
+}
+
+.sk:is([data-sk-structure='ledger'], [data-sk-structure='tray'], [data-sk-structure='spine'])
+  .zao-message[data-zao-kind='user']
+  .zao-message-content
+  p {
+  font-weight: var(--zao-font-weight-medium);
+}
+
+/* Ledger: the request is the heading of its exchange, pinned while its answer scrolls. */
+.sk[data-sk-structure='ledger'] {
+  & .zao-conversation-list {
+    gap: var(--zao-space-6);
+    padding-block-start: 0;
+  }
+
+  & .sk-exchange {
+    gap: var(--zao-space-3);
+  }
+
+  & .zao-message[data-zao-kind='user'] {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    inline-size: auto;
+    max-inline-size: none;
+    margin-inline: calc(-1 * var(--zao-space-3));
+    padding: var(--zao-space-2) var(--zao-space-6);
+    border: 0;
+    border-block: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+    background-color: var(--zao-color-bg-sunken);
+  }
+}
+
+/* Slip: requests move to the trailing edge as small built parts. */
+.sk[data-sk-structure='slip'] {
+  & .zao-conversation-list {
+    gap: var(--zao-space-8);
+  }
+
+  & .sk-exchange {
+    gap: var(--zao-space-4);
+  }
+
+  & .zao-message[data-zao-kind='user'] {
+    @apply construction-shading construction-planes;
+    position: relative;
+    isolation: isolate;
+    --zao-construction-face: var(--zao-color-bg-surface);
+    --zao-plane-strength: 6%;
+    --zao-plane-rest: var(--zao-depth-rest-small);
+    --zao-face-offset: 0px;
+    align-self: flex-end;
+    max-inline-size: min(85%, 34rem);
+    border: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+
+    @supports (corner-shape: bevel) {
+      border-top-right-radius: var(--zao-radius-facet);
+      corner-shape: bevel;
+    }
+  }
+
+  /* Position names the author; “You” stays as the accessible name only. */
+  & .zao-message[data-zao-kind='user'] > [data-zao-slot='header'] > [data-zao-slot='author'] {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  &
+    .zao-message[data-zao-kind='user']
+    > [data-zao-slot='header']
+    > [data-zao-slot='metadata']::before {
+    display: none;
+  }
+
+  &
+    .zao-message[data-zao-kind='user']:not(
+      :has(> [data-zao-slot='header'] > [data-zao-slot='metadata'])
+    )
+    > [data-zao-slot='header'] {
+    position: absolute;
+  }
+}
+
+/* Tray: the answer sits in a recessed field; its cards and tables stand up from it. */
+.sk[data-sk-structure='tray'] {
+  & .zao-conversation-list {
+    gap: var(--zao-space-6);
+  }
+
+  & .sk-exchange {
+    gap: var(--zao-space-2);
+  }
+
+  & .zao-message[data-zao-kind='user'] {
+    inline-size: auto;
+    background: none;
+    border: 0;
+    padding-block-end: 0;
+  }
+
+  & .zao-message[data-zao-kind='assistant'] > [data-zao-slot='actions'] {
+    inset-block-start: var(--zao-space-2);
+  }
+
+  & .zao-message[data-zao-kind='assistant'] {
+    @apply construction-well;
+    gap: var(--zao-space-2);
+    padding: var(--zao-space-3);
+    border: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+    background-color: var(--zao-color-bg-sunken);
+  }
+}
+
+/* Spine: an ink rule binds each answer and everything in it. */
+.sk[data-sk-structure='spine'] {
+  & .zao-conversation-list {
+    gap: var(--zao-space-8);
+  }
+
+  & .sk-exchange {
+    gap: var(--zao-space-2);
+  }
+
+  & .zao-message[data-zao-kind='user'] {
+    inline-size: auto;
+    background: none;
+    border: 0;
+    padding-block-end: 0;
+  }
+
+  & .zao-message[data-zao-kind='assistant'] {
+    position: relative;
+    margin-inline-start: var(--zao-space-3);
+    padding-inline-start: var(--zao-space-4);
+    border-inline-start: var(--zao-space-0-5) solid var(--zao-color-border-strong);
+  }
+
+  /* The registration tick where the spine meets the author. */
+  & .zao-message[data-zao-kind='assistant'] > [data-zao-slot='header'] {
+    position: relative;
+  }
+
+  & .zao-message[data-zao-kind='assistant'] > [data-zao-slot='header']::before {
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--zao-space-4));
+    top: 50%;
+    inline-size: var(--zao-space-2);
+    block-size: var(--zao-stroke-hairline);
+    background: var(--zao-color-border-strong);
+    content: '';
+  }
+}
+
+/* T2 · Under construction: a dashed ink line while a response is written ----------- */
+
+.sk[data-sk-line='line']
+  .zao-message[data-zao-kind='assistant']:is(
+    [data-zao-status='streaming'],
+    [data-zao-status='stopped'],
+    [data-zao-status='error']
+  ) {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: var(--zao-stroke-hairline);
+    color: var(--zao-color-fg-default);
+    background: repeating-linear-gradient(
+      to bottom,
+      currentColor 0 var(--zao-space-1),
+      transparent var(--zao-space-1) var(--zao-space-2)
+    );
+    pointer-events: none;
+    content: '';
+  }
+
+  &[data-zao-status='stopped']::before {
+    color: var(--zao-color-fg-muted);
+  }
+
+  &[data-zao-status='error']::before {
+    color: var(--zao-color-danger-text);
+  }
+
+  @media (forced-colors: active) {
+    &::before {
+      color: CanvasText;
+    }
+  }
+}
+
+@keyframes sk-loading {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The Responding square becomes Button's loading arc: one pending animation in the system. */
+.sk[data-sk-line='line']
+  .zao-message[data-zao-status='streaming']
+  > [data-zao-slot='header']
+  > [data-zao-slot='status']::before {
+  inline-size: var(--zao-space-3);
+  block-size: var(--zao-space-3);
+  border: var(--zao-stroke-hairline) solid currentColor;
+  border-inline-start-color: transparent;
+  border-radius: 50%;
+  background: none;
+  animation: sk-loading var(--zao-motion-duration-loading) linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* In Spine, the spine itself becomes the dashed line while the answer is unfinished. */
+.sk[data-sk-structure='spine'][data-sk-line='line']
+  .zao-message[data-zao-kind='assistant']:is(
+    [data-zao-status='streaming'],
+    [data-zao-status='stopped'],
+    [data-zao-status='error']
+  ) {
+  border-inline-start-color: transparent;
+
+  &::before {
+    inset-inline-start: calc(-1 * var(--zao-space-0-5));
+    inline-size: var(--zao-space-0-5);
+  }
+}
+
+/* T3 · Request hand-off: Reveal from the bottom edge, with a front edge ------------ */
+
+@property --sk-reveal {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sk[data-sk-handoff='reveal'] [data-sk-new] > .zao-message[data-zao-kind='user'] {
+    --sk-reveal: 1;
+    --sk-lip: color-mix(
+      in oklch,
+      var(--zao-color-border-strong),
+      transparent calc(var(--sk-reveal) * 100%)
+    );
+    clip-path: inset(
+      calc((1 - var(--sk-reveal)) * 100% - var(--zao-stroke-hairline)) calc(-1 * var(--zao-space-1))
+        calc(-1 * var(--zao-space-1)) calc(-1 * var(--zao-space-1))
+    );
+    background-image: linear-gradient(
+      to bottom,
+      transparent calc((1 - var(--sk-reveal)) * 100% - var(--zao-stroke-hairline)),
+      var(--sk-lip) 0,
+      var(--sk-lip) calc((1 - var(--sk-reveal)) * 100%),
+      transparent 0
+    );
+    transition: --sk-reveal var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal);
+
+    @starting-style {
+      --sk-reveal: 0;
+    }
+  }
+}
+
+/* T4 · Latest response, docked over the transcript's bottom edge ---------------------- */
+
+.sk[data-sk-latest='docked'] {
+  & .zao-conversation {
+    position: relative;
+  }
+
+  & [data-zao-slot='latest'] {
+    position: absolute;
+    inset-block-end: var(--zao-space-3);
+    inset-inline-start: var(--zao-space-3);
+    z-index: 2;
+    margin: 0;
+    --zao-plane-rest: var(--zao-depth-rest-control);
+    --button-fill: var(--zao-color-bg-surface);
+    --button-hover-fill: var(--zao-color-bg-hover);
+    --button-pressed-fill: var(--zao-color-bg-active);
+    --button-edge: var(--zao-color-border-default);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    & [data-zao-slot='latest'] {
+      --sk-reveal: 1;
+      clip-path: inset(
+        calc((1 - var(--sk-reveal)) * (100% + var(--zao-space-2)) - var(--zao-space-2))
+          calc(-1 * var(--zao-space-2)) calc(-1 * var(--zao-space-2)) calc(-1 * var(--zao-space-2))
+      );
+      transition:
+        --zao-face-offset var(--button-spatial-duration) var(--button-spatial-easing),
+        --sk-reveal var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal);
+
+      @starting-style {
+        --sk-reveal: 0;
+      }
+    }
+  }
+}
+
+/* T5 · Scroll edges: eaves drawn only while content is hidden past an edge ---------- */
+
+@keyframes sk-eave-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sk-eave-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.sk[data-sk-eaves='eaves'] {
+  & .sk-panel-header {
+    border-block-end-color: transparent;
+  }
+
+  & .zao-conversation-viewport::before,
+  & .zao-conversation-viewport::after {
+    display: block;
+    position: sticky;
+    z-index: 3;
+    block-size: var(--zao-stroke-hairline);
+    background: var(--zao-color-border-subtle);
+    pointer-events: none;
+    content: '';
+  }
+
+  & .zao-conversation-viewport::before {
+    top: 0;
+    margin-block-end: calc(-1 * var(--zao-stroke-hairline));
+    animation: sk-eave-in linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0px var(--zao-space-4);
+  }
+
+  & .zao-conversation-viewport::after {
+    bottom: 0;
+    margin-block-start: calc(-1 * var(--zao-stroke-hairline));
+    animation: sk-eave-out linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: calc(100% - var(--zao-space-4)) 100%;
+  }
+}

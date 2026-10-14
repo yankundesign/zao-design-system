@@ -74,7 +74,13 @@ test('Combobox filters, selects with the keyboard, and exposes disabled choices'
 }) => {
   await page.goto('/components/combobox');
   const preview = specimen(page, 'combobox');
-  const destination = preview.getByRole('combobox', { name: 'Destination workspace' });
+  const first = preview.locator('[data-zao-component="combobox"]').first();
+  // Input registration changes Base UI's trigger from a combobox to a plain button.
+  await expect(first.locator('[data-zao-slot="trigger"]')).toHaveAttribute(
+    'aria-haspopup',
+    'listbox',
+  );
+  const destination = preview.getByRole('combobox', { name: 'Destination workspace', exact: true });
   await destination.fill('West');
   const popup = preview.locator('[data-zao-component="combobox"] [data-zao-slot="popup"]').last();
   await expect(popup.getByRole('option', { name: 'West workspace' })).toBeVisible();
@@ -82,12 +88,18 @@ test('Combobox filters, selects with the keyboard, and exposes disabled choices'
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await expect(destination).toHaveValue('West workspace');
+  await expect(first.locator('[data-zao-slot="trigger"]')).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
+  await expect(popup).not.toBeVisible();
 
-  const first = preview.locator('[data-zao-component="combobox"]').first();
   await first.locator('[data-zao-slot="trigger"]').click();
   await expect(first.getByRole('option', { name: 'Archive workspace' })).toBeDisabled();
   await page.keyboard.press('Escape');
-  await expect(preview.getByRole('combobox', { name: 'Locked workspace' })).toBeDisabled();
+  await expect(
+    preview.getByRole('combobox', { name: 'Locked workspace', exact: true }),
+  ).toBeDisabled();
 });
 
 test('Combobox popup opens below the field and leaves space after its arrow', async ({ page }) => {

@@ -68,6 +68,22 @@
           },
           "$description": "Grade 8: 4.5 寸 × 30ms. Parts of this grade move over this duration."
         }
+      },
+      "hold": {
+        "$value": {
+          "value": 1080,
+          "unit": "ms"
+        },
+        "$description": "Press-and-hold confirmation: 4 grade-1 beats, one band per beat. Reduced motion keeps the safety delay and removes only fill travel.",
+        "$extensions": {
+          "dev.zao.motion": {
+            "bands": 4
+          }
+        }
+      },
+      "impress": {
+        "$value": "{motion.duration.reveal}",
+        "$description": "A seal impression inks onto an approved record."
       }
     },
     "easing": {
@@ -151,6 +167,38 @@
                 "y": 1
               }
             ]
+          }
+        }
+      },
+      "hold": {
+        "$value": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "$description": "4 hold bands land at the end of each beat.",
+        "$extensions": {
+          "dev.zao.motion": {
+            "css": "steps(4, jump-end)",
+            "bands": 4,
+            "jump": "end"
+          }
+        }
+      },
+      "impress": {
+        "$value": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "$description": "3 impression bands land with the first at once.",
+        "$extensions": {
+          "dev.zao.motion": {
+            "css": "steps(3, jump-start)",
+            "bands": 3,
+            "jump": "start"
           }
         }
       }

@@ -55,11 +55,42 @@ export function motionDocument(finish: keyof typeof motion) {
             },
           ]),
         ),
+        hold: {
+          $value: { value: input.bands.hold * durations['1']!, unit: 'ms' },
+          $description: `Press-and-hold confirmation: ${input.bands.hold} grade-1 beats, one band per beat. Reduced motion keeps the safety delay and removes only fill travel.`,
+          $extensions: { 'dev.zao.motion': { bands: input.bands.hold } },
+        },
+        impress: {
+          $value: '{motion.duration.reveal}',
+          $description: 'A seal impression inks onto an approved record.',
+        },
       },
       easing: {
         $type: 'cubicBezier',
         'fold-enter': curve('enter'),
         'fold-exit': curve('exit'),
+        hold: {
+          $value: [0, 0, 1, 1],
+          $description: `${input.bands.hold} hold bands land at the end of each beat.`,
+          $extensions: {
+            'dev.zao.motion': {
+              css: `steps(${input.bands.hold}, jump-end)`,
+              bands: input.bands.hold,
+              jump: 'end',
+            },
+          },
+        },
+        impress: {
+          $value: [0, 0, 1, 1],
+          $description: `${input.bands.impress} impression bands land with the first at once.`,
+          $extensions: {
+            'dev.zao.motion': {
+              css: `steps(${input.bands.impress}, jump-start)`,
+              bands: input.bands.impress,
+              jump: 'start',
+            },
+          },
+        },
       },
     },
   };

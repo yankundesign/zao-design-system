@@ -82,19 +82,20 @@ Sources: [implementation and props](../../packages/react/src/components/table.ts
 | Head `scope`             | Native th scope; default `col`. `row`/`rowgroup` use the body type role.                                               |
 | Hover / focus within row | Neutral hover fill without geometry or depth motion.                                                                   |
 | Selected row             | Active fill overrides ordinary hover/focus-within fill.                                                                |
+| Drawing/loading          | Root's `drawing` prop keeps the frame, exposes `aria-busy`, makes content inert/hidden, and announces `drawingLabel`.  |
 
-There is no package sorting, selection store, loading, empty, error, disabled, read-only, or invalid state. Native controls placed in cells own their own disabled/focus behavior. A host-supplied empty-state row can span the actual columns; no automatic empty copy or skeleton is created.
+There is no package sorting, selection store, fetch, empty, error, disabled, read-only, or invalid state. The `drawing` prop only paints host-supplied placeholder or last-known rows; it does not load data. Native controls placed in cells own their own disabled/focus behavior. A host-supplied empty-state row can span the actual columns; no automatic empty copy or skeleton is created.
 
 The D10 docs status treatment keeps each word visible with a supplementary decorative glyph: Check/Ready, Play/Running, WarningTriangle/Needs review, Prohibition/Blocked. All use default ink, no status color or animation. The specimen's `status` slot is docs-owned and is therefore absent from the package metadata.
 
 ## Interaction
 
-| Public part                                    | Current contract                                                                                                                                                                                                                     |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Table.Root`                                   | Native table props plus required `aria-label`, outer layout `className`, native-table `tableClassName`, and optional inherited finish/mode attributes. Native props/ref apply to `<table>`; layout classes apply to the outer frame. |
-| `Table.Caption`, `.Header`, `.Body`, `.Footer` | Corresponding native element attributes, children and refs.                                                                                                                                                                          |
-| `Table.Row`                                    | Native tr attributes plus visual `selected`.                                                                                                                                                                                         |
-| `Table.Head`, `.Cell`                          | Native cell attributes plus `numeric`; Head defaults `scope` to col.                                                                                                                                                                 |
+| Public part                                    | Current contract                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Table.Root`                                   | Native table props plus required `aria-label`, outer layout `className`, native-table `tableClassName`, `drawing`, `drawingLabel`, and optional inherited finish/mode attributes. Native props/ref apply to `<table>`; layout classes and drawing state apply to the outer frame. |
+| `Table.Caption`, `.Header`, `.Body`, `.Footer` | Corresponding native element attributes, children and refs.                                                                                                                                                                                                                       |
+| `Table.Row`                                    | Native tr attributes plus visual `selected`.                                                                                                                                                                                                                                      |
+| `Table.Head`, `.Cell`                          | Native cell attributes plus `numeric`; Head defaults `scope` to col.                                                                                                                                                                                                              |
 
 No Base UI table state machine or ARIA grid keyboard model is added. The host owns records, column widths, sort comparators, row keys, selection state, comparison output, form controls, action handlers, and announcements. Use shared small Button and Menu actions for a compact toolbar, and explicit controls inside sortable headings; do not make the entire row a second action.
 
@@ -122,11 +123,11 @@ import { Table } from '@zao/react';
 
 ## Motion
 
-Table authors no motion role, transition, or row travel. Resting frame planes, rules, cells, targets, and neighboring layout stay fixed. Selection and neutral emphasis change paint immediately. The shared construction utility draws planes without its own animation.
+Table authors no sorting, selection, or row travel. Resting frame planes, rules, cells, targets, and neighboring layout stay fixed. Selection and neutral emphasis change paint immediately. Drawing stays still; when drawing becomes false after mount, guidelines withdraw on Reveal exit, ink and face arrive on Reveal, then planes rise on Lift. The host supplies rows throughout. The shared construction utility draws planes without blur.
 
 Composed Button/Menu actions retain their separately approved motion and reduced-motion paths. A Table action does not make the Table frame dip like Card. Native horizontal scrolling is available through the named scroll region; no scroll hijacking or scripted snap behavior is authored.
 
-Reduced motion needs no special Table transition suppression because Table adds none. Shared plane paint disappears in forced colors; native semantics, focus outlines, and browser/system color adjustment remain. The docs checkbox utility explicitly restores system-colored checked/mixed marks. Table itself defines no special status-color mapping, facet, or translucent material fallback.
+Reduced motion swaps drawing and built treatment immediately. Forced colors keep the frame and guidelines in CanvasText while decorative planes drop; native semantics, focus outlines, and browser/system color adjustment remain. The docs checkbox utility explicitly restores system-colored checked/mixed marks. Table itself defines no special status-color mapping, facet, or translucent material fallback.
 
 ## Accessibility
 
@@ -157,3 +158,5 @@ From [BRIEF.md](../../BRIEF.md#current-design-direction-quiet-construction), unc
 | Oct 11 V2/V3, [finish decisions](../plans/2026-10-finish/decision-drafts.md)                             | Shared frame drawing uses banded planes and surface rest depth, without changing native layout.                                       | Source reasons, summarized: describe depth without blur and make resting construction visible.                                                                                                  |
 
 Spec scope note: D10 resolves only the status choice. The Table request, host-owned sorting/selection, and measured-usability claims retain their actual status; the finish authorization does not approve a new table interaction system. Source text remains in place for the separate approval migration.
+
+Oct 13 L1–L2, [components plan](../plans/2026-10-components/README.md): Table.Root adds published `drawing` and `drawingLabel` behavior. The host keeps data ownership; dimensions remain docs-local.
