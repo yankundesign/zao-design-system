@@ -2,6 +2,32 @@
   position: relative;
 }
 
+.docs-anatomy[data-anatomy-kind='button'] {
+  container-type: inline-size;
+}
+
+.docs-anatomy[data-anatomy-kind='text-field'] {
+  container-type: inline-size;
+}
+
+@container (min-width: 40rem) {
+  .docs-anatomy[data-anatomy-kind='button'] > figure {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--zao-space-8);
+  }
+}
+
+@container (min-width: 52rem) {
+  .docs-anatomy[data-anatomy-kind='text-field'] > figure {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--zao-space-8);
+  }
+}
+
 .docs-anatomy-source {
   position: absolute;
   inset: 0 auto auto 0;

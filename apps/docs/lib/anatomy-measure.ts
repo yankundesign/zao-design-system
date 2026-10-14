@@ -286,6 +286,7 @@ function rect(
   fill: string,
   stroke?: string,
   radius = 0,
+  facet = 0,
 ) {
   m.scene.shapes.push({
     type: 'rect',
@@ -296,6 +297,7 @@ function rect(
     stroke,
     strokeWidth: stroke ? m.scene.tokens.hairline : undefined,
     radius,
+    ...(facet ? { facet } : {}),
   });
 }
 
@@ -492,7 +494,16 @@ function buttonParts(
     prefix ? owner : 'side',
   );
   rect(m, `${prefix}base`, prefix ? owner : 'base', baseGeometry, transparent, edge);
-  rect(m, `${prefix}face`, owner, faceGeometry, front.paint.fill, edge, front.paint.radius);
+  rect(
+    m,
+    `${prefix}face`,
+    owner,
+    faceGeometry,
+    front.paint.fill,
+    edge,
+    front.paint.radius,
+    prefix ? 0 : Number.parseFloat(style(face).borderTopRightRadius) || 0,
+  );
   m.scene.readings.push(...readings(face, m.origin, owner, offset));
   m.scene.source[`${prefix}buttonTopology`] = {
     face: faceGeometry,
@@ -555,7 +566,7 @@ function buttonScene(island: HTMLElement, configuration: AnatomyConfiguration) {
     'face',
     'Face',
     'The existing face slot carries the real action reading and semantic fill.',
-    { x: shapes.front.x + shapes.front.width / 2, y: shapes.front.y },
+    { x: shapes.front.x + shapes.front.width, y: shapes.front.y },
   );
   part(
     m,
@@ -563,8 +574,8 @@ function buttonScene(island: HTMLElement, configuration: AnatomyConfiguration) {
     'Side',
     'The side slot paints two planes, each in a near and a far band, from the face back to the base.',
     {
-      x: (shapes.front.x + shapes.base.x) / 2,
-      y: (shapes.front.y + shapes.base.y + shapes.front.height + shapes.base.height) / 2,
+      x: shapes.front.x + shapes.front.width - (shapes.front.x - shapes.base.x) / 4,
+      y: shapes.front.y + shapes.front.height + (shapes.base.y - shapes.front.y) / 4,
     },
   );
   part(
@@ -572,7 +583,7 @@ function buttonScene(island: HTMLElement, configuration: AnatomyConfiguration) {
     'base',
     'Base',
     'The fixed base is the native box moved the control rest depth back along the axis; the planes end at its edges.',
-    { x: shapes.base.x + shapes.base.width / 2, y: shapes.base.y + shapes.base.height },
+    { x: shapes.base.x + shapes.base.width, y: shapes.base.y + shapes.base.height },
   );
   return m.scene;
 }
@@ -928,6 +939,7 @@ function fieldScene(island: HTMLElement, configuration: AnatomyConfiguration) {
     control.paint.border,
     control.paint.radius,
   );
+  insetContacts(m, input, control.rect, 'field-inset-contact', 'control', m.offset);
   m.scene.readings.push(
     ...readings(label, m.origin, 'label', m.offset),
     inputReading(input, m.origin, m.offset),

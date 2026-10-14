@@ -37,7 +37,7 @@ interface ShapePaint {
   dashed?: boolean;
 }
 export type AnatomyShape =
-  | (ShapePaint & AnatomyRect & { type: 'rect'; radius?: number })
+  | (ShapePaint & AnatomyRect & { type: 'rect'; radius?: number; facet?: number })
   | (ShapePaint & { type: 'polygon'; points: AnatomyPoint[] })
   | (ShapePaint & { type: 'path'; d: string; transform: string; bounds: AnatomyRect })
   | (ShapePaint & { type: 'line'; from: AnatomyPoint; to: AnatomyPoint });

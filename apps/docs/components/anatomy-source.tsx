@@ -16,7 +16,7 @@ const menuItems = [
 function ActualSource({ kind }: { kind: AnatomyKind }) {
   switch (kind) {
     case 'button':
-      return <Button variant="secondary">Review settings</Button>;
+      return <Button variant="secondary">Review details</Button>;
     case 'card':
       return (
         <Card className="flex w-full flex-col gap-2">

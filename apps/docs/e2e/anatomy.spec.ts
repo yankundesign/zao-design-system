@@ -428,6 +428,7 @@ async function assertPhysicalGeometry(figure: Locator, measured: AnatomyScene) {
   const contactOwners = {
     'housing-inset-contact': { source: 'housing', move: { x: 0, y: 0 } },
     'track-inset-contact': { source: 'list', move: { x: 0, y: 0 } },
+    'field-inset-contact': { source: 'control', move: offset },
     'frame-inset-contact': { source: 'frame', move: { x: 0, y: 0 } },
     'indicator-inset-contact': { source: 'indicator', move: { x: 0, y: offset.y } },
   };
@@ -639,17 +640,28 @@ async function parentState(page: Page) {
 async function assertRenderedScene(figure: Locator, measured: AnatomyScene) {
   const svg = figure.locator('svg[data-anatomy-drawing]');
   const reference = svg.locator('[data-anatomy-shape="native-reference"]');
-  for (const [attribute, value] of Object.entries(measured.native)) {
-    expect(Number(await reference.getAttribute(attribute))).toBeCloseTo(value, 4);
+  if (measured.kind === 'button' || measured.kind === 'text-field') {
+    await expect(reference).toHaveCount(0);
+    expect(
+      await svg
+        .locator(`[data-anatomy-shape="${measured.kind === 'button' ? 'face' : 'field-control'}"]`)
+        .evaluate((node) => node.getBoundingClientRect().width),
+    ).toBeCloseTo(measured.native.width, 1);
+  } else {
+    for (const [attribute, value] of Object.entries(measured.native)) {
+      expect(Number(await reference.getAttribute(attribute))).toBeCloseTo(value, 4);
+    }
+    await expect(reference).toHaveAttribute('fill', 'none');
+    await expect(reference).toHaveAttribute(
+      'stroke-dasharray',
+      `${measured.tokens.fen} ${measured.tokens.fen}`,
+    );
+    await expect(reference).toHaveAttribute('vector-effect', 'non-scaling-stroke');
+    expect(Number(await reference.getAttribute('stroke-width'))).toBe(measured.tokens.hairline);
   }
-  await expect(reference).toHaveAttribute('fill', 'none');
-  await expect(reference).toHaveAttribute(
-    'stroke-dasharray',
-    `${measured.tokens.fen} ${measured.tokens.fen}`,
+  await expect(svg.locator('[data-anatomy-shape]')).toHaveCount(
+    measured.shapes.length + (measured.kind === 'button' || measured.kind === 'text-field' ? 0 : 1),
   );
-  await expect(reference).toHaveAttribute('vector-effect', 'non-scaling-stroke');
-  expect(Number(await reference.getAttribute('stroke-width'))).toBe(measured.tokens.hairline);
-  await expect(svg.locator('[data-anatomy-shape]')).toHaveCount(measured.shapes.length + 1);
   for (const shape of measured.shapes) {
     const painted = svg.locator(`[data-anatomy-shape="${shape.id}"]`);
     await expect(painted).toHaveAttribute('data-anatomy-part', shape.part);
@@ -659,7 +671,14 @@ async function assertRenderedScene(figure: Locator, measured: AnatomyScene) {
     if (shape.strokeWidth !== undefined) {
       expect(Number(await painted.getAttribute('stroke-width'))).toBeCloseTo(shape.strokeWidth, 5);
     }
-    if (shape.type === 'rect') {
+    if (shape.type === 'rect' && measured.kind === 'button' && shape.id === 'face' && shape.facet) {
+      const right = shape.x + shape.width;
+      const bottom = shape.y + shape.height;
+      await expect(painted).toHaveAttribute(
+        'd',
+        `M ${shape.x} ${shape.y} H ${right - shape.facet} L ${right} ${shape.y + shape.facet} V ${bottom} H ${shape.x} Z`,
+      );
+    } else if (shape.type === 'rect') {
       for (const attribute of ['x', 'y', 'width', 'height'] as const) {
         expect(Number(await painted.getAttribute(attribute))).toBeCloseTo(shape[attribute], 4);
       }
@@ -761,10 +780,16 @@ async function assertRenderedScene(figure: Locator, measured: AnatomyScene) {
       };
     });
     const caption = node.closest('figure')!.querySelector('figcaption')!.getBoundingClientRect();
-    return { inner, beforeCaption: outer.bottom <= caption.top + 0.5 };
+    return {
+      inner,
+      clearOfCaption:
+        outer.bottom <= caption.top + 0.5 ||
+        outer.right <= caption.left + 0.5 ||
+        caption.right <= outer.left + 0.5,
+    };
   });
   expect(bounds.inner.filter((part) => !part.inside)).toEqual([]);
-  expect(bounds.beforeCaption).toBe(true);
+  expect(bounds.clearOfCaption).toBe(true);
 }
 
 async function assertAlternative(figure: Locator, measured: AnatomyScene) {
@@ -779,7 +804,11 @@ async function assertAlternative(figure: Locator, measured: AnatomyScene) {
   );
   expect(alternatives[0]).toBe(`${measured.title} anatomy`);
   expect(alternatives[1]).toContain(measured.description);
-  expect(alternatives[1]).toContain('stationary native reference');
+  if (measured.kind === 'button' || measured.kind === 'text-field') {
+    expect(alternatives[1]).not.toContain('stationary native reference');
+  } else {
+    expect(alternatives[1]).toContain('stationary native reference');
+  }
   const parts = figure.locator('ol[data-anatomy-parts] > li');
   await expect(parts).toHaveCount(measured.parts.length);
   for (const [index, part] of measured.parts.entries()) {
@@ -854,6 +883,11 @@ for (const mode of modes) {
         const figure = await openFigure(page, kind, mode);
         const measured = await scene(figure);
         expect(measured.kind).toBe(kind);
+        if (kind === 'button') {
+          expect(measured.readings.map((reading) => reading.text).join('')).toBe(
+            await page.getByRole('button', { name: 'Review details', exact: true }).innerText(),
+          );
+        }
         expect(anatomyDefaults).toEqual({
           explodeContactMultiplier: 18,
           projectionAngleDegrees: 0,
@@ -867,6 +901,22 @@ for (const mode of modes) {
         await assertPhysicalGeometry(figure, measured);
         await assertRenderedScene(figure, measured);
         await assertAlternative(figure, measured);
+        if (kind === 'text-field') {
+          const layout = await figure.locator('figure').evaluate((node) => {
+            const drawing = node
+              .querySelector('svg[data-anatomy-drawing]')!
+              .getBoundingClientRect();
+            const caption = node.querySelector('figcaption')!.getBoundingClientRect();
+            return {
+              display: getComputedStyle(node).display,
+              sideBySide: drawing.right <= caption.left && drawing.bottom > caption.top,
+              stacked: drawing.bottom <= caption.top,
+            };
+          });
+          expect(layout.display).toBe(viewport.width === 1440 ? 'grid' : 'flex');
+          expect(layout.sideBySide).toBe(viewport.width === 1440);
+          expect(layout.stacked).toBe(viewport.width === 480);
+        }
         expect(
           await figure.evaluate((node) =>
             Boolean(

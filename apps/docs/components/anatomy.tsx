@@ -81,7 +81,8 @@ function Drawing({
   const labelTop = Math.min(drawingTop, center.y - (parts.length * labelStep) / 2);
   const viewTop = Math.min(drawingTop, labelTop) - margin;
   const viewBottom = Math.max(drawingBottom, labelTop + parts.length * labelStep) + margin;
-  const viewBox = `${drawingLeft - margin} ${viewTop} ${labelX - drawingLeft + margin * 2} ${viewBottom - viewTop}`;
+  const viewWidth = labelX - drawingLeft + margin * 2;
+  const viewBox = `${drawingLeft - margin} ${viewTop} ${viewWidth} ${viewBottom - viewTop}`;
   const hairline = tokens.hairline * parameters.strokeHairlineMultiplier;
   const referenceDash = `${tokens.fen} ${tokens.fen}`;
   const front = scene.shapes.find(
@@ -100,6 +101,7 @@ function Drawing({
   const referenceClipId = `${nameId}-reference-clip`;
   const leaderClipId = `${nameId}-leader-clip`;
   const selectionClipId = `${nameId}-selection-clip`;
+  const showNativeReference = scene.kind !== 'button' && scene.kind !== 'text-field';
   const readingBoxes = scene.readings.map((reading) => [
     { x: reading.x - tokens.fen, y: reading.y - reading.height - tokens.fen },
     { x: reading.x + reading.width + tokens.fen, y: reading.y - reading.height - tokens.fen },
@@ -112,15 +114,21 @@ function Drawing({
       role="img"
       aria-labelledby={`${nameId} ${descriptionId}`}
       className="docs-anatomy-drawing type-caption"
+      style={
+        scene.kind === 'button' || scene.kind === 'text-field'
+          ? { width: viewWidth, maxWidth: '100%' }
+          : undefined
+      }
       viewBox={viewBox}
       data-anatomy-drawing=""
     >
       <title id={nameId}>{scene.title} anatomy</title>
       <desc id={descriptionId}>
-        {scene.description} The dashed outline marks the stationary native reference. Numbered
-        labels correspond to the parts listed below.
+        {scene.description}{' '}
+        {showNativeReference && 'The dashed outline marks the stationary native reference. '}
+        Numbered labels correspond to the parts list.
       </desc>
-      {front?.type === 'rect' && (
+      {showNativeReference && front?.type === 'rect' && (
         <defs>
           <clipPath id={referenceClipId}>
             <path
@@ -172,6 +180,17 @@ function Drawing({
             vectorEffect: 'non-scaling-stroke' as const,
           };
           if (shape.type === 'rect') {
+            if (scene.kind === 'button' && shape.id === 'face' && shape.facet) {
+              const right = shape.x + shape.width;
+              const bottom = shape.y + shape.height;
+              return (
+                <path
+                  key={shape.id}
+                  {...paint}
+                  d={`M ${shape.x} ${shape.y} H ${right - shape.facet} L ${right} ${shape.y + shape.facet} V ${bottom} H ${shape.x} Z`}
+                />
+              );
+            }
             // Tab readings stay on their native plane. Clear the separated
             // indicator's stroke beneath them while retaining its measured fill.
             const clearReading = scene.kind === 'tabs' && shape.id === 'selection-face';
@@ -221,16 +240,18 @@ function Drawing({
             />
           );
         })}
-        <rect
-          data-anatomy-shape="native-reference"
-          {...native}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={hairline}
-          strokeDasharray={referenceDash}
-          vectorEffect="non-scaling-stroke"
-          clipPath={front ? `url(#${referenceClipId})` : undefined}
-        />
+        {showNativeReference && (
+          <rect
+            data-anatomy-shape="native-reference"
+            {...native}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={hairline}
+            strokeDasharray={referenceDash}
+            vectorEffect="non-scaling-stroke"
+            clipPath={front ? `url(#${referenceClipId})` : undefined}
+          />
+        )}
         {scene.readings.map((reading) => (
           <text
             key={reading.id}
@@ -379,8 +400,8 @@ export function Anatomy({
           Anatomy
         </h2>
         <p className="type-body text-muted">
-          Measured parts, with contact expanded {explodeContactMultiplier}×. The native reference
-          stays in place.
+          Measured parts, with contact expanded {explodeContactMultiplier}×.
+          {kind !== 'button' && kind !== 'text-field' && ' The native reference stays in place.'}
         </p>
       </div>
       <iframe
@@ -411,9 +432,11 @@ export function Anatomy({
                 </li>
               ))}
             </ol>
-            <p className="type-caption text-muted">
-              Dashed reference: the native target or frame before separation.
-            </p>
+            {kind !== 'button' && kind !== 'text-field' && (
+              <p className="type-caption text-muted">
+                Dashed reference: the native target or frame before separation.
+              </p>
+            )}
           </figcaption>
           <script type="application/json" data-anatomy-scene="">
             {JSON.stringify(scene)}
