@@ -77,14 +77,14 @@ tokens:
 | `viewport`               | Wrapper around every list, with fen-sized clearance and scrolling.                   |
 | `list`                   | Base UI tablist and variant owner.                                                   |
 | `rail`                   | Decorative primary guide, horizontal or vertical; absent in secondary.               |
-| `graduation`             | Decorative vertical primary marks at actual visible adjacent-tab gap midpoints.      |
-| `indicator`              | Base UI-measured selection decoration for either variant.                            |
+| `graduation`             | Decorative primary marks at actual visible adjacent-tab gap midpoints.               |
+| `indicator`              | Base UI-measured selection decoration; primary paints its fishtails on it.           |
 | `selection-line`         | Primary selection stroke, with a painted registration tick; absent in secondary.     |
 | `tab`                    | Native Base UI tab button and its stationary visible children.                       |
 | `tick`                   | Decorative per-tab registration mark; mounted in both variants, hidden in secondary. |
 | `panel`                  | Base UI panel supplied by the host, with associated selected value.                  |
 
-Primary draws one hairline guide, end stops, fine graduations, and a stronger selection line on one centerline. The vertical rail has one half-fen graduation for each actual visible adjacent gap: `n − 1`. A ResizeObserver/MutationObserver measures native gaps, rather than inventing a repeated pitch. Vertical labels align toward the rail: right in LTR, left in RTL.
+Primary draws one hairline guide, end stops, fine graduations, and a stronger selection line on one centerline. Each actual visible adjacent gap has one graduation, `n − 1`: a full-height boundary mark on a horizontal rail (Oct 15) and a half-fen mark on a vertical one. The selection line ends in two seal fishtails (鱼尾, Oct 15), notches facing the tab, painted on the indicator's `::before` and `::after`; no slot is added. A ResizeObserver/MutationObserver measures native gaps, rather than inventing a repeated pitch. Vertical labels align toward the rail: right in LTR, left in RTL.
 
 Secondary draws a square sunken track and one surface-colored indicator with small rest depth (2px), a perimeter, and banded plane paint. There is no authored face/base/side slot on Tabs: the indicator is the painted face. Its label remains on the native tab, independent of the selection decoration; pressing the selected tab seats only the indicator, not its label. The indicator's conceptual base follows the selected cell; it stays registered there during seating.
 
@@ -175,5 +175,6 @@ From [BRIEF.md](../../BRIEF.md#current-design-direction-quiet-construction), unc
 | Oct 10 D9, [height decision](../plans/2026-10-improvement/decision-drafts/default-height-c.md)         | Default tabs grow from 32px to shared 34px. Spacing's 32px step stays independent.                                                                | Source reason, summarized: preserve Button geometry and make default controls consistent.                                                                                                  |
 | Oct 10 D11, [historical motion](../plans/2026-10-improvement/decision-drafts/motion-values-current.md) | Role vocabulary survives; its old duration/curve values read through V5/V6.                                                                       | Spec scope note: the historical retained values are not concurrent finish instructions.                                                                                                    |
 | Oct 11 V1/V2/V3/V5/V6, [finish decisions](../plans/2026-10-finish/decision-drafts.md)                  | Primary selection line carries the active seal; secondary uses banded planes and small rest depth; spatial roles use the derived current aliases. | Source reasons, summarized: depth without blur, legible rest construction, and curves/timing derived from building rules.                                                                  |
+| Oct 15 top nav A, [craft references](../research/visual-craft.md)                                      | Horizontal rails mark each tab boundary; the selection line ends in two fishtails, notches facing the tab. No new interaction or slot.            | Source reason, summarized: give each line on the rail a job, using the woodblock folio's fishtail as the current mark.                                                                     |
 
 Spec scope note: Tabs retains the ordinary outside focus outline; V12 brackets apply to Button, IconButton and Switch only. The independent stationary label/marker topology remains approved. Source texts stay in place until the separate migration; this spec adds no public props, tokens, drawing defaults, or interaction.

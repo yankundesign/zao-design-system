@@ -240,3 +240,75 @@
     --docs-nav-paper-lip-contact: var(--docs-nav-paper-contact);
   }
 }
+
+/*
+ * Card line hierarchy (Oct 15, Yankun: cards A). Docs-local until a published name is chosen.
+ * A capped rule ends in two + marks just inside the content edges, with a fen of air before each; a
+ * leader joins a reading to its value with dots one fen apart.
+ */
+.docs-rule-capped {
+  --docs-cap: calc(var(--zao-space-1-5) + var(--zao-stroke-hairline));
+  --docs-cap-ink: var(--zao-color-border-strong);
+  position: relative;
+}
+
+.docs-rule-capped::before {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(var(--zao-space-1-5) / -2);
+  /* The marks stay inside the box, so they add no scrollable overflow. */
+  inset-inline: 0;
+  block-size: var(--docs-cap);
+  pointer-events: none;
+  background:
+    linear-gradient(var(--docs-cap-ink), var(--docs-cap-ink)) left center / var(--docs-cap)
+      var(--zao-stroke-hairline) no-repeat,
+    linear-gradient(var(--docs-cap-ink), var(--docs-cap-ink)) calc(var(--zao-space-1-5) / 2)
+      center / var(--zao-stroke-hairline) var(--docs-cap) no-repeat,
+    linear-gradient(var(--docs-cap-ink), var(--docs-cap-ink)) right center / var(--docs-cap)
+      var(--zao-stroke-hairline) no-repeat,
+    linear-gradient(var(--docs-cap-ink), var(--docs-cap-ink)) calc(100% - var(--zao-space-1-5) / 2)
+      center / var(--zao-stroke-hairline) var(--docs-cap) no-repeat,
+    linear-gradient(var(--zao-color-border-subtle), var(--zao-color-border-subtle)) center /
+      calc(100% - 2 * (var(--docs-cap) + var(--zao-space-1))) var(--zao-stroke-hairline) no-repeat;
+}
+
+.docs-leaders > div > dt {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: baseline;
+  min-inline-size: 0;
+}
+
+.docs-leaders > div > dt::after {
+  content: '';
+  flex: 1 1 auto;
+  min-inline-size: var(--zao-space-4);
+  block-size: var(--zao-space-1);
+  margin-inline: var(--zao-space-2);
+  background: radial-gradient(
+      circle,
+      var(--zao-color-border-strong) calc(var(--zao-stroke-hairline) * 0.6),
+      transparent var(--zao-stroke-hairline)
+    )
+    left center / var(--zao-space-1) var(--zao-space-1) repeat-x;
+}
+
+@media (forced-colors: active) {
+  .docs-rule-capped {
+    --docs-cap-ink: CanvasText;
+  }
+
+  .docs-rule-capped::before {
+    forced-color-adjust: none;
+  }
+
+  .docs-leaders > div > dt::after {
+    forced-color-adjust: none;
+    background-image: radial-gradient(
+      circle,
+      GrayText calc(var(--zao-stroke-hairline) * 0.6),
+      transparent var(--zao-stroke-hairline)
+    );
+  }
+}

@@ -304,6 +304,19 @@ test.describe('the workspace', () => {
     await expect(page.getByRole('button', { name: 'Approve 2 requests' })).toBeFocused();
   });
 
+  test('the header names North and its readings follow the requests', async ({ page }) => {
+    // Oct 15, header A: kind over name beside a mark, and readings that follow the data.
+    await open(page);
+    await build(page);
+    const window = page.locator('.exploded-live [data-landing-window]');
+    await expect(window.getByText('North', { exact: true })).toBeVisible();
+    const readings = window.locator('[aria-label="North readings"]');
+    await expect(readings).toContainText('Members48');
+    await expect(readings).toContainText('Open4');
+    await page.getByRole('button', { name: 'Approve 2 requests' }).click();
+    await expect(readings).toContainText('Open2');
+  });
+
   test('a written request to approve does the same', async ({ page }) => {
     await open(page);
     await build(page);

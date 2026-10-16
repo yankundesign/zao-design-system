@@ -355,36 +355,113 @@
   }
 }
 
-/* The window: one Card-built frame around the workspace and its assistant. */
+/*
+ * The window: one Card-built frame around the workspace and its assistant. Oct 15 (Yankun: header
+ * A, top nav A, side panel C, cards A and C): a header band in the surface tone (who this is,
+ * then the tab rail) above a body one step back in the canvas tone, so the cards stand on it.
+ */
 .landing-window {
+  container: landing-window / inline-size;
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
 }
 
+/* Header A: the identity block on the leading edge; readings and actions on the trailing one. */
 .landing-window-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  column-gap: var(--zao-space-6);
-  row-gap: var(--zao-space-1);
-  padding: var(--zao-space-2) var(--zao-space-4) 0;
-  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  column-gap: var(--zao-space-3);
+  row-gap: var(--zao-space-2);
+  padding: var(--zao-space-3) var(--zao-space-4) var(--zao-space-2);
 }
 
-.landing-window-title {
-  min-block-size: var(--zao-size-control-md);
+.landing-window-mark-frame {
+  fill: none;
+  stroke: var(--zao-color-border-default);
+  stroke-width: var(--zao-stroke-hairline);
 }
 
-.landing-window-tabs {
+.landing-window-mark-fill {
+  fill: var(--zao-color-fg-default);
+}
+
+.landing-window-mark-line {
+  fill: none;
+  stroke: var(--zao-color-fg-default);
+  stroke-width: var(--zao-stroke-hairline);
+  stroke-linejoin: round;
+}
+
+/* Readings: label and value pairs in mono, split by hairlines. */
+.landing-window-readings {
   order: 3;
   flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: var(--zao-space-1);
+  margin: 0;
+  color: var(--zao-color-fg-muted);
+}
+
+.landing-window-readings > div {
+  display: flex;
+  gap: var(--zao-space-1-5);
+  padding-inline: var(--zao-space-3);
+  border-inline-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.landing-window-readings > div:first-child {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+.landing-window-readings dd {
+  margin: 0;
+  color: var(--zao-color-fg-default);
+}
+
+.landing-window-actions {
+  margin-inline-start: auto;
+}
+
+/* The window's own width decides its layout, since the docs frame sets how much it gets. */
+@container landing-window (min-width: 40rem) {
+  .landing-window-bar {
+    column-gap: var(--zao-space-6);
+  }
+
+  .landing-window-readings {
+    order: 0;
+    flex-basis: auto;
+    margin-inline-start: auto;
+  }
+
+  .landing-window-readings + .landing-window-actions {
+    margin-inline-start: 0;
+  }
+}
+
+.landing-window-body {
+  display: grid;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+/*
+ * Top nav A: the rail runs the full width of the main column, from the window's edge, and the
+ * row ends on the rail's guide line; the rail's lower half hangs over the body.
+ */
+.landing-window-tabs {
+  z-index: 1;
+  margin-block-end: calc(-1 * var(--zao-space-1));
 }
 
 /*
  * Tabs' viewport is capped at its container's width, but reaches 1 fen past each side for focus
- * room; in this shrink-to-fit bar that cap left it 2 fen short of its list, so it scrolled. Let it
- * keep its reach. On phones the strip still pans by touch and arrow keys, without a scrollbar.
+ * room; in this bar that cap left it 2 fen short of its list, so it scrolled. Let it keep its
+ * reach. On phones the strip still pans by touch and arrow keys, without a scrollbar.
  */
 .landing-window-tabs .tabs-viewport {
   max-inline-size: none;
@@ -395,18 +472,15 @@
   display: none;
 }
 
-.landing-window-actions {
-  margin-inline-start: auto;
-}
-
-.landing-window-body {
-  display: grid;
-  min-inline-size: 0;
+.landing-window-tabs .tabs-list {
+  min-inline-size: 100%;
+  padding-inline-start: var(--zao-space-4);
 }
 
 .landing-window-panels {
   min-inline-size: 0;
-  padding: 0 var(--zao-space-4) var(--zao-space-4);
+  padding: var(--zao-space-4);
+  background-color: var(--zao-color-bg-canvas);
 }
 
 /* The other views hold the overview's height, so switching tabs never resizes the window. */
@@ -427,10 +501,34 @@
   border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
 }
 
-/* The transcript fills what the workspace leaves, and scrolls; it never sets the height. */
+.landing-window-assistant-head {
+  min-block-size: var(--zao-size-control-md);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.landing-window-assistant-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-block-size: 0;
+  background-color: var(--zao-color-bg-canvas);
+}
+
+/*
+ * Side panel C, the ground: a faint field of marks one fen apart in four, under the transcript.
+ * The transcript fills what the workspace leaves, and scrolls; it never sets the height.
+ */
 .landing-window-conversation {
+  --landing-field-ink: color-mix(in oklch, var(--zao-color-border-default) 80%, transparent);
   flex: 1 1 auto;
   block-size: calc(var(--zao-space-20) * 4);
+  background-image: radial-gradient(
+    circle,
+    var(--landing-field-ink) calc(var(--zao-stroke-hairline) * 0.75),
+    transparent var(--zao-stroke-hairline)
+  );
+  background-position: center;
+  background-size: var(--zao-space-4) var(--zao-space-4);
 }
 
 .landing-window-conversation > .zao-conversation {
@@ -438,17 +536,36 @@
   inset: 0;
 }
 
-@media (min-width: 64rem) {
-  .landing-window-tabs {
-    order: 0;
-    flex-basis: auto;
-  }
+/* Side panel C, the well: the Composer's tray rests a surface depth above a recessed floor. */
+.landing-window-dock {
+  --zao-well-face: var(--zao-color-bg-sunken);
+  background-color: var(--zao-color-bg-sunken);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
 
+/* Wide enough for the assistant beside the work: the main column keeps room for its tabs. */
+@container landing-window (min-width: 56rem) {
   .landing-window-body {
     grid-template-columns: minmax(0, 1fr) calc(var(--zao-space-20) * 4);
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
+  .landing-window-tabs {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .landing-window-panels {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  /* The assistant's heading shares the rail's row, so both rules meet on one line. */
   .landing-window-assistant {
+    display: grid;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    grid-template-rows: subgrid;
     border-block-start: 0;
     border-inline-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
   }
@@ -456,6 +573,21 @@
   .landing-window-conversation {
     block-size: auto;
     min-block-size: calc(var(--zao-space-20) * 3);
+  }
+}
+
+@media (forced-colors: active) {
+  .landing-window-mark-frame,
+  .landing-window-mark-line {
+    stroke: CanvasText;
+  }
+
+  .landing-window-mark-fill {
+    fill: CanvasText;
+  }
+
+  .landing-window-conversation {
+    background-image: none;
   }
 }
 

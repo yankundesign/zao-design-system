@@ -87,6 +87,22 @@ function Part({
   );
 }
 
+/** North's mark: a north arrow, half filled as on a survey drawing, in a hairline frame. */
+function NorthMark() {
+  return (
+    <svg
+      className="landing-window-mark h-8 w-8 shrink-0"
+      viewBox="0 0 32 32"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect className="landing-window-mark-frame" x="0.5" y="0.5" width="31" height="31" />
+      <path className="landing-window-mark-fill" d="M16 6 L11 20 L16 17.5 Z" />
+      <path className="landing-window-mark-line" d="M16 6 L21 20 L16 17.5 M16 17.5 V26" />
+    </svg>
+  );
+}
+
 function RequestsTable({
   statuses,
   owners = false,
@@ -176,6 +192,7 @@ export function ShowcaseWindow({
   }, []);
 
   const waiting = requests.filter((request) => statuses[request.id] === 'Needs review');
+  const open = requests.filter((request) => statuses[request.id] !== 'Ready').length;
   const approved = requests.filter(
     (request) => request.status === 'Needs review' && statuses[request.id] === 'Ready',
   );
@@ -239,7 +256,7 @@ export function ShowcaseWindow({
       aria-label="North workspace example"
       data-landing-window=""
       data-depth-scale={scale}
-      className="landing-window card-shaded-construction construction-shading border border-subtle bg-surface"
+      className="landing-window card-shaded-construction card-material border bg-surface"
       style={style}
     >
       <Tabs.Root
@@ -247,26 +264,34 @@ export function ShowcaseWindow({
         onValueChange={(value) => setView(value as View)}
         className="flex min-w-0 flex-1 flex-col"
       >
+        {/* Oct 15, header A: who this is (kind over name, a mark) and how it stands. */}
         <div className="landing-window-bar">
-          <div className="landing-window-title flex min-w-0 items-baseline gap-2">
-            <span className="type-label font-medium whitespace-nowrap">North workspace</span>
-            <span className="type-caption figures-id text-muted whitespace-nowrap">
-              Workspace / 001
-            </span>
+          <div className="landing-window-identity flex min-w-0 items-center gap-3">
+            <NorthMark />
+            <div className="flex min-w-0 flex-col">
+              <span className="font-mono type-caption figures-id text-muted whitespace-nowrap">
+                Workspace · 001
+              </span>
+              <span className="type-label font-medium whitespace-nowrap">North</span>
+            </div>
           </div>
-          <Part name="Tabs" className="landing-window-tabs">
-            <Tabs.List aria-label="Workspace views">
-              <Tabs.Tab value="overview">Overview</Tabs.Tab>
-              <Tabs.Tab value="requests">
-                Requests
-                <span className="border-l border-subtle pl-2 type-caption figures-tabular">
-                  {waiting.length}
-                </span>
-              </Tabs.Tab>
-              <Tabs.Tab value="members">Members</Tabs.Tab>
-              <Tabs.Tab value="settings">Settings</Tabs.Tab>
-            </Tabs.List>
-          </Part>
+          <dl
+            className="landing-window-readings font-mono type-caption"
+            aria-label="North readings"
+          >
+            <div>
+              <dt>Members</dt>
+              <dd className="figures-tabular">{SEATS.used}</dd>
+            </div>
+            <div>
+              <dt>Open</dt>
+              <dd className="figures-tabular">{open}</dd>
+            </div>
+            <div>
+              <dt>Synced</dt>
+              <dd className="figures-tabular">09:41</dd>
+            </div>
+          </dl>
           <div className="landing-window-actions flex items-center gap-2">
             <Part name="Menu" className="inline-flex">
               <Menu
@@ -293,6 +318,21 @@ export function ShowcaseWindow({
         </div>
 
         <div className="landing-window-body">
+          {/* Oct 15, top nav A: the rail runs the width of the main column and meets the
+              assistant's heading rule on one line. */}
+          <Part name="Tabs" className="landing-window-tabs">
+            <Tabs.List aria-label="Workspace views">
+              <Tabs.Tab value="overview">Overview</Tabs.Tab>
+              <Tabs.Tab value="requests">
+                Requests
+                <span className="border-l border-subtle pl-2 type-caption figures-tabular">
+                  {waiting.length}
+                </span>
+              </Tabs.Tab>
+              <Tabs.Tab value="members">Members</Tabs.Tab>
+              <Tabs.Tab value="settings">Settings</Tabs.Tab>
+            </Tabs.List>
+          </Part>
           <div ref={panels} className="landing-window-panels">
             <Tabs.Panel ref={overview} value="overview" aria-label="Overview" keepMounted>
               <div className="flex min-w-0 flex-col gap-4">
@@ -318,19 +358,20 @@ export function ShowcaseWindow({
                     <Part name="Progress">
                       <Progress label="Seats in use" value={SEATS.used} max={SEATS.total} />
                     </Part>
-                    <dl className="flex flex-col gap-2 type-caption">
+                    {/* Oct 15, cards A: dotted leaders join each reading to its value. */}
+                    <dl className="docs-leaders flex flex-col gap-2 type-caption">
                       {[
                         ['Seats used', `${SEATS.used} of ${SEATS.total}`],
                         ['Active today', '12 members'],
                         ['Invitations pending', '3'],
                       ].map(([term, value]) => (
-                        <div key={term} className="flex items-baseline justify-between gap-4">
+                        <div key={term} className="flex items-baseline justify-between">
                           <dt className="text-muted">{term}</dt>
                           <dd className="figures-tabular">{value}</dd>
                         </div>
                       ))}
                     </dl>
-                    <div className="mt-auto flex flex-col gap-3 border-t border-subtle pt-3">
+                    <div className="docs-rule-capped mt-auto flex flex-col gap-3 pt-3">
                       <Part name="Switch">
                         <label className="flex min-h-6 cursor-pointer items-center justify-between gap-4">
                           <span className="type-body">Email updates</span>
@@ -423,69 +464,73 @@ export function ShowcaseWindow({
           </div>
 
           <aside className="landing-window-assistant" aria-label="Assistant">
-            <div className="flex items-baseline justify-between gap-2 border-b border-subtle px-3 py-2">
+            <div className="landing-window-assistant-head flex items-center justify-between gap-2 px-3">
               <h3 className="type-label font-medium">Assistant</h3>
               <span className="type-caption text-muted">Sample data</span>
             </div>
-            <Part name="Conversation" className="landing-window-conversation">
-              <Conversation.Root aria-label="Assistant conversation" announcement={announcement}>
-                <Conversation.Viewport className="landing-window-viewport">
-                  <Conversation.List>
-                    {lines.map((line) => (
-                      <Conversation.Item key={line.id}>
-                        {line.id === 'summary' ? (
-                          <Part name="Message">
-                            <Message.Root author="Assistant" kind="assistant">
+            {/* Oct 15, side panel C: a faint fen field as the ground, and the Composer seated
+                in a well. */}
+            <div className="landing-window-assistant-body">
+              <Part name="Conversation" className="landing-window-conversation">
+                <Conversation.Root aria-label="Assistant conversation" announcement={announcement}>
+                  <Conversation.Viewport className="landing-window-viewport">
+                    <Conversation.List>
+                      {lines.map((line) => (
+                        <Conversation.Item key={line.id}>
+                          {line.id === 'summary' ? (
+                            <Part name="Message">
+                              <Message.Root author="Assistant" kind="assistant">
+                                <Message.Content>
+                                  <p className="type-body">{line.text}</p>
+                                </Message.Content>
+                                {waiting.length > 0 || approved.length > 0 ? (
+                                  <Message.Actions>
+                                    {/* One Button that changes its action, so focus stays on it. */}
+                                    <Part name="Button" className="inline-flex">
+                                      <Button
+                                        size="small"
+                                        variant={waiting.length > 0 ? 'primary' : 'secondary'}
+                                        onClick={() => (waiting.length > 0 ? approve() : reopen())}
+                                      >
+                                        {waiting.length > 0
+                                          ? `Approve ${waiting.length} requests`
+                                          : `Reopen ${approved.length} requests`}
+                                      </Button>
+                                    </Part>
+                                  </Message.Actions>
+                                ) : null}
+                              </Message.Root>
+                            </Part>
+                          ) : (
+                            <Message.Root
+                              author={line.kind === 'user' ? 'You' : 'Assistant'}
+                              kind={line.kind}
+                            >
                               <Message.Content>
                                 <p className="type-body">{line.text}</p>
                               </Message.Content>
-                              {waiting.length > 0 || approved.length > 0 ? (
-                                <Message.Actions>
-                                  {/* One Button that changes its action, so focus stays on it. */}
-                                  <Part name="Button" className="inline-flex">
-                                    <Button
-                                      size="small"
-                                      variant={waiting.length > 0 ? 'primary' : 'secondary'}
-                                      onClick={() => (waiting.length > 0 ? approve() : reopen())}
-                                    >
-                                      {waiting.length > 0
-                                        ? `Approve ${waiting.length} requests`
-                                        : `Reopen ${approved.length} requests`}
-                                    </Button>
-                                  </Part>
-                                </Message.Actions>
-                              ) : null}
                             </Message.Root>
-                          </Part>
-                        ) : (
-                          <Message.Root
-                            author={line.kind === 'user' ? 'You' : 'Assistant'}
-                            kind={line.kind}
-                          >
-                            <Message.Content>
-                              <p className="type-body">{line.text}</p>
-                            </Message.Content>
-                          </Message.Root>
-                        )}
-                      </Conversation.Item>
-                    ))}
-                  </Conversation.List>
-                </Conversation.Viewport>
-                <Conversation.Latest />
-              </Conversation.Root>
-            </Part>
-            <div className="p-3">
-              <Part name="Composer">
-                <Composer
-                  label="Message the assistant"
-                  value={draft}
-                  onValueChange={setDraft}
-                  onSend={send}
-                  placeholder={
-                    waiting.length > 0 ? 'Approve the waiting requests…' : 'Ask about North…'
-                  }
-                />
+                          )}
+                        </Conversation.Item>
+                      ))}
+                    </Conversation.List>
+                  </Conversation.Viewport>
+                  <Conversation.Latest />
+                </Conversation.Root>
               </Part>
+              <div className="landing-window-dock construction-well p-3">
+                <Part name="Composer">
+                  <Composer
+                    label="Message the assistant"
+                    value={draft}
+                    onValueChange={setDraft}
+                    onSend={send}
+                    placeholder={
+                      waiting.length > 0 ? 'Approve the waiting requests…' : 'Ask about North…'
+                    }
+                  />
+                </Part>
+              </div>
             </div>
           </aside>
         </div>

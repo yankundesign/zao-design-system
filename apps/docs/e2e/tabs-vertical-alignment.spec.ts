@@ -253,9 +253,34 @@ function localMarks(reading: Awaited<ReturnType<typeof railReading>>) {
   }));
 }
 
+/** Oct 15 (top nav A): a horizontal rail marks each tab boundary at the gap's midpoint. */
+async function expectBoundaryMarks(horizontal: Locator) {
+  await expect(async () => {
+    const reading = await horizontal.evaluate((list) => {
+      const tabs = [...list.querySelectorAll<HTMLElement>(':scope > [data-zao-slot="tab"]')]
+        .map((tab) => tab.getBoundingClientRect())
+        .sort((a, b) => a.left - b.left);
+      const midpoints = tabs.slice(1).map((box, index) => (tabs[index]!.right + box.left) / 2);
+      const marks = [
+        ...list.querySelectorAll<HTMLElement>(
+          ':scope > [data-zao-slot="rail"] > [data-zao-slot="graduation"]',
+        ),
+      ].map((mark) => {
+        const box = mark.getBoundingClientRect();
+        return box.left + box.width / 2;
+      });
+      return { midpoints, marks: marks.sort((a, b) => a - b) };
+    });
+    expect(reading.marks).toHaveLength(reading.midpoints.length);
+    reading.marks.forEach((mark, index) => {
+      expect(Math.abs(mark - reading.midpoints[index]!)).toBeLessThanOrEqual(0.5);
+    });
+  }).toPass({ timeout: 5000 });
+}
+
 async function expectHorizontalUnchanged(study: Locator) {
   const horizontal = study.getByRole('tablist', { name: 'Workspace views', exact: true });
-  await expect(horizontal.locator('[data-zao-slot="graduation"]')).toHaveCount(0);
+  await expectBoundaryMarks(horizontal);
   const values = await tokens(horizontal);
   const paint = await horizontal
     .locator(':scope > [data-zao-slot="rail"]')
@@ -643,7 +668,7 @@ for (const paint of paints)
           system.ink,
         );
         const horizontal = study.getByRole('tablist', { name: 'Workspace views', exact: true });
-        await expect(horizontal.locator('[data-zao-slot="graduation"]')).toHaveCount(0);
+        await expectBoundaryMarks(horizontal);
         expect(
           await horizontal
             .locator(':scope > [data-zao-slot="rail"]')

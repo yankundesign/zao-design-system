@@ -26,6 +26,7 @@ tokens:
   - color.bg.surface
   - color.fg.default
   - color.border.subtle
+  - color.border.strong
   - depth.rest.surface
   - depth.contact
   - depth.lift
@@ -38,13 +39,13 @@ tokens:
 
 # Card
 
-**Approved component; current source contract, Oct 11, 2026.** This spec uses the D14 template. The full contract is repository/agent reference; the website retains its concise guide and working examples. The Oct 11 finish supersedes the older single contact shade and square-only drawing. The Card itself remains a passive reading surface.
+**Approved component; current source contract, Oct 15, 2026.** This spec uses the D14 template. The full contract is repository/agent reference; the website retains its concise guide and working examples. The Oct 11 finish supersedes the older single contact shade and square-only drawing. The Card itself remains a passive reading surface.
 
 ## Anatomy
 
 Card is one native `<div>` with `data-zao-component="card"`. It authors **no `data-zao-slot` hooks** and no required title, metadata, data, or action containers. Those elements belong to the host composition; `card-data` and `card-media` hooks in docs specimens are not package hooks.
 
-The root is the content plane and static frame: a subtle semantic border, surface fill, default ink, and 4-fen padding (currently 16px). `construction-shading` supplies its semantic face's tones. `construction-planes` draws two side planes on the root's `::before` and `::after`, each in two crisp bands, ending at a conceptual fixed base behind the face. There is no separate `face`, `side`, `base`, or `contact-edge` DOM slot.
+The root is the content plane and static frame: surface fill, default ink, and 4-fen padding (currently 16px). `card-material` (Oct 15) draws the frame lit and shaded from the depth axis's side: the top and right edges are lit (`border-subtle` in light, `border-strong` in dark), and the left and bottom edges, where the planes start, are in shade (`border-strong` in light, `border-subtle` in dark). It also supplies the plane tones, darker steps of the face's own ink in both modes, in place of `construction-shading`. Place a Card on a ground one tone step behind its face, such as `bg-canvas`, so the face reads as the nearest surface. `construction-planes` draws two side planes on the root's `::before` and `::after`, each in two crisp bands, ending at a conceptual fixed base behind the face. There is no separate `face`, `side`, `base`, or `contact-edge` DOM slot.
 
 The rest depth reads `depth.rest.surface` (4px); the direction reads `depth.axis.x/y` (right/up). The leading top-right corner uses `radius.facet` with `corner-shape: bevel` support and remains square otherwise. Plane paint uses clipped zero-blur spreads instead of larger layout boxes. It introduces no hover lift or scrollable plane overflow. The shared helper reads `depth.lift` for its paint-reach bound; Card does not hover by that value.
 
@@ -128,6 +129,7 @@ From [BRIEF.md](../../BRIEF.md#current-design-direction-quiet-construction), tra
 | Oct 11 V7b, [finish decisions](../plans/2026-10-finish/decision-drafts.md)                                                                                                                | Card titles keep the text face.                                                                                                                                      | Source reason (summary): retain Card's existing type role.                                                       |
 | Oct 11 V8, [finish decisions](../plans/2026-10-finish/decision-drafts.md)                                                                                                                 | Drawn → built/removal/loading is demonstrated locally on the Card page.                                                                                              | Source reason (summary): the drawing explains a loading state; it does not add a Card state API.                 |
 | Oct 11 V11, [finish decisions](../plans/2026-10-finish/decision-drafts.md)                                                                                                                | Descendant action press reduces contact/rest paint; core content and targets remain fixed.                                                                           | Source reason: the surface answers the weight of its actions.                                                    |
+| Oct 15 cards A and C, [craft references](../research/visual-craft.md)                                                                                                                     | Lit top and right edges, shaded left and bottom edges, and planes darker than the face in both modes. Hosts place Cards one tone step in front of their ground.      | Source reason (summary): the workspace read as a wireframe because every surface shared one tone and one line.   |
 
 The authorized [finish rules](../../AGENTS.md#current-design-direction-quiet-construction) take precedence only where they reopen earlier choices. This spec records existing construction and composition; it proposes no new Card interaction or claim about better understanding.
 

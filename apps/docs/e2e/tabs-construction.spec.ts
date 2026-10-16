@@ -92,6 +92,46 @@ for (const finish of [
   });
 }
 
+test('the primary selection ends in two fishtails and the rail marks each tab boundary', async ({
+  page,
+}) => {
+  // Oct 15, top nav A: 鱼尾 fishtails in the selection's seal, notches facing the tab.
+  const preview = await openTabs(page);
+  const list = preview.getByRole('tablist', { name: 'Workspace views' });
+  await list.scrollIntoViewIfNeeded();
+  await settle(list);
+  const reading = await list.evaluate((node) => {
+    const indicator = node.querySelector<HTMLElement>(':scope > [data-zao-slot="indicator"]')!;
+    const line = indicator.querySelector<HTMLElement>('[data-zao-slot="selection-line"]')!;
+    const ends = (['::before', '::after'] as const).map((pseudo) => {
+      const css = getComputedStyle(indicator, pseudo);
+      return {
+        content: css.content,
+        width: css.width,
+        height: css.height,
+        color: css.backgroundColor,
+        clip: css.clipPath,
+      };
+    });
+    return {
+      ends,
+      ink: getComputedStyle(line).backgroundColor,
+      tabs: node.querySelectorAll(':scope > [data-zao-slot="tab"]').length,
+      marks: node.querySelectorAll(':scope > [data-zao-slot="rail"] > [data-zao-slot="graduation"]')
+        .length,
+    };
+  });
+  for (const end of reading.ends) {
+    expect(end.content).not.toBe('none');
+    expect(end.width).toBe('6px');
+    expect(end.height).toBe('8px');
+    expect(end.color).toBe(reading.ink);
+    expect(end.clip).toContain('polygon');
+  }
+  expect(reading.ends[0]!.clip, 'the two notches face each other').not.toBe(reading.ends[1]!.clip);
+  expect(reading.marks).toBe(reading.tabs - 1);
+});
+
 test('secondary tabs retain nested selection and seat only the decorative face on keyboard press', async ({
   page,
 }) => {

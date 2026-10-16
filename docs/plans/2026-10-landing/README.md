@@ -13,6 +13,16 @@ This plan only covers `/` (Start → Overview). Overview pages for Foundations, 
 3. `docs/plans/2026-10-improvement/README.md`, for its rules, option sheets and definition of done. They apply here unchanged.
 4. This file, to the end.
 
+## Progress, Oct 15: the workspace craft pass
+
+Yankun chose header A, top nav A, side panel C, and cards A and C from the [craft references](../../research/visual-craft.md). In `components/landing/showcase.tsx` and `landing.css`:
+
+- **Header.** An identity block (a north-arrow mark in a hairline frame, `Workspace · 001` above `North`) and mono readings (members, open requests, last sync) beside the View menu. Open counts down as requests are approved.
+- **Rail.** The tabs move into the body's first row; the rail runs the main column from the window edge, and the assistant's heading rule meets it on one line (subgrid). Boundary marks and fishtails come from Tabs itself.
+- **Body.** Panels and the assistant sit in `bg-canvas` behind the `bg-surface` header band and Cards. The transcript sits on a faint field of marks four fen apart; the Composer rests in a `construction-well`.
+- **Cards.** Seats uses `docs-leaders`; the Seats and Storage rules use `docs-rule-capped`.
+- **Layout.** The window lays out by its own width: the assistant sits beside the work from 56rem, below it under that.
+
 ## Progress, Oct 11: the exploded hero (finish plan V9, V10)
 
 - **The hero is the workspace taken apart.** [The finish plan](../2026-10-finish/README.md) WP 3.2: the copy sits above (headline left, sentence and actions right), then one Parts/Built control with a caption cell, then the stage. It rests on **Parts** (V9). `components/exploded-stage.tsx` hides the live window and shows static copies of it, one per layer: canvas, surface, cards, controls, overlay and focus. Pointer height or Up and Down pick a layer, which rises a little further while the others ghost (as L17); Escape clears. The caption names the picked layer, its grade and its depth. **Built** puts the working window back together, and it works as before.
