@@ -331,15 +331,23 @@ for (const study of studies) {
       const frame = () =>
         card.evaluate((node) => {
           const front = getComputedStyle(node);
-          const probe = document.createElement('span');
-          probe.style.cssText =
-            'position:fixed;visibility:hidden;pointer-events:none;width:0;height:0;color:var(--zao-color-border-subtle)';
-          node.append(probe);
-          const subtleBorder = getComputedStyle(probe).color;
-          probe.remove();
+          const resolve = (role: string) => {
+            const probe = document.createElement('span');
+            probe.style.cssText = `position:fixed;visibility:hidden;pointer-events:none;width:0;height:0;color:var(${role})`;
+            node.append(probe);
+            const color = getComputedStyle(probe).color;
+            probe.remove();
+            return color;
+          };
           return {
-            frontBorder: front.borderColor,
-            subtleBorder,
+            edges: {
+              top: front.borderTopColor,
+              right: front.borderRightColor,
+              bottom: front.borderBottomColor,
+              left: front.borderLeftColor,
+            },
+            subtleBorder: resolve('--zao-color-border-subtle'),
+            strongBorder: resolve('--zao-color-border-strong'),
             radii: [
               front.borderTopLeftRadius,
               front.borderTopRightRadius,
@@ -356,7 +364,11 @@ for (const study of studies) {
           };
         });
       const expectFrame = (reading: Awaited<ReturnType<typeof frame>>) => {
-        expect(reading.frontBorder).toBe(reading.subtleBorder);
+        // Oct 15 (cards A and C): the edges facing the light are lit and the edges meeting the
+        // planes are in shade, in each mode's own direction.
+        const lit = mode === 'light' ? reading.subtleBorder : reading.strongBorder;
+        const shaded = mode === 'light' ? reading.strongBorder : reading.subtleBorder;
+        expect(reading.edges).toEqual({ top: lit, right: lit, bottom: shaded, left: shaded });
         // One faceted leading corner (V4); the other three stay square.
         expect(reading.radii).toEqual(['0px', reading.facet, '0px', '0px']);
         expect(reading.frontStroke).toBe(reading.stroke);
@@ -368,7 +380,8 @@ for (const study of studies) {
         for (const sample of await panel.locator('[data-zao-component="card"]').all()) {
           const reading = await planes(sample, null, null);
           expect(reading.rest, `${description}: surface rest depth`).toBe(rest);
-          if (rest > 0) expectBanded(reading, description, shade);
+          // Card planes are darker steps of the face in both modes (Oct 15, cards C).
+          if (rest > 0) expectBanded(reading, description, 'black');
         }
       };
       const rest = await frame();

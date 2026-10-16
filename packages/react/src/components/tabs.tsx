@@ -46,7 +46,12 @@ const Root = forwardRef<HTMLDivElement, TabsRootProps>(function TabsRoot(
 
 function PrimaryRail() {
   const ref = useRef<HTMLSpanElement>(null);
-  const [graduations, setGraduations] = useState<number[]>([]);
+  // Gap midpoints between adjacent tabs: down a vertical rail (Oct 9, B), and along a horizontal
+  // one, where each marks a tab boundary (Oct 15, top nav A).
+  const [graduations, setGraduations] = useState<{ axis: 'block' | 'inline'; at: number[] }>({
+    axis: 'inline',
+    at: [],
+  });
 
   useLayoutEffect(() => {
     const rail = ref.current;
@@ -56,26 +61,42 @@ function PrimaryRail() {
 
     const measure = () => {
       const positions: number[] = [];
-      if (list.dataset.orientation === 'vertical') {
-        const railBounds = rail.getBoundingClientRect();
+      const vertical = list.dataset.orientation === 'vertical';
+      const railBounds = rail.getBoundingClientRect();
+      // Skip a tab hidden on its own; a list hidden as a whole (such as a still drawing's live
+      // copy) still measures, so its marks are in place when it is shown.
+      const listVisibility = getComputedStyle(list).visibility;
+      const visible = tabs
+        .filter((tab) => getComputedStyle(tab).visibility === listVisibility)
+        .map((tab) => tab.getBoundingClientRect())
+        .filter((box) => box.width > 0 && box.height > 0);
+      if (vertical) {
         const railHeight = Number.parseFloat(getComputedStyle(rail).height);
         const scale = railBounds.height / railHeight || 1;
-        const bounds = tabs
-          .filter((tab) => getComputedStyle(tab).visibility !== 'hidden')
-          .map((tab) => tab.getBoundingClientRect())
-          .filter((box) => box.width > 0 && box.height > 0)
-          .sort((a, b) => a.top - b.top);
+        const bounds = visible.sort((a, b) => a.top - b.top);
         for (let index = 1; index < bounds.length; index++) {
           positions.push(
             ((bounds[index - 1]!.bottom + bounds[index]!.top) / 2 - railBounds.top) / scale,
           );
         }
+      } else {
+        const railWidth = Number.parseFloat(getComputedStyle(rail).width);
+        const scale = railBounds.width / railWidth || 1;
+        const rtl = getComputedStyle(list).direction === 'rtl';
+        const bounds = visible.sort((a, b) => a.left - b.left);
+        for (let index = 1; index < bounds.length; index++) {
+          const middle = (bounds[index - 1]!.right + bounds[index]!.left) / 2;
+          positions.push((rtl ? railBounds.right - middle : middle - railBounds.left) / scale);
+        }
+        positions.sort((a, b) => a - b);
       }
+      const axis = vertical ? 'block' : 'inline';
       setGraduations((current) =>
-        current.length === positions.length &&
-        current.every((position, index) => position === positions[index])
+        current.axis === axis &&
+        current.at.length === positions.length &&
+        current.at.every((position, index) => position === positions[index])
           ? current
-          : positions,
+          : { axis, at: positions },
       );
     };
 
@@ -125,8 +146,16 @@ function PrimaryRail() {
 
   return (
     <span ref={ref} aria-hidden="true" data-zao-slot="rail">
-      {graduations.map((position, index) => (
-        <span key={index} data-zao-slot="graduation" style={{ insetBlockStart: position }} />
+      {graduations.at.map((position, index) => (
+        <span
+          key={index}
+          data-zao-slot="graduation"
+          style={
+            graduations.axis === 'block'
+              ? { insetBlockStart: position }
+              : { insetInlineStart: position }
+          }
+        />
       ))}
     </span>
   );

@@ -30,7 +30,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
     <>
       <div
         ref={setRoot}
-        className={`card-shaded-construction construction-shading construction-planes border border-subtle bg-surface p-4 text-default${drawing ? ' construction-drawing' : ''}${className ? ` ${className}` : ''}`}
+        className={`card-shaded-construction card-material construction-planes border bg-surface p-4 text-default${drawing ? ' construction-drawing' : ''}${className ? ` ${className}` : ''}`}
         {...props}
         aria-hidden={drawing ? true : props['aria-hidden']}
         aria-busy={drawing ? true : props['aria-busy']}

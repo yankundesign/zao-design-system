@@ -146,6 +146,59 @@
     block-size: var(--tabs-stroke);
   }
 
+  /* Tab boundaries (Oct 15, top nav A): a full-height mark at each gap midpoint, so the rail
+   * measures the tabs it carries. Centered registration ticks still mark each tab. */
+  .tabs-list[data-zao-variant='primary']:not([data-orientation='vertical'])
+    > [data-zao-slot='rail']
+    > [data-zao-slot='graduation'] {
+    display: block;
+    position: absolute;
+    inset-block: 0;
+    inline-size: var(--tabs-stroke);
+    background: var(--zao-color-border-subtle);
+    transform: translateX(-50%);
+  }
+
+  .tabs-list[data-zao-variant='primary']:not([data-orientation='vertical']):dir(rtl)
+    > [data-zao-slot='rail']
+    > [data-zao-slot='graduation'] {
+    transform: translateX(50%);
+  }
+
+  /* 鱼尾 fishtails (Oct 15, top nav A): the current selection ends in two seal marks whose
+   * notches face the tab, as the fishtails in a printed folio's center fold mark its fold. */
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator::before,
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator::after {
+    content: '';
+    position: absolute;
+    inset-block-start: calc(100% + var(--zao-space-1));
+    inline-size: var(--zao-space-1-5);
+    block-size: var(--zao-space-2);
+    background: var(--zao-color-accent-solid);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator::before {
+    inset-inline-start: calc(var(--zao-space-2) - var(--zao-space-1-5));
+    clip-path: polygon(0 0, 100% 0, 50% 50%, 100% 100%, 0 100%);
+  }
+
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator::after {
+    inset-inline-end: calc(var(--zao-space-2) - var(--zao-space-1-5));
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 50% 50%);
+  }
+
+  .tabs-list[data-zao-variant='primary']:not([data-orientation='vertical']):dir(rtl)
+    > .tabs-indicator::before {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 50% 50%);
+  }
+
+  .tabs-list[data-zao-variant='primary']:not([data-orientation='vertical']):dir(rtl)
+    > .tabs-indicator::after {
+    clip-path: polygon(0 0, 100% 0, 50% 50%, 100% 100%, 0 100%);
+  }
+
   /* The secondary face follows the active cell, including consumer-supplied grids. */
   .tabs-list[data-zao-variant='secondary'] {
     gap: var(--zao-space-0-5);
@@ -265,6 +318,26 @@
       inline-size: var(--tabs-stroke);
       block-size: auto;
     }
+    /* Vertical fishtails sit at the line's two ends, notches facing the tab's middle. */
+    & > .tabs-indicator::before,
+    & > .tabs-indicator::after {
+      inset-block-start: auto;
+      inset-inline-start: calc(100% + var(--zao-space-1));
+      inset-inline-end: auto;
+      inline-size: var(--zao-space-2);
+      block-size: var(--zao-space-1-5);
+      transform: translateX(-50%);
+    }
+
+    & > .tabs-indicator::before {
+      inset-block-start: calc(var(--zao-space-2) - var(--zao-space-1-5));
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 50%, 0 100%);
+    }
+
+    & > .tabs-indicator::after {
+      inset-block-end: calc(var(--zao-space-2) - var(--zao-space-1-5));
+      clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+    }
   }
 
   /* Logical tick positions need the matching half-width shift in right-to-left layouts. */
@@ -278,11 +351,16 @@
     & > .tabs-indicator > [data-zao-slot='selection-line'] {
       transform: translateX(50%);
     }
+    & > .tabs-indicator::before,
+    & > .tabs-indicator::after {
+      transform: translateX(50%);
+    }
   }
 
   @media (forced-colors: active) {
     .tabs-list[data-zao-variant='primary'] > [data-zao-slot='rail'],
     .tabs-list[data-zao-variant='primary'] > .tabs-tab > [data-zao-slot='tick'],
+    .tabs-list[data-zao-variant='primary'] > .tabs-indicator,
     .tabs-list[data-zao-variant='primary'] > .tabs-indicator > [data-zao-slot='selection-line'] {
       --zao-color-border-subtle: CanvasText;
       --zao-color-border-default: CanvasText;

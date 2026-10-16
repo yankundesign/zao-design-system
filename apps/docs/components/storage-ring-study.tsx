@@ -234,7 +234,7 @@ export function StorageRingStudy() {
       </div>
       <div
         data-zao-slot="chart-foot"
-        className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-subtle pt-2 font-mono type-caption figures-tabular"
+        className="docs-rule-capped flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2 font-mono type-caption figures-tabular"
       >
         <p id={detailId} data-zao-slot="storage-detail">
           {activeRegion

@@ -421,6 +421,42 @@
   }
 }
 
+/*
+ * Card material (Oct 15, cards A and C). Light comes from the depth axis's side (top right), so
+ * the edges facing it are lit and the edges meeting the planes are in shade: a stronger frame
+ * without a heavier line all round. The planes are darker steps of the face's own ink in both
+ * modes, so the face reads as the nearest, lightest surface. It replaces construction-shading on
+ * the parts that carry it. Light planes keep the shared formula at the card strength (6%).
+ */
+@utility card-material {
+  --zao-card-edge-lit: light-dark(var(--zao-color-border-subtle), var(--zao-color-border-strong));
+  --zao-card-edge-shade: light-dark(var(--zao-color-border-strong), var(--zao-color-border-subtle));
+  border-color: var(--zao-card-edge-shade);
+  border-top-color: var(--zao-card-edge-lit);
+  border-right-color: var(--zao-card-edge-lit);
+  --zao-plane-x-near: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black 6%),
+    color-mix(in oklch, var(--zao-construction-face), black 30%)
+  );
+  --zao-plane-x-far: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black 10.5%),
+    color-mix(in oklch, var(--zao-construction-face), black 36%)
+  );
+  --zao-plane-y-near: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black 9%),
+    color-mix(in oklch, var(--zao-construction-face), black 34%)
+  );
+  --zao-plane-y-far: light-dark(
+    color-mix(in oklch, var(--zao-construction-face), black 12%),
+    color-mix(in oklch, var(--zao-construction-face), black 40%)
+  );
+  --zao-construction-side: var(--zao-plane-x-near);
+
+  @media (forced-colors: active) {
+    border-color: CanvasText;
+  }
+}
+
 /* A content frame with the same planes, for Table and the conversation transcript. */
 @utility card-construction {
   position: relative;
