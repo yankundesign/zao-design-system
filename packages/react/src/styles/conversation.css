@@ -305,6 +305,9 @@
       block-size: var(--zao-stroke-hairline);
       margin-block-end: calc(-1 * var(--zao-stroke-hairline));
       background: var(--zao-color-border-subtle);
+      /* Hidden unless the transcript scrolls: an inactive scroll timeline applies no keyframes,
+         so a short transcript keeps no stray rule under its last message (Oct 16). */
+      opacity: 0;
       pointer-events: none;
       content: '';
     }

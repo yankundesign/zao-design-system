@@ -464,12 +464,12 @@ export function ShowcaseWindow({
           </div>
 
           <aside className="landing-window-assistant" aria-label="Assistant">
-            <div className="landing-window-assistant-head flex items-center justify-between gap-2 px-3">
+            <div className="landing-window-assistant-head flex items-center justify-between gap-2">
               <h3 className="type-label font-medium">Assistant</h3>
               <span className="type-caption text-muted">Sample data</span>
             </div>
-            {/* Oct 15, side panel C: a faint fen field as the ground, and the Composer seated
-                in a well. */}
+            {/* Side panel C: a fen ruler and the character field (Oct 16) as the ground, and the
+                Composer seated in a well. */}
             <div className="landing-window-assistant-body">
               <Part name="Conversation" className="landing-window-conversation">
                 <Conversation.Root aria-label="Assistant conversation" announcement={announcement}>
@@ -518,7 +518,7 @@ export function ShowcaseWindow({
                   <Conversation.Latest />
                 </Conversation.Root>
               </Part>
-              <div className="landing-window-dock construction-well p-3">
+              <div className="landing-window-dock construction-well p-4">
                 <Part name="Composer">
                   <Composer
                     label="Message the assistant"

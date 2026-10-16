@@ -274,6 +274,80 @@ test('the island takes the resolved mode before hydration', async ({ browser }) 
   await context.close();
 });
 
+test.describe('the character field', () => {
+  /** The `::before` ground of the first match: whether it is drawn, its mask and its ink. */
+  const ground = (page: Page, selector: string) =>
+    page
+      .locator(selector)
+      .first()
+      .evaluate((node) => {
+        const style = getComputedStyle(node, '::before');
+        return {
+          display: style.display,
+          mask: style.maskImage,
+          ink: style.backgroundColor,
+          events: style.pointerEvents,
+        };
+      });
+  /** A semantic role as the landing island computes it. */
+  const role = (page: Page, name: string) =>
+    page.locator('[data-landing]').evaluate((root, name) => {
+      const probe = document.createElement('span');
+      probe.style.color = `var(${name})`;
+      root.append(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
+    }, name);
+  const painted = (page: Page) =>
+    expect
+      .poll(() =>
+        page
+          .locator('[data-landing]')
+          .evaluate((root) => root.style.getPropertyValue('--landing-field')),
+      )
+      .toMatch(/^url\("blob:/);
+
+  test('grounds the drawing, its copies and the transcript in the mode’s ink', async ({ page }) => {
+    // Oct 16: one tile, painted once on the landing root and used as a mask.
+    await page.setViewportSize({ width: 1440, height: 900 });
+    for (const mode of ['light', 'dark'] as const) {
+      await open(page, '', mode);
+      await painted(page);
+      const drawing = await ground(page, '[data-landing-section="hero"] .exploded-stage');
+      expect(drawing.mask).toContain('blob:');
+      expect(drawing.events).toBe('none');
+      expect(drawing.ink).toBe(await role(page, '--zao-color-border-strong'));
+      // The resting drawing's surface layer is a copy of the window; it carries the field too.
+      const copy = await ground(
+        page,
+        '.exploded-layer[data-layer="surface"] .landing-window-conversation',
+      );
+      expect(copy.display).toBe('block');
+      expect(copy.mask).toContain('blob:');
+      const transcript = await ground(page, '.exploded-live .landing-window-conversation');
+      expect(transcript.display).toBe('block');
+      expect(transcript.ink).toBe(await role(page, '--zao-color-border-default'));
+    }
+  });
+
+  test('leaves the short transcript plain, and is not drawn in forced colors', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page);
+    await painted(page);
+    expect((await ground(page, '.exploded-live .landing-window-conversation')).display).toBe(
+      'none',
+    );
+    expect((await ground(page, '[data-landing-section="hero"] .exploded-stage')).display).toBe(
+      'block',
+    );
+    await page.emulateMedia({ forcedColors: 'active' });
+    expect((await ground(page, '[data-landing-section="hero"] .exploded-stage')).display).toBe(
+      'none',
+    );
+  });
+});
+
 test.describe('the workspace', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 

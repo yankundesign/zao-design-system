@@ -112,6 +112,73 @@
   background-color: var(--zao-color-bg-sunken);
 }
 
+/*
+ * The character field (Oct 16): a faint fen grid of dots and crosses gathered into drifting
+ * clusters, the ground under the drawing and under the assistant's transcript.
+ * `useCharacterField` paints the tile once on the landing root; each ground fills it with a
+ * semantic ink, so it follows the mode, and the drawing's copies carry it. Until the tile is
+ * ready the fallback mask paints nothing.
+ */
+.landing-hero .exploded-stage::before,
+.landing-window-conversation::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  --landing-field-scale: 1;
+  pointer-events: none;
+  background-color: var(--landing-field-ink, var(--zao-color-border-strong));
+  mask-image: var(--landing-field, linear-gradient(transparent, transparent));
+  mask-size: calc(var(--landing-field-width, 100%) * var(--landing-field-scale))
+    calc(var(--landing-field-height, 100%) * var(--landing-field-scale));
+  mask-repeat: repeat;
+}
+
+/*
+ * The drawing's ground quiets toward its middle, so the marks stay behind the parts. A narrow
+ * stage draws the parts smaller, and the marks with them.
+ */
+.landing-hero .exploded-stage::before {
+  mask-image:
+    var(--landing-field, linear-gradient(transparent, transparent)),
+    radial-gradient(closest-side, rgb(0 0 0 / 0.3), #000);
+  mask-size:
+    calc(var(--landing-field-width, 100%) * var(--landing-field-scale))
+      calc(var(--landing-field-height, 100%) * var(--landing-field-scale)),
+    100% 100%;
+  mask-repeat: repeat, no-repeat;
+  mask-composite: intersect;
+}
+
+@media (max-width: 47.99rem) {
+  .landing-hero .exploded-stage::before {
+    --landing-field-scale: 0.75;
+  }
+}
+
+/*
+ * Under the transcript the field settles toward the Composer, quieter, and clear of the ruler:
+ * the messages are read on plain ground, and the open space below them carries the texture.
+ * Only beside the work (56rem and wider): below it, the short transcript has no open space.
+ */
+.landing-window-conversation::before {
+  --landing-field-ink: var(--zao-color-border-default);
+  display: none;
+  inset-inline-start: var(--zao-space-2);
+  mask-image:
+    var(--landing-field, linear-gradient(transparent, transparent)),
+    linear-gradient(to bottom, transparent 45%, #000 90%);
+  mask-size:
+    calc(var(--landing-field-width, 100%) * var(--landing-field-scale))
+      calc(var(--landing-field-height, 100%) * var(--landing-field-scale)),
+    100% 100%;
+  /* Offset into the tile so one of its clusters rests just above the Composer. */
+  mask-position:
+    left calc(-50 * var(--zao-space-1)) bottom calc(-100 * var(--zao-space-1)),
+    0 0;
+  mask-repeat: repeat, no-repeat;
+  mask-composite: intersect;
+}
+
 @media (min-width: 48rem) {
   .landing-hero .exploded-stage {
     padding: var(--zao-space-8) var(--zao-space-8) var(--zao-space-12);
@@ -368,13 +435,18 @@
 }
 
 /* Header A: the identity block on the leading edge; readings and actions on the trailing one. */
+/*
+ * The bar belongs to the whole window, so it closes with a rule across both columns; the
+ * assistant's divider starts from that rule (Oct 16).
+ */
 .landing-window-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   column-gap: var(--zao-space-3);
   row-gap: var(--zao-space-2);
-  padding: var(--zao-space-3) var(--zao-space-4) var(--zao-space-2);
+  padding: var(--zao-space-3) var(--zao-space-4);
+  border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
 }
 
 .landing-window-mark-frame {
@@ -455,6 +527,9 @@
  */
 .landing-window-tabs {
   z-index: 1;
+  /* A fen above the tabs balances the rail's half fen below the guide, so the labels sit
+     midway between the bar's rule and the rail (Oct 16). */
+  padding-block-start: var(--zao-space-1);
   margin-block-end: calc(-1 * var(--zao-space-1));
 }
 
@@ -501,9 +576,19 @@
   border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
 }
 
+/*
+ * One inset for both columns (Oct 16): parts sit 4 fen in from a column's edge and text a
+ * further 3 fen, so the assistant's heading lines up with the text of its messages, as the tab
+ * labels line up over the cards.
+ */
 .landing-window-assistant-head {
   min-block-size: var(--zao-size-control-md);
+  padding-inline: calc(var(--zao-space-4) + var(--zao-space-3));
   border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+}
+
+.landing-window-viewport .zao-conversation-list {
+  padding-inline: var(--zao-space-4);
 }
 
 .landing-window-assistant-body {
@@ -515,20 +600,37 @@
 }
 
 /*
- * Side panel C, the ground: a faint field of marks one fen apart in four, under the transcript.
- * The transcript fills what the workspace leaves, and scrolls; it never sets the height.
+ * The transcript fills what the workspace leaves, and scrolls; it never sets the height. Its
+ * `::before` holds the character field (above).
  */
 .landing-window-conversation {
-  --landing-field-ink: color-mix(in oklch, var(--zao-color-border-default) 80%, transparent);
   flex: 1 1 auto;
   block-size: calc(var(--zao-space-20) * 4);
-  background-image: radial-gradient(
-    circle,
-    var(--landing-field-ink) calc(var(--zao-stroke-hairline) * 0.75),
-    transparent var(--zao-stroke-hairline)
-  );
-  background-position: center;
-  background-size: var(--zao-space-4) var(--zao-space-4);
+}
+
+/*
+ * Side panel C, the ground (Oct 16, replacing the dot field): a fen ruler on the transcript's
+ * leading edge that scrolls with it, a mark every 4 fen and a longer one every 16, like the tab
+ * rail turned on its side. The panel itself stays plain.
+ */
+.landing-window-viewport {
+  background-image:
+    linear-gradient(
+      to bottom,
+      var(--zao-color-border-default) var(--zao-stroke-hairline),
+      transparent var(--zao-stroke-hairline)
+    ),
+    linear-gradient(
+      to bottom,
+      var(--zao-color-border-subtle) var(--zao-stroke-hairline),
+      transparent var(--zao-stroke-hairline)
+    );
+  background-size:
+    var(--zao-space-1-5) var(--zao-space-16),
+    var(--zao-space-1) var(--zao-space-4);
+  background-position: left top;
+  background-repeat: repeat-y;
+  background-attachment: local;
 }
 
 .landing-window-conversation > .zao-conversation {
@@ -546,7 +648,8 @@
 /* Wide enough for the assistant beside the work: the main column keeps room for its tabs. */
 @container landing-window (min-width: 56rem) {
   .landing-window-body {
-    grid-template-columns: minmax(0, 1fr) calc(var(--zao-space-20) * 4);
+    /* 84 fen: with the 4-fen inset, a one-line question still fits its slip. */
+    grid-template-columns: minmax(0, 1fr) calc(var(--zao-space-1) * 84);
     grid-template-rows: auto minmax(0, 1fr);
   }
 
@@ -574,6 +677,10 @@
     block-size: auto;
     min-block-size: calc(var(--zao-space-20) * 3);
   }
+
+  .landing-window-conversation::before {
+    display: block;
+  }
 }
 
 @media (forced-colors: active) {
@@ -586,8 +693,13 @@
     fill: CanvasText;
   }
 
-  .landing-window-conversation {
+  .landing-window-viewport {
     background-image: none;
+  }
+
+  .landing-hero .exploded-stage::before,
+  .landing-window-conversation::before {
+    display: none;
   }
 }
 
