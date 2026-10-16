@@ -19,9 +19,12 @@ Yankun chose header A, top nav A, side panel C, and cards A and C from the [craf
 
 - **Header.** An identity block (a north-arrow mark in a hairline frame, `Workspace · 001` above `North`) and mono readings (members, open requests, last sync) beside the View menu. Open counts down as requests are approved.
 - **Rail.** The tabs move into the body's first row; the rail runs the main column from the window edge, and the assistant's heading rule meets it on one line (subgrid). Boundary marks and fishtails come from Tabs itself.
-- **Body.** Panels and the assistant sit in `bg-canvas` behind the `bg-surface` header band and Cards. The transcript sits on a faint field of marks four fen apart; the Composer rests in a `construction-well`.
+- **Body.** Panels and the assistant sit in `bg-canvas` behind the `bg-surface` header band and Cards. A fen ruler runs down the transcript's leading edge and scrolls with it (Oct 16, replacing a dot field Yankun found cheap); the Composer rests in a `construction-well`.
 - **Cards.** Seats uses `docs-leaders`; the Seats and Storage rules use `docs-rule-capped`.
 - **Layout.** The window lays out by its own width: the assistant sits beside the work from 56rem, below it under that.
+- **Oct 16, centring.** The bar's padding is even, and a fen above the tabs balances the rail's half fen below the guide, so the bar's contents and the tab and assistant labels sit midway between their rules.
+- **Oct 16, the character field.** Yankun asked for a subtle character texture like his reference: the ruler alone was not enough. `components/landing/character-field.ts` paints a seamless 1440 × 1008 tile of faint drafting marks in clusters, once, as a mask on the landing root (`--landing-field`). Yankun turned down hex bytes (no numbers); the field is a 3-fen grid of `·` and `+` whose crosses close in toward each cluster's core, with `hatch` and `lines` kept as unselected alternates. The stage fills it with `border-strong`, quieter toward the drawing's middle and at three quarters size on a phone; the transcript, beside the work only, fills a cluster above the Composer with `border-default`. Copies in the Parts drawing carry it; nothing moves; forced colors omit it.
+- **Oct 16, the assistant's head.** The bar closes with a rule across the whole window, and the assistant's divider starts from it. Both columns share one inset: parts 4 fen in from the column edge, text 7 fen, so the heading lines up with its messages as the tab labels do over the cards. The column is 84 fen wide so a one-line question still fits its slip.
 
 ## Progress, Oct 11: the exploded hero (finish plan V9, V10)
 

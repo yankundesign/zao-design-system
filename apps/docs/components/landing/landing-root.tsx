@@ -1,9 +1,10 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useRef, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { finish } from '@zao/react';
 import { useFinish } from '../use-finish';
+import { useCharacterField } from './character-field';
 
 /**
  * The landing page is one Quiet instrument island. Before hydration React only knows the server's
@@ -17,6 +18,8 @@ const noop = () => () => {};
 /** The landing page's one study island. Every section inherits its finish and mode. */
 export function LandingRoot({ children }: { children: ReactNode }) {
   const { theme, resolved } = useFinish();
+  const root = useRef<HTMLDivElement>(null);
+  useCharacterField(root);
   const serverRender = useSyncExternalStore(
     noop,
     () => false,
@@ -24,6 +27,7 @@ export function LandingRoot({ children }: { children: ReactNode }) {
   );
   return (
     <div
+      ref={root}
       {...finish(theme, resolved)}
       data-study="quiet-instrument"
       suppressHydrationWarning
