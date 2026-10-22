@@ -6,8 +6,107 @@
  * headline, smaller than before; it no longer appears in Explore.
  */
 
+/*
+ * 0. The sheet (W1, kept Oct 21; docs/research/context-dev.md). The landing is ruled as one
+ * sheet, after a woodblock's frame (版框) and its column rules (界行): two rails run the main
+ * column's height in the gutters, a rule crosses it at the head, between sections and at the foot,
+ * and a + marks every crossing, a fen clear of both lines, as on `docs-rule-capped`. Paint only:
+ * the lines sit in the gutters and gaps, behind the content, and never move or resize it.
+ */
 .landing {
-  gap: var(--zao-space-20);
+  --landing-gap: var(--zao-space-20);
+  /* Rails sit midway in the gutters: the shell's 4 fen padding, from md its 8 fen gap and padding. */
+  --landing-rail: var(--zao-space-2);
+  /* The head and foot rules sit midway in the main column's block padding: 8 fen, from md 12. */
+  --landing-head: var(--zao-space-4);
+  --landing-arm: calc(var(--zao-space-1-5) / 2);
+  --landing-cap: calc(var(--zao-space-1-5) + var(--zao-stroke-hairline));
+  --landing-clear: var(--zao-space-1);
+  /* The frame reads a step above the divisions inside the content, which use border-subtle. */
+  --landing-line: var(--zao-color-border-default);
+  --landing-mark: var(--zao-color-border-strong);
+  /* One crossing rule: a + at each rail and the rule between them, clear of both marks. */
+  --landing-crossing:
+    linear-gradient(var(--landing-mark), var(--landing-mark)) 0 var(--landing-arm) /
+      var(--landing-cap) var(--zao-stroke-hairline) no-repeat,
+    linear-gradient(var(--landing-mark), var(--landing-mark)) var(--landing-arm) 0 /
+      var(--zao-stroke-hairline) var(--landing-cap) no-repeat,
+    linear-gradient(var(--landing-mark), var(--landing-mark)) 100% var(--landing-arm) /
+      var(--landing-cap) var(--zao-stroke-hairline) no-repeat,
+    linear-gradient(var(--landing-mark), var(--landing-mark)) calc(100% - var(--landing-arm)) 0 /
+      var(--zao-stroke-hairline) var(--landing-cap) no-repeat,
+    linear-gradient(var(--landing-line), var(--landing-line))
+      calc(var(--landing-cap) + var(--landing-clear)) var(--landing-arm) /
+      calc(100% - 2 * (var(--landing-cap) + var(--landing-clear))) var(--zao-stroke-hairline)
+      no-repeat;
+  position: relative;
+  gap: var(--landing-gap);
+}
+
+@media (min-width: 48rem) {
+  .landing {
+    --landing-rail: var(--zao-space-4);
+    --landing-head: var(--zao-space-6);
+  }
+}
+
+/* Each section draws the rule above it and its stretch of both rails, down to the next mark. */
+.landing > [data-landing-section] {
+  --landing-above: calc(var(--landing-gap) / 2);
+  --landing-below: calc(var(--landing-gap) / 2);
+  position: relative;
+  isolation: isolate;
+}
+
+.landing > [data-landing-section]:first-of-type {
+  --landing-above: var(--landing-head);
+}
+
+.landing > [data-landing-section]:last-of-type {
+  --landing-below: var(--landing-head);
+}
+
+.landing > [data-landing-section]::after,
+.landing::after {
+  content: '';
+  position: absolute;
+  inset-inline: calc(-1 * (var(--landing-rail) + var(--landing-arm)));
+  pointer-events: none;
+}
+
+.landing > [data-landing-section]::after {
+  z-index: -1;
+  inset-block: calc(-1 * (var(--landing-above) + var(--landing-arm)))
+    calc(-1 * (var(--landing-below) - var(--landing-arm) - var(--landing-clear)));
+  background:
+    var(--landing-crossing),
+    linear-gradient(var(--landing-line), var(--landing-line)) var(--landing-arm)
+      calc(var(--landing-cap) + var(--landing-clear)) / var(--zao-stroke-hairline)
+      calc(100% - var(--landing-cap) - var(--landing-clear)) no-repeat,
+    linear-gradient(var(--landing-line), var(--landing-line)) calc(100% - var(--landing-arm))
+      calc(var(--landing-cap) + var(--landing-clear)) / var(--zao-stroke-hairline)
+      calc(100% - var(--landing-cap) - var(--landing-clear)) no-repeat;
+}
+
+/* The foot rule closes the sheet. */
+.landing::after {
+  inset-block-end: calc(
+    -1 * (var(--landing-head) + var(--landing-arm) + var(--zao-stroke-hairline))
+  );
+  block-size: var(--landing-cap);
+  background: var(--landing-crossing);
+}
+
+@media (forced-colors: active) {
+  .landing {
+    --landing-line: GrayText;
+    --landing-mark: CanvasText;
+  }
+
+  .landing > [data-landing-section]::after,
+  .landing::after {
+    forced-color-adjust: none;
+  }
 }
 
 /* 1. Hero ---------------------------------------------------------------- */

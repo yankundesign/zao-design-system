@@ -58,6 +58,18 @@ function luminance(page: Page, selector: string) {
   });
 }
 
+/** A semantic role as the landing island computes it. */
+function role(page: Page, name: string) {
+  return page.locator('[data-landing]').evaluate((root, name) => {
+    const probe = document.createElement('span');
+    probe.style.color = `var(${name})`;
+    root.append(probe);
+    const value = getComputedStyle(probe).color;
+    probe.remove();
+    return value;
+  }, name);
+}
+
 const caption = (page: Page) => page.locator('.landing-bracket-caption [data-current]');
 
 /** The working window. Each layer of the exploded drawing holds an inert copy of it. */
@@ -289,16 +301,6 @@ test.describe('the character field', () => {
           events: style.pointerEvents,
         };
       });
-  /** A semantic role as the landing island computes it. */
-  const role = (page: Page, name: string) =>
-    page.locator('[data-landing]').evaluate((root, name) => {
-      const probe = document.createElement('span');
-      probe.style.color = `var(${name})`;
-      root.append(probe);
-      const value = getComputedStyle(probe).color;
-      probe.remove();
-      return value;
-    }, name);
   const painted = (page: Page) =>
     expect
       .poll(() =>
@@ -568,6 +570,120 @@ test('explore tiles are whole links and lift one drawn part', async ({ page }) =
         .evaluate((part) => getComputedStyle(part).transform),
     )
     .not.toBe('none');
+});
+
+test.describe('the sheet', () => {
+  // W1, kept Oct 21 (docs/research/context-dev.md): rails in the gutters, a rule at the head,
+  // between sections and at the foot, and a + at every crossing. A + is 7px (3px arms across a
+  // hairline) and stands a fen clear of both lines.
+  const ARM = 3;
+  const CLEAR = 4;
+
+  /** Each section's `::after` (its rule, + marks and rails) and the root's foot, in page px. */
+  const sheet = (page: Page) =>
+    page.locator('[data-landing]').evaluate((root) => {
+      scrollTo(0, 0);
+      const px = (value: string) => Number.parseFloat(value);
+      const box = (node: Element) => {
+        const rect = node.getBoundingClientRect();
+        return { top: rect.top + scrollY, bottom: rect.bottom + scrollY, left: rect.left };
+      };
+      const sections = [...root.querySelectorAll(':scope > [data-landing-section]')];
+      const strokes = [...sections, root].map((node) => {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node, '::after');
+        return {
+          top: rect.top + scrollY + px(style.top),
+          bottom: rect.bottom + scrollY - px(style.bottom),
+          left: rect.left + px(style.left),
+          right: rect.right - px(style.right),
+          image: style.backgroundImage,
+          events: style.pointerEvents,
+          adjust: style.forcedColorAdjust,
+        };
+      });
+      const content = document.querySelector('main')!;
+      const main = content.getBoundingClientRect();
+      const shell = content.parentElement!.getBoundingClientRect();
+      const aside = document.querySelector('aside')!.getBoundingClientRect();
+      const header = document.querySelector('body > header')!.getBoundingClientRect();
+      return {
+        sections: sections.map(box),
+        strokes,
+        main: { top: main.top + scrollY, left: main.left, right: main.right },
+        // The gutters end at the shell's edges. Beside the content the nav bounds the leading
+        // gutter instead; on a phone it sits above the content.
+        gutter: { start: aside.right <= main.left ? aside.right : shell.left, end: shell.right },
+        above: aside.bottom <= main.top ? aside.bottom + scrollY : header.bottom + scrollY,
+      };
+    });
+  /** A system color as an unadjusted element draws it. */
+  const system = (page: Page, name: 'CanvasText' | 'GrayText') =>
+    page.locator('[data-landing]').evaluate((root, name) => {
+      const probe = document.createElement('span');
+      probe.style.forcedColorAdjust = 'none';
+      probe.style.color = name;
+      root.append(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
+    }, name);
+
+  for (const [width, height, mode] of [
+    [1440, 900, 'light'],
+    [1440, 900, 'dark'],
+    [390, 844, 'light'],
+  ] as const) {
+    test(`${width}px ${mode}: rails, rules and marks meet on the gutters and gaps`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height });
+      await open(page, '', mode);
+      const { sections, strokes, main, gutter, above } = await sheet(page);
+      const [strong, line] = [
+        await role(page, '--zao-color-border-strong'),
+        await role(page, '--zao-color-border-default'),
+      ];
+      const foot = strokes.at(-1)!;
+      for (const stroke of strokes) {
+        // The rails stand midway in the gutters, outside the content.
+        expect(stroke.left + ARM).toBeCloseTo((gutter.start + main.left) / 2, 0);
+        expect(stroke.right - ARM).toBeCloseTo((main.right + gutter.end) / 2, 0);
+        expect(stroke.image).toContain(strong);
+        expect(stroke.image).toContain(line);
+        expect(stroke.events).toBe('none');
+      }
+      // The head rule sits midway between the content and what is above it; the foot mirrors it.
+      const head = sections[0]!.top - (strokes[0]!.top + ARM);
+      expect(head).toBeCloseTo((sections[0]!.top - above) / 2, 0);
+      expect(foot.top + ARM - sections.at(-1)!.bottom).toBeCloseTo(head, 0);
+      for (const [index, section] of sections.entries()) {
+        const next = strokes[index + 1]!;
+        // Each rail stops a fen above the next mark.
+        expect(strokes[index]!.bottom + CLEAR).toBeCloseTo(next.top, 0);
+        // Between sections the rule sits midway in the gap.
+        if (index > 0) {
+          expect(strokes[index]!.top + ARM).toBeCloseTo(
+            (sections[index - 1]!.bottom + section.top) / 2,
+            0,
+          );
+        }
+      }
+    });
+  }
+
+  test('forced colors draw the marks in CanvasText and the lines in GrayText', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await open(page);
+    await page.emulateMedia({ forcedColors: 'active' });
+    const { strokes } = await sheet(page);
+    const [text, gray] = [await system(page, 'CanvasText'), await system(page, 'GrayText')];
+    for (const stroke of strokes) {
+      expect(stroke.adjust).toBe('none');
+      expect(stroke.image).toContain(text);
+      expect(stroke.image).toContain(gray);
+    }
+  });
 });
 
 test('the window tab strip never shows a scrollbar', async ({ page }) => {
