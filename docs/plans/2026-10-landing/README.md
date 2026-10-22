@@ -13,6 +13,18 @@ This plan only covers `/` (Start → Overview). Overview pages for Foundations, 
 3. `docs/plans/2026-10-improvement/README.md`, for its rules, option sheets and definition of done. They apply here unchanged.
 4. This file, to the end.
 
+## Progress, Oct 21: the sheet (W1, kept)
+
+Yankun asked for proposal W1 from the [context.dev research](../../research/context-dev.md): rule the landing as one sheet, after a woodblock's frame (版框) and column rules (界行). In `landing.css` ("0. The sheet"):
+
+- **Rails.** Two hairlines run the main column's height, midway in the gutters: 2 fen out on a phone, 4 fen from md (between the nav and the content, and in the trailing padding).
+- **Rules.** A hairline crosses the column at the head, midway between every two sections and at the foot. The head and foot sit midway in the main column's block padding, so the header's rule and the sheet's head stand an equal step apart.
+- **Marks.** A `+` in `border-strong` stands on every crossing, and both lines stop a fen short of it, as on `docs-rule-capped`. Lines use `border-default`, a step above the divisions inside the content (`border-subtle`), so the frame reads as the frame; forced colors draw marks in `CanvasText` and lines in `GrayText`.
+- **Paint only.** Each section's `::after` draws its rule, marks and rails behind its content (`isolation: isolate`), and the root's `::after` draws the foot. Nothing moves, content keeps its place and width, and nothing scrolls sideways at 390. The hero's controls rule and the Explore tile rules stay as divisions inside the content.
+- **Known crossing.** With the bracket set fully opened and its top course picked, the beam rises past the head rule and covers it, standing in front of the sheet.
+
+Yankun kept it on Oct 21, after the lines moved from `border-subtle` to `border-default` so the frame shows in dark mode. Checked in light, dark, RTL and at 390; `e2e/landing.spec.ts` covers the geometry and forced colors.
+
 ## Progress, Oct 15: the workspace craft pass
 
 Yankun chose header A, top nav A, side panel C, and cards A and C from the [craft references](../../research/visual-craft.md). In `components/landing/showcase.tsx` and `landing.css`:
@@ -274,7 +286,8 @@ Implements L15 and L16 as described under section 2. Covered by `e2e/landing.spe
   - the showcase following the page's mode, including before hydration;
   - the workspace: approval, Reopen focus, views, Show parts and depth;
   - the window's tab strip fitting without a scrollbar at 1440, 1280 and 1024, and panning without one at 390;
-  - the keyboard order, axe in light and dark, and no horizontal scroll at 390.
+  - the keyboard order, axe in light and dark, and no horizontal scroll at 390;
+  - the sheet's rails, rules and marks at 1440 in light and dark, at 390, and in forced colors (Oct 21).
 - Keep the `components.spec.ts` check that `/` loads Su with no Yu controls.
 - Add an assertion to `nav-construction.spec.ts` that WP 1 left the nav unchanged.
 
