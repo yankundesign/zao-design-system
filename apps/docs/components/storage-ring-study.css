@@ -87,3 +87,12 @@
     outline: 1px solid Highlight;
   }
 }
+
+/*
+ * The reading keeps a fixed minimum width, a little wider than its longest line, so the ring
+ * beside it never moves when the drawing builds: the drawn placeholders swap digits for figure
+ * spaces, which Geist lacks, and a fallback font may draw them wider or narrower.
+ */
+.storage-ring-study .figure-mark {
+  min-inline-size: calc(20 * var(--zao-space-1));
+}

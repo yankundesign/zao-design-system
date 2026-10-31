@@ -195,7 +195,7 @@ test('live simulation is off by default, updates discretely, and stops when swit
 }) => {
   for (const chart of charts.filter((chart) => chart.live)) {
     const figure = await openChart(page, chart.slug);
-    const live = page.getByRole('switch', { name: 'Simulate live updates', exact: true });
+    const live = figure.getByRole('switch', { name: 'Simulate live updates', exact: true });
     await expect(live).not.toBeChecked();
     const svg = figure.locator('svg').first();
     const readout = figure.locator('[data-zao-slot="chart-readout"]');
@@ -287,6 +287,11 @@ const pages = [
   { slug: 'heatmap', title: 'Events per hour', rows: 7 },
   { slug: 'histogram', title: 'Session length', rows: null },
 ] as const;
+
+/** The page's main preview; a second form may have its own preview below it (wave 2). */
+function preview(page: Page) {
+  return page.locator('section[aria-label$="chart preview"]');
+}
 
 /** The preview's chart root: a figure for framed charts, the study for the ring. */
 function previewRoot(page: Page, slug: string) {
@@ -395,9 +400,9 @@ test('a loading chart is a drawing: structure only, no marks and no numbers', as
     const plot = root.locator(chart.slug === 'ring' ? 'svg' : '.chart-plot').first();
 
     // Toggle first: clicking scrolls the controls into view, and boxes are viewport-relative.
-    await page.getByRole('switch', { name: 'Keep loading', exact: true }).click();
+    await preview(page).getByRole('switch', { name: 'Keep loading', exact: true }).click();
     const box = await plot.boundingBox();
-    await page.getByRole('button', { name: 'Reload readings', exact: true }).click();
+    await preview(page).getByRole('button', { name: 'Reload readings', exact: true }).click();
     await expect(root).toHaveAttribute('aria-busy', 'true');
     await expect(root).toHaveAttribute('data-zao-drawing', '');
     await expect(marks).toHaveCount(0);
@@ -418,7 +423,7 @@ test('a loading chart is a drawing: structure only, no marks and no numbers', as
       expect(Math.abs(drawn[key] - box![key])).toBeLessThan(1);
     }
 
-    await page.getByRole('switch', { name: 'Keep loading', exact: true }).click();
+    await preview(page).getByRole('switch', { name: 'Keep loading', exact: true }).click();
     await expect(root).not.toHaveAttribute('aria-busy', 'true');
     await expect(marks).toHaveCount(markCount);
     await expect(readout).toHaveText(resting!);
@@ -430,10 +435,10 @@ test('with reduced motion a chart builds at once', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openChart(page, 'bar');
   const root = previewRoot(page, 'bar');
-  await page.getByRole('switch', { name: 'Keep loading', exact: true }).click();
-  await page.getByRole('button', { name: 'Reload readings', exact: true }).click();
+  await preview(page).getByRole('switch', { name: 'Keep loading', exact: true }).click();
+  await preview(page).getByRole('button', { name: 'Reload readings', exact: true }).click();
   await expect(root).toHaveAttribute('aria-busy', 'true');
-  await page.getByRole('switch', { name: 'Keep loading', exact: true }).click();
+  await preview(page).getByRole('switch', { name: 'Keep loading', exact: true }).click();
   await expect(root).not.toHaveAttribute('aria-busy', 'true');
   expect(await root.getAttribute('data-zao-building')).toBeNull();
 });
@@ -450,8 +455,8 @@ test('forced colors draw a loading chart’s structure in CanvasText', async ({ 
     probe.remove();
     return color;
   });
-  await page.getByRole('switch', { name: 'Keep loading', exact: true }).click();
-  await page.getByRole('button', { name: 'Reload readings', exact: true }).click();
+  await preview(page).getByRole('switch', { name: 'Keep loading', exact: true }).click();
+  await preview(page).getByRole('button', { name: 'Reload readings', exact: true }).click();
   await expect(root).toHaveAttribute('aria-busy', 'true');
   await expect(root.locator('[data-zao-slot="chart-ruler"]')).toHaveCSS('stroke', canvasText);
 });
@@ -570,4 +575,476 @@ test('the share strip draws one stroke per point and names every part', async ({
   } finally {
     await narrow.close();
   }
+});
+
+/* Charts wave 2: prism bars, line events and forecast, histogram percentiles and comparison. */
+
+const forms = [
+  { slug: 'bar', form: 'prism', kind: 'bar-prism', marks: '[data-zao-slot="chart-mark"]' },
+  {
+    slug: 'line',
+    form: 'forecast',
+    kind: 'line-forecast',
+    marks: '[data-zao-slot="chart-mark"], [data-zao-slot="chart-forecast"]',
+  },
+  {
+    slug: 'histogram',
+    form: 'compare',
+    kind: 'histogram-compare',
+    marks: '[data-zao-slot="chart-mark"]',
+  },
+] as const;
+
+/** A second form's section and its chart, below the main preview. */
+function formSection(page: Page, form: string) {
+  return page.locator(`[data-zao-chart-form="${form}"]`);
+}
+
+function formChart(page: Page, form: string, kind: string) {
+  return formSection(page, form).locator(`figure[data-zao-chart="${kind}"]`);
+}
+
+/** The prisms' front faces, which carry the readings; planes come and go with inspection. */
+async function prismFaces(figure: Locator) {
+  return figure
+    .locator('[data-zao-slot="chart-prism-face"]')
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('d')));
+}
+
+/** Wait out finite animations, such as the colors easing after a mode switch. */
+async function settle(element: Locator) {
+  await element.evaluate(async (node) => {
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const animations = node
+      .getAnimations({ subtree: true })
+      .filter((animation) => animation.effect?.getTiming().iterations !== Infinity);
+    await Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)));
+  });
+}
+
+/** Boxes in page pixels, for checking that labels and lines keep apart. */
+async function boxes(locator: Locator) {
+  return locator.evaluateAll((nodes) =>
+    nodes.map((node) => node.getBoundingClientRect().toJSON() as DOMRect),
+  );
+}
+
+function apart(a: DOMRect, b: DOMRect) {
+  return a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+}
+
+test('the prism form is flat at rest, previews a bar in full, and keeps the selected bar', async ({
+  browser,
+  baseURL,
+}) => {
+  for (const viewport of [
+    { width: 1280, height: 900 },
+    { width: 320, height: 800 },
+  ]) {
+    const page = await browser.newPage({ baseURL, viewport });
+    try {
+      await page.goto('/charts/bar');
+      const prism = formChart(page, 'prism', 'bar-prism');
+      const prisms = prism.locator('[data-zao-prism]');
+      await expect(prisms).toHaveCount(6);
+      // At rest every bar is a flat front face: no planes and no plane outlines.
+      await expect(
+        prism.locator(
+          '[data-zao-slot="chart-prism-top"], [data-zao-slot="chart-prism-side"], [data-zao-slot="chart-prism-edges"]',
+        ),
+      ).toHaveCount(0);
+      const faces = await prisms.evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const face = (
+            node.querySelector('[data-zao-slot="chart-prism-face"]') as SVGGraphicsElement
+          ).getBBox();
+          return {
+            value: Number(node.querySelector('.chart-label')!.textContent!.replace(/,/g, '')),
+            left: face.x,
+            height: face.height,
+            bottom: face.y + face.height,
+          };
+        }),
+      );
+      // Front faces stand on one baseline at true height.
+      expect(new Set(faces.map((face) => face.bottom)).size).toBe(1);
+      const scale = faces[0]!.height / faces[0]!.value;
+      for (const face of faces) {
+        expect(Math.abs(face.height - face.value * scale)).toBeLessThan(1);
+      }
+      // The reference stays in the front plane: drawn after every prism.
+      expect(
+        await prism.evaluate((figure) => {
+          const reference = figure.querySelector('[data-zao-slot="chart-reference"]')!;
+          const prisms = figure.querySelectorAll('[data-zao-prism]');
+          return Boolean(
+            prisms[prisms.length - 1]!.compareDocumentPosition(reference) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+          );
+        }),
+      ).toBe(true);
+
+      // Inspecting a bar previews it alone in full: an ink face and one shared depth, clear of
+      // the next face. The readings never move.
+      const original = await prismFaces(prism);
+      await prism.locator('[data-zao-slot="chart-datum"][tabindex="0"]').focus();
+      const depths: number[] = [];
+      for (let index = 0; index < faces.length; index += 1) {
+        if (index) await page.keyboard.press('ArrowRight');
+        const raised = prism.locator('[data-zao-prism][data-depth="shown"]');
+        await expect(raised).toHaveCount(1);
+        await expect(prisms.nth(index)).toHaveAttribute('data-depth', 'shown');
+        await expect(
+          prisms.nth(index).locator('[data-zao-slot="chart-prism-face"]'),
+        ).toHaveAttribute('data-chart-fill', '');
+        const side = await prisms
+          .nth(index)
+          .locator('[data-zao-slot="chart-prism-side"]')
+          .evaluate((node) => {
+            const box = (node as SVGGraphicsElement).getBBox();
+            return { x: box.x, width: box.width };
+          });
+        depths.push(side.width);
+        if (index < faces.length - 1) {
+          expect(side.x + side.width).toBeLessThan(faces[index + 1]!.left);
+        }
+        expect(await prismFaces(prism)).toEqual(original);
+      }
+      expect(new Set(depths).size).toBe(1);
+      expect(depths[0]).toBeGreaterThanOrEqual(4);
+      await page.keyboard.press('Escape');
+      await expect(prism.locator('[data-zao-prism][data-depth="shown"]')).toHaveCount(0);
+
+      // One bar is built: the lead at rest, the selected one after Enter, the lead after Escape.
+      const built = prism.locator('[data-zao-prism][data-state="built"]');
+      await expect(built).toHaveCount(1);
+      await expect(built.locator('.chart-label').first()).toHaveText('412');
+      await expect(prism.locator('[data-zao-slot="chart-accent"]')).toHaveCount(1);
+      const [accent] = await boxes(prism.locator('[data-zao-slot="chart-accent"]'));
+      const [label] = await boxes(built.locator('.chart-label').first());
+      expect(accent!.right).toBeLessThanOrEqual(label!.left);
+      // The selected bar stays in full while another bar is previewed.
+      const shown = prism.locator('[data-zao-prism][data-depth="shown"]');
+      await page.keyboard.press('Home');
+      await page.keyboard.press('Enter');
+      await expect(built.locator('.chart-label').first()).toHaveText('318');
+      await expect(built).toHaveAttribute('data-depth', 'shown');
+      await page.keyboard.press('ArrowRight');
+      await expect(shown).toHaveCount(2);
+      await expect(prisms.nth(1)).toHaveAttribute('data-depth', 'shown');
+      await expect(built).toHaveAttribute('data-depth', 'shown');
+      expect(await prismFaces(prism)).toEqual(original);
+      await page.keyboard.press('Escape');
+      await expect(built.locator('.chart-label').first()).toHaveText('412');
+      await expect(shown).toHaveCount(0);
+
+      // With the pointer: hover previews, a click keeps the bar in full, and it stays so while
+      // the pointer previews another bar and after the pointer leaves.
+      await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+      const plot = await prism.locator('.chart-plot').boundingBox();
+      await page.mouse.move(plot!.x + plot!.width * 0.08, plot!.y + plot!.height * 0.6);
+      await expect(prisms.first()).toHaveAttribute('data-depth', 'shown');
+      await expect(shown).toHaveCount(1);
+      await page.mouse.click(plot!.x + plot!.width * 0.08, plot!.y + plot!.height * 0.6);
+      await expect(built.locator('.chart-label').first()).toHaveText('318');
+      await page.mouse.move(plot!.x + plot!.width * 0.9, plot!.y + plot!.height * 0.5);
+      await expect(prisms.last()).toHaveAttribute('data-depth', 'shown');
+      await expect(prisms.first()).toHaveAttribute('data-depth', 'shown');
+      await expect(shown).toHaveCount(2);
+      expect(await prismFaces(prism)).toEqual(original);
+      await page.mouse.move(0, 0);
+      await expect(shown).toHaveCount(1);
+      await expect(prisms.first()).toHaveAttribute('data-depth', 'shown');
+    } finally {
+      await page.close();
+    }
+  }
+});
+
+test('line events tick the ruler and are named in the readout and data view', async ({ page }) => {
+  const figure = await openChart(page, 'line');
+  const ticks = figure.locator('[data-zao-slot="chart-event"]');
+  await expect(ticks).toHaveCount(2);
+  const datums = figure.locator('[data-zao-slot="chart-datum"]');
+  const tickBoxes = await boxes(ticks);
+  for (const [index, name] of [
+    [19, 'Metrics collector restarted'],
+    [37, 'Deployed api 4.12'],
+  ] as const) {
+    await expect(datums.nth(index)).toHaveAttribute('aria-label', new RegExp(`, ${name}$`));
+    const datum = (await datums.nth(index).boundingBox())!;
+    const center = datum.x + datum.width / 2;
+    expect(tickBoxes.some((tick) => Math.abs(tick.left + tick.width / 2 - center) < 1)).toBe(true);
+  }
+  // Event labels keep to their lane: clear of each other and of the time labels.
+  const labels = await boxes(figure.locator('[data-zao-slot="chart-event-label"] .chart-label'));
+  expect(labels).toHaveLength(2);
+  const others = await boxes(figure.locator('.chart-plot > svg > .chart-label'));
+  labels.forEach((label, index) => {
+    labels.slice(index + 1).forEach((other) => expect(apart(label, other)).toBe(true));
+    others.forEach((other) => expect(apart(label, other)).toBe(true));
+  });
+
+  await expect(figure.locator('[data-zao-slot="chart-summary"]')).toContainText(
+    'It rose after the api 4.12 deploy 5 hours ago.',
+  );
+  await datums.first().focus();
+  await page.keyboard.press('End');
+  for (let step = 0; step < 10; step += 1) await page.keyboard.press('ArrowLeft');
+  await expect(figure.locator('[data-zao-slot="chart-readout"]')).toHaveText(
+    '−5 h · 122 ms · prev 114 ms · deploy',
+  );
+  await page.keyboard.press('Escape');
+  await figure.getByRole('button', { name: 'Show data', exact: true }).click();
+  const table = figure.getByRole('table', { name: 'p95 latency, last 24 hours data' });
+  await expect(table.locator('thead th').last()).toHaveText('Event');
+  await expect(table.locator('tbody tr').nth(37)).toContainText('Deployed api 4.12');
+});
+
+test('the forecast is drawn after "now" from its stated method', async ({ page }) => {
+  await page.goto('/charts/line');
+  const forecast = formChart(page, 'forecast', 'line-forecast');
+  const squares = forecast.locator('[data-zao-slot="chart-forecast"]');
+  await expect(squares).toHaveCount(8);
+  await expect(forecast.locator('[data-zao-slot="chart-scale"]')).toHaveText(
+    '30 min samples · 4 h forecast',
+  );
+  await expect(forecast.locator('[data-zao-slot="chart-summary"]')).toContainText(
+    "The forecast follows yesterday's curve, shifted by today's average difference over the last 6 hours, and stays between 137 and 178 ms through +4 h.",
+  );
+  // Hollow squares after "now"; the trace and the previous period stop at "now".
+  const layout = await forecast.evaluate((figure) => {
+    const box = (selector: string) =>
+      (figure.querySelector(selector) as SVGGraphicsElement).getBBox();
+    const now = box('[data-zao-slot="chart-accent"]');
+    const squares = [...figure.querySelectorAll('[data-zao-slot="chart-forecast"]')];
+    return {
+      now: now.x + now.width / 2,
+      trace: box('[data-zao-slot="chart-mark"]').x + box('[data-zao-slot="chart-mark"]').width,
+      prior:
+        box('[data-zao-slot="chart-reference"]').x + box('[data-zao-slot="chart-reference"]').width,
+      squares: squares.map((square) => (square as SVGGraphicsElement).getBBox().x),
+      fills: squares.map((square) => square.getAttribute('fill')),
+    };
+  });
+  expect(layout.trace).toBeLessThanOrEqual(layout.now + 1);
+  expect(layout.prior).toBeLessThanOrEqual(layout.now + 1);
+  layout.squares.forEach((x) => expect(x).toBeGreaterThan(layout.now));
+  expect(new Set(layout.fills)).toEqual(new Set(['none']));
+
+  const datums = forecast.locator('[data-zao-slot="chart-datum"]');
+  await expect(datums).toHaveCount(56);
+  await expect(datums.nth(50)).toHaveAttribute('aria-label', '+1.5 h: forecast 153 ms');
+  await datums.first().focus();
+  await page.keyboard.press('End');
+  const readout = forecast.locator('[data-zao-slot="chart-readout"]');
+  await expect(readout).toHaveText('+4 h · forecast 175 ms');
+  await page.keyboard.press('Escape');
+
+  const section = formSection(page, 'forecast');
+  await section.getByRole('switch', { name: 'Keep loading', exact: true }).click();
+  await section.getByRole('button', { name: 'Reload readings', exact: true }).click();
+  await expect(forecast).toHaveAttribute('aria-busy', 'true');
+  await expect(squares).toHaveCount(0);
+});
+
+test('the histogram marks p50, p95 and p99 with labels that never collide', async ({
+  browser,
+  baseURL,
+}) => {
+  for (const viewport of [
+    { width: 1280, height: 900 },
+    { width: 320, height: 800 },
+  ]) {
+    const page = await browser.newPage({ baseURL, viewport });
+    try {
+      await page.goto('/charts/histogram');
+      const figure = previewRoot(page, 'histogram');
+      const references = figure.locator('[data-zao-slot="chart-reference"]');
+      await expect(references).toHaveCount(3);
+      expect(
+        await references.evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute('data-percentile')),
+        ),
+      ).toEqual(['p50', 'p95', 'p99']);
+      await expect(figure.locator('[data-zao-slot="chart-summary"]')).toContainText(
+        viewport.width > 320
+          ? 'Half of sessions end within 11.5 minutes, 95% within 26 and 99% within 35.'
+          : /^Half of sessions end within [\d.]+ minutes, 95% within [\d.]+ and 99% within [\d.]+\./,
+      );
+      if (viewport.width > 320) {
+        await expect(figure.locator('[data-zao-slot="chart-reference-label"]')).toHaveText([
+          'p50 11.5 min',
+          'p95 26 min',
+          'p99 35 min',
+        ]);
+        // Each line sits at its bin's upper edge: p50 at 11.5 minutes ends bin 22.
+        const datum = (await figure
+          .locator('[data-zao-slot="chart-datum"]')
+          .nth(22)
+          .boundingBox())!;
+        const [p50] = await boxes(references.first());
+        expect(Math.abs(p50!.left + p50!.width / 2 - (datum.x + datum.width))).toBeLessThan(1);
+      }
+      // Labels never touch each other, and never cross another reference's line.
+      const labels = await figure
+        .locator('[data-zao-slot="chart-reference-label"]')
+        .evaluateAll((nodes) =>
+          nodes.map((node) => ({
+            name: node.getAttribute('data-percentile'),
+            box: node.getBoundingClientRect().toJSON() as DOMRect,
+          })),
+        );
+      expect(labels.length).toBeGreaterThanOrEqual(1);
+      const lines = await references.evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          name: node.getAttribute('data-percentile'),
+          box: node.getBoundingClientRect().toJSON() as DOMRect,
+        })),
+      );
+      labels.forEach((label, index) => {
+        labels.slice(index + 1).forEach((other) => expect(apart(label.box, other.box)).toBe(true));
+        lines
+          .filter((line) => line.name !== label.name)
+          .forEach((line) => expect(apart(label.box, line.box)).toBe(true));
+      });
+    } finally {
+      await page.close();
+    }
+  }
+});
+
+test('the comparison mirrors last week on the same bins and scale', async ({ page }) => {
+  await page.goto('/charts/histogram');
+  const compare = formChart(page, 'compare', 'histogram-compare');
+  await expect(compare.locator('[data-zao-slot="chart-summary"]')).toHaveText(
+    'Half of sessions end within 11.5 minutes this week, 1.5 minutes longer than last week.',
+  );
+  const readout = compare.locator('[data-zao-slot="chart-readout"]');
+  await expect(readout).toHaveText('1,400 this week · 1,310 last week');
+  await expect(compare.locator('[data-zao-slot="chart-accent"]')).toHaveCount(1);
+  await expect(
+    compare.locator('[data-zao-slot="chart-mark"][data-period="last"][data-chart-ink="data"]'),
+  ).toHaveCount(0);
+
+  // Equal counts are equal lengths: length per session is the same above and below.
+  const counts = await compare.locator('[data-zao-slot="chart-datum"]').evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const [, now, before] = node
+        .getAttribute('aria-label')!
+        .replace(/,(?=\d)/g, '')
+        .match(/: (\d+) sessions this week, (\d+) last week$/)!;
+      return [Number(now), Number(before)];
+    }),
+  );
+  const rates = await compare.locator('[data-zao-slot="chart-mark"]').evaluateAll((nodes) =>
+    nodes.map((node) => ({
+      period: node.getAttribute('data-period'),
+      bin: Number(node.getAttribute('data-bin')),
+      length: Math.abs(Number(node.getAttribute('y2')) - Number(node.getAttribute('y1'))),
+    })),
+  );
+  const perSession = rates.map(
+    (rate) => rate.length / counts[rate.bin]![rate.period === 'this' ? 0 : 1]!,
+  );
+  const busiest = rates.reduce((best, rate) => (rate.length > best.length ? rate : best));
+  for (const [index, rate] of rates.entries()) {
+    const count = counts[rate.bin]![rate.period === 'this' ? 0 : 1]!;
+    // Lengths are drawn to the scale plus half a pixel; compare against the busiest bin.
+    const expected =
+      ((busiest.length - 0.5) / counts[busiest.bin]![busiest.period === 'this' ? 0 : 1]!) * count +
+      0.5;
+    expect(Math.abs(rate.length - expected), `bin ${rate.bin} ${rate.period}`).toBeLessThan(0.01);
+    expect(perSession[index]).toBeGreaterThan(0);
+  }
+
+  await compare.getByRole('button', { name: 'Show data', exact: true }).click();
+  await expect(compare.getByRole('table').locator('thead th')).toHaveText([
+    'Session length',
+    'This week',
+    'Last week',
+  ]);
+  await compare.getByRole('button', { name: 'Hide data', exact: true }).click();
+
+  // Only this week updates.
+  const lastWeek = () =>
+    compare
+      .locator('[data-zao-slot="chart-mark"][data-period="last"]')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('y2')));
+  const before = await lastWeek();
+  await compare.getByRole('switch', { name: 'Simulate live updates', exact: true }).click();
+  await expect(readout).not.toHaveText('1,400 this week · 1,310 last week', { timeout: 5000 });
+  await expect(readout).toHaveText(/ · 1,310 last week$/);
+  expect(await lastWeek()).toEqual(before);
+  await compare.getByRole('switch', { name: 'Simulate live updates', exact: true }).click();
+});
+
+for (const finish of finishes) {
+  test(`${finish.name}: every second form is accessible, still, and loads as a drawing`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const form of forms) {
+      await openChart(page, form.slug, finish.mode);
+      const figure = formChart(page, form.form, form.kind);
+      await expect(figure).toHaveCount(1);
+      await settle(formSection(page, form.form));
+      const accessibility = await new AxeBuilder({ page })
+        .include(`[data-zao-chart-form="${form.form}"]`)
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .analyze();
+      expect(accessibility.violations).toEqual([]);
+      expect(await figure.evaluate((node) => node.getAnimations({ subtree: true }).length)).toBe(0);
+
+      const marks = figure.locator(form.marks);
+      expect(await marks.count()).toBeGreaterThan(0);
+      const section = formSection(page, form.form);
+      await section.getByRole('switch', { name: 'Keep loading', exact: true }).click();
+      const box = await figure.locator('.chart-plot').boundingBox();
+      await section.getByRole('button', { name: 'Reload readings', exact: true }).click();
+      await expect(figure).toHaveAttribute('aria-busy', 'true');
+      await expect(marks).toHaveCount(0);
+      expect(
+        (
+          await figure
+            .locator('[data-zao-slot="chart-summary"], [data-zao-slot="chart-readout"]')
+            .allTextContents()
+        ).join(' '),
+      ).not.toMatch(/\d/);
+      expect(await figure.locator('.chart-plot').boundingBox()).toEqual(box);
+      await section.getByRole('switch', { name: 'Keep loading', exact: true }).click();
+      await expect(figure).not.toHaveAttribute('aria-busy', 'true');
+    }
+  });
+}
+
+test('forced colors draw prisms in system colors', async ({ page }) => {
+  await page.emulateMedia({ forcedColors: 'active' });
+  await page.goto('/charts/bar');
+  const prism = formChart(page, 'prism', 'bar-prism');
+  const [canvasText, canvas] = await page.evaluate(() =>
+    ['CanvasText', 'Canvas'].map((color) => {
+      const probe = document.createElement('span');
+      probe.style.color = color;
+      document.body.append(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
+    }),
+  );
+  // Inspect the built bar so its planes are drawn.
+  await prism.locator('[data-zao-slot="chart-datum"][tabindex="0"]').focus();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  const built = prism.locator('[data-zao-prism][data-state="built"]');
+  await expect(built).toHaveAttribute('data-depth', 'shown');
+  await expect(built.locator('[data-zao-slot="chart-prism-face"]')).toHaveCSS('fill', canvasText!);
+  await expect(built.locator('[data-zao-slot="chart-prism-edges"]')).toHaveCSS(
+    'stroke',
+    canvasText!,
+  );
+  await expect(built.locator('[data-zao-slot="chart-prism-top"]')).toHaveCSS('fill', canvas!);
+  await expect(
+    prism.locator('[data-zao-prism][data-state="rest"] [data-zao-slot="chart-prism-face"]').first(),
+  ).toHaveCSS('fill', 'none');
 });

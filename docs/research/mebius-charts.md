@@ -150,7 +150,7 @@ Each answers a question the guideline's "Start with the question" list doesn't c
 
 The Oct 9 Charts plan kept scatter, stat tile and meter pages out of scope, so any new page needs Yankun's go-ahead and its own plan. Forecasts drawn as drawings would give the drawing state a second meaning (not yet real, as well as not yet loaded); that is Yankun's call too.
 
-Steps 1 and 2 are drafted as [charts wave 1](../plans/2026-10-charts-wave-1/README.md).
+Steps 1 and 2 are drafted as [charts wave 1](../plans/2026-10-charts-wave-1/README.md), and steps 3 and 4 as [charts wave 2](../plans/2026-10-charts-wave-2/README.md). Wave 2 takes up the line's events and forecast and the histogram's percentiles and mirrored comparison; the line's marginal comb and small multiples and the histogram's cumulative trace wait.
 
 ## Sources
 
