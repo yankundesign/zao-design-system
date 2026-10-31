@@ -633,7 +633,7 @@ function apart(a: DOMRect, b: DOMRect) {
   return a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
 }
 
-test('the prism form is flat at rest and shows depth only on the inspected bar', async ({
+test('the prism form is flat at rest, previews a bar in full, and keeps the selected bar', async ({
   browser,
   baseURL,
 }) => {
@@ -684,8 +684,8 @@ test('the prism form is flat at rest and shows depth only on the inspected bar',
         }),
       ).toBe(true);
 
-      // Inspecting a bar shows its depth alone: one shared depth, clear of the next face,
-      // and the readings never move.
+      // Inspecting a bar previews it alone in full: an ink face and one shared depth, clear of
+      // the next face. The readings never move.
       const original = await prismFaces(prism);
       await prism.locator('[data-zao-slot="chart-datum"][tabindex="0"]').focus();
       const depths: number[] = [];
@@ -694,6 +694,9 @@ test('the prism form is flat at rest and shows depth only on the inspected bar',
         const raised = prism.locator('[data-zao-prism][data-depth="shown"]');
         await expect(raised).toHaveCount(1);
         await expect(prisms.nth(index)).toHaveAttribute('data-depth', 'shown');
+        await expect(
+          prisms.nth(index).locator('[data-zao-slot="chart-prism-face"]'),
+        ).toHaveAttribute('data-chart-fill', '');
         const side = await prisms
           .nth(index)
           .locator('[data-zao-slot="chart-prism-side"]')
@@ -720,23 +723,38 @@ test('the prism form is flat at rest and shows depth only on the inspected bar',
       const [accent] = await boxes(prism.locator('[data-zao-slot="chart-accent"]'));
       const [label] = await boxes(built.locator('.chart-label').first());
       expect(accent!.right).toBeLessThanOrEqual(label!.left);
+      // The selected bar stays in full while another bar is previewed.
+      const shown = prism.locator('[data-zao-prism][data-depth="shown"]');
       await page.keyboard.press('Home');
       await page.keyboard.press('Enter');
       await expect(built.locator('.chart-label').first()).toHaveText('318');
       await expect(built).toHaveAttribute('data-depth', 'shown');
+      await page.keyboard.press('ArrowRight');
+      await expect(shown).toHaveCount(2);
+      await expect(prisms.nth(1)).toHaveAttribute('data-depth', 'shown');
+      await expect(built).toHaveAttribute('data-depth', 'shown');
       expect(await prismFaces(prism)).toEqual(original);
       await page.keyboard.press('Escape');
       await expect(built.locator('.chart-label').first()).toHaveText('412');
+      await expect(shown).toHaveCount(0);
 
-      // Pointer hover shows the hovered bar's depth, and leaving flattens it again.
+      // With the pointer: hover previews, a click keeps the bar in full, and it stays so while
+      // the pointer previews another bar and after the pointer leaves.
       await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
       const plot = await prism.locator('.chart-plot').boundingBox();
+      await page.mouse.move(plot!.x + plot!.width * 0.08, plot!.y + plot!.height * 0.6);
+      await expect(prisms.first()).toHaveAttribute('data-depth', 'shown');
+      await expect(shown).toHaveCount(1);
+      await page.mouse.click(plot!.x + plot!.width * 0.08, plot!.y + plot!.height * 0.6);
+      await expect(built.locator('.chart-label').first()).toHaveText('318');
       await page.mouse.move(plot!.x + plot!.width * 0.9, plot!.y + plot!.height * 0.5);
       await expect(prisms.last()).toHaveAttribute('data-depth', 'shown');
-      await expect(prism.locator('[data-zao-prism][data-depth="shown"]')).toHaveCount(1);
+      await expect(prisms.first()).toHaveAttribute('data-depth', 'shown');
+      await expect(shown).toHaveCount(2);
       expect(await prismFaces(prism)).toEqual(original);
       await page.mouse.move(0, 0);
-      await expect(prism.locator('[data-zao-prism][data-depth="shown"]')).toHaveCount(0);
+      await expect(shown).toHaveCount(1);
+      await expect(prisms.first()).toHaveAttribute('data-depth', 'shown');
     } finally {
       await page.close();
     }
@@ -1028,5 +1046,5 @@ test('forced colors draw prisms in system colors', async ({ page }) => {
   await expect(built.locator('[data-zao-slot="chart-prism-top"]')).toHaveCSS('fill', canvas!);
   await expect(
     prism.locator('[data-zao-prism][data-state="rest"] [data-zao-slot="chart-prism-face"]').first(),
-  ).toHaveCSS('fill', canvas!);
+  ).toHaveCSS('fill', 'none');
 });

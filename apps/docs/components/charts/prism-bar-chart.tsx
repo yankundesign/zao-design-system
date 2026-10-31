@@ -25,11 +25,18 @@ export function prismProportions(slot: number) {
 
 /**
  * Bar's prism form: its front face carries the reading at true height on the ruler (P6). At
- * rest every bar is a flat front face; the inspected bar (hover, focus, or the selection)
- * shows its depth, one shared depth along the depth axis, right and up (Oct 31 revision).
- * The selected bar, or the lead bar, is built (P3, P4). Nothing tweens (P5).
+ * rest every bar is a flat front face, and the lead bar is built in ink with the accent
+ * (P3, P4). Hovering or focusing a bar previews it in full: an ink face and its planes, one
+ * shared depth along the depth axis, right and up. Selecting it keeps it so while other bars
+ * are previewed (Yankun, Oct 31). Nothing tweens (P5).
  */
-export function PrismBarChart({ drawing = false }: { drawing?: boolean }) {
+export function PrismBarChart({
+  compact = false,
+  drawing = false,
+}: {
+  compact?: boolean;
+  drawing?: boolean;
+}) {
   const [plotRef, width] = useChartWidth<HTMLDivElement>();
   const [values, setValues] = useState(regionCalls);
   const simulation = useLiveSimulation(() => setValues((current) => stepRegionCalls(current)));
@@ -42,7 +49,7 @@ export function PrismBarChart({ drawing = false }: { drawing?: boolean }) {
   // The plot reserves the depth above the scale's top, so the tallest bar keeps its planes
   // and label inside it.
   const top = 28 + depth;
-  const height = 216 + depth;
+  const height = (compact ? 176 : 216) + depth;
   const baseline = height - 30;
   const y = (value: number) => baseline - (value / regionScaleMax) * (baseline - top);
   const { average, lead, summary, readout, table, data } = barReading(values, inspection.active, {
@@ -51,7 +58,8 @@ export function PrismBarChart({ drawing = false }: { drawing?: boolean }) {
     height,
   });
   const active = inspection.active;
-  const built = inspection.selected ?? lead;
+  const selected = inspection.selected;
+  const built = selected ?? lead;
   const averageY = crisp(y(average));
   const b = crisp(baseline);
 
@@ -65,14 +73,16 @@ export function PrismBarChart({ drawing = false }: { drawing?: boolean }) {
       readout={readout}
       unit="calls"
       announcement={inspection.announcement}
-      table={table}
+      table={compact ? undefined : table}
       drawing={drawing}
       drawingLabel="Loading calls by region"
       controls={
-        <LiveSimulationSwitch
-          running={simulation.running}
-          onRunningChange={simulation.setRunning}
-        />
+        compact ? undefined : (
+          <LiveSimulationSwitch
+            running={simulation.running}
+            onRunningChange={simulation.setRunning}
+          />
+        )
       }
     >
       <div ref={plotRef} className="chart-plot" style={{ height }}>
@@ -85,8 +95,10 @@ export function PrismBarChart({ drawing = false }: { drawing?: boolean }) {
                 const x1 = x0 + face - 1;
                 const h = Math.round(y(value)) + 0.5;
                 const isBuilt = index === built;
-                // Only the inspected bar shows its planes; the rest stay flat front faces.
                 const inspected = index === active;
+                // The previewed bar and the selected bar stand in full; the rest stay flat.
+                const raised = inspected || index === selected;
+                const inked = isBuilt || raised;
                 const center = (x0 + x1) / 2;
                 const labelY = h - depth - fen;
                 const label = count.format(value);
@@ -104,42 +116,38 @@ export function PrismBarChart({ drawing = false }: { drawing?: boolean }) {
                     data-zao-slot="chart-mark"
                     data-zao-prism=""
                     data-state={isBuilt ? 'built' : inspected ? 'active' : 'rest'}
-                    data-depth={inspected ? 'shown' : undefined}
+                    data-depth={raised ? 'shown' : undefined}
                   >
-                    {inspected && (
+                    {raised && (
                       <>
                         <path
                           data-zao-slot="chart-prism-top"
-                          className={isBuilt ? 'chart-prism-plane-top' : 'chart-prism-ground'}
+                          className="chart-prism-plane-top"
                           d={topPlane}
                         />
                         <path
                           data-zao-slot="chart-prism-side"
-                          className={isBuilt ? 'chart-prism-plane-side' : 'chart-prism-ground'}
+                          className="chart-prism-plane-side"
                           d={sidePlane}
                         />
+                        {/* Unpainted until forced colors outline the planes. */}
                         <path
                           data-zao-slot="chart-prism-edges"
-                          className={isBuilt ? 'chart-prism-edges is-built' : 'chart-prism-edges'}
+                          className="chart-prism-edges"
                           d={edges}
                         />
                       </>
                     )}
                     <path
                       data-zao-slot="chart-prism-face"
-                      data-chart-ink={isBuilt || inspected ? 'data' : 'muted'}
-                      data-chart-fill={isBuilt ? '' : undefined}
-                      className={isBuilt ? undefined : 'chart-prism-ground'}
+                      data-chart-ink={inked ? 'data' : 'muted'}
+                      data-chart-fill={inked ? '' : undefined}
                       d={front}
-                      fill={isBuilt ? 'var(--zao-color-fg-default)' : undefined}
-                      stroke={
-                        isBuilt || inspected
-                          ? 'var(--zao-color-fg-default)'
-                          : 'var(--zao-color-fg-muted)'
-                      }
+                      fill={inked ? 'var(--zao-color-fg-default)' : 'none'}
+                      stroke={inked ? 'var(--zao-color-fg-default)' : 'var(--zao-color-fg-muted)'}
                       strokeWidth="1"
                     />
-                    <ChartLabel x={center} y={labelY} strong={isBuilt || inspected}>
+                    <ChartLabel x={center} y={labelY} strong={inked}>
                       {label}
                     </ChartLabel>
                     {isBuilt && (
