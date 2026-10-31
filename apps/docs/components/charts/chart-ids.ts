@@ -10,3 +10,6 @@ export const chartOrder: readonly ChartId[] = [
   'heatmap',
   'histogram',
 ];
+
+/** A second form shown in its own section on a chart's page (charts wave 2). */
+export type ChartForm = 'prism' | 'forecast' | 'compare';

@@ -4,7 +4,7 @@ import { getQuietInstrumentStudy } from '@/lib/style-studies';
 import { ChartStudy } from './chart-study';
 import { ChartPreview } from './chart-preview';
 import { ChartStates } from './chart-states';
-import type { ChartId } from './chart-ids';
+import type { ChartForm, ChartId } from './chart-ids';
 
 interface ChartDefinition {
   title: string;
@@ -14,6 +14,8 @@ interface ChartDefinition {
   accessibility: string;
   /** Finished readings for the edge cases a chart input must define. */
   states?: string;
+  /** A second form of the chart, previewed in its own section (charts wave 2). */
+  form?: { id: ChartForm; heading: string; description: string; use: string[] };
 }
 
 const frameSlots = (series: string, scale: string, readout: string, unit: string) => [
@@ -153,6 +155,7 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
       'Give the bar the story is about the accent head and full ink; keep the rest in muted ink.',
       'A dashed line marks the average or target, with its value written beside it.',
       'Use segmented level-meter bars only when the data really is a level or comes in steps.',
+      'For a few categories that are a screen’s main figure, use the prism form below.',
     ],
     anatomy: [
       { part: 'Baseline', detail: 'A solid hairline ruler with end stops.' },
@@ -171,6 +174,17 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
     ],
     accessibility:
       'The chart is one tab stop. Arrow keys, Home, and End move between bars; each bar is a native button named with its region and value. Pointer inspection uses the nearest bar across the whole plot. Enter, Space, or a tap selects; Escape clears. Every value is also written on the chart and the summary names the leader.',
+    form: {
+      id: 'prism',
+      heading: 'Prism form',
+      description:
+        'The same reading as dimensional bars. At rest each bar is a flat front face carrying the value at true height on the ruler. Hover, focus, or select a bar to see its depth; select it to build it.',
+      use: [
+        'Use the prism form where a few categories are a screen’s main figure, such as a report’s cover or a summary header. Use needles in dense dashboards and wherever several charts sit together.',
+        'Only the inspected bar shows its depth, a third of the face, the same for every bar. The front faces never move, the dashed average stays in the front plane, and nothing sits on a back wall.',
+        'Whether the depth helps comprehension is a hypothesis until a comparison with needles supports it.',
+      ],
+    },
   },
   line: {
     title: 'Line',
@@ -179,6 +193,7 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
       'Use a line for one measure over a continuous time axis with a named period and unit.',
       'Draw one faint stroke per sample under the trace. A missing reading is a missing stroke and a break in the trace; never bridge it.',
       'Show the previous period as a dashed trace, and put the accent square on the latest sample.',
+      'Mark events such as deploys and restarts with a tick through the ruler and a short label in their own lane. The readout, the sample’s name and the data view carry the full name.',
       'With live data, the trace scrolls left one sample at a time and the "now" end stays fixed.',
     ],
     anatomy: [
@@ -194,10 +209,31 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
       { part: 'Trace', detail: 'A 1.5px fg-default line that breaks at missing readings.' },
       { part: 'Reference', detail: 'The previous period as a dashed fg-muted trace.' },
       { part: 'Accent', detail: 'The latest sample, in ink.' },
-      ...frameSlots('latency.p95', 'the sampling interval', 'time, value, previous value', 'ms'),
+      {
+        part: 'Events',
+        detail:
+          'A 1px fg-muted tick through the ruler, from 6px above to 10px below, with a short mono label in the lane below the time labels.',
+      },
+      ...frameSlots(
+        'latency.p95',
+        'the sampling interval',
+        'time, value, previous value, event',
+        'ms',
+      ),
     ],
     accessibility:
-      'One tab stop with arrow-key movement across samples; each sample is a native button that names its time, value or missing reading, and previous value. The summary states the latest value, its change, and how many readings are missing. Inspection draws a guide without moving the data.',
+      'One tab stop with arrow-key movement across samples; each sample is a native button that names its time, value or missing reading, previous value, and any event. The summary states the latest value, its change, what followed the latest event, and how many readings are missing. Inspection draws a guide without moving the data.',
+    form: {
+      id: 'forecast',
+      heading: 'Forecast',
+      description:
+        'The same line with 4 hours of forecast after "now", drawn as hollow samples: the past is built, and the future is a drawing.',
+      use: [
+        'Show a forecast only from a stated method on real history, and name the method in the summary. Never extend a line by eye.',
+        'This forecast takes the same time yesterday, shifted by today’s average difference from yesterday over the last 6 hours. With fewer than 6 of those readings there is no forecast, and the summary says so.',
+        'Forecast samples are inspectable and named "forecast"; the data view lists them in their own column.',
+      ],
+    },
   },
   heatmap: {
     title: 'Heatmap',
@@ -228,18 +264,33 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
     use: [
       'Use a histogram for the distribution of one measure, with a named bin width.',
       'Draw one hairline per bin. Keep at least 3px between strokes; on narrow screens the chart merges bins and says so in the scale slot.',
-      'A dashed line marks the median. The accent square marks the bin of the latest observation.',
-      'With live data, new observations grow the comb and move the median.',
+      'Dashed lines mark p50, p95 and p99, each labeled with its value. The accent square marks the bin of the latest observation.',
+      'With live data, new observations grow the comb and move the percentiles.',
     ],
     anatomy: [
       { part: 'Comb', detail: 'One 1px fg-default stroke per bin from a solid baseline.' },
       { part: 'Ruler', detail: 'Graduations every 5 minutes, labeled every 15.' },
-      { part: 'Reference', detail: 'The dashed median, labeled with its value.' },
+      {
+        part: 'References',
+        detail:
+          'Dashed p50, p95 and p99 at their bins’ upper edges. Labels share one row and step into a second only where they would touch.',
+      },
       { part: 'Accent', detail: 'The latest observation’s bin, in ink.' },
       ...frameSlots('session.length', 'the bin width', 'bin range and count', 'sessions'),
     ],
     accessibility:
-      'One tab stop with arrow-key movement across bins; each bin is a native button that names its range and count. Inspecting a bin mutes the others without changing any length. The summary states the median, the most common length, and the tail.',
+      'One tab stop with arrow-key movement across bins; each bin is a native button that names its range and count. Inspecting a bin mutes the others without changing any length. The summary states p50, p95 and p99 and the most common length.',
+    form: {
+      id: 'compare',
+      heading: 'Compared with last week',
+      description:
+        'This week rises above the ruler and last week hangs below it, with the same bins and the same scale, so equal counts are equal lengths.',
+      use: [
+        'Use a mirrored comparison for two periods of the same measure. Each half marks its own median.',
+        'Only the current period updates; last week is finished.',
+        'Each bin is one datum covering both weeks, and the data view lists both.',
+      ],
+    },
   },
 };
 
@@ -280,6 +331,29 @@ export async function ChartDetail({ chart }: { chart: ChartId }) {
           </p>
         )}
       </section>
+
+      {definition.form && (
+        <section
+          className="docs-detail-section grid gap-5 border-t border-subtle pt-5"
+          data-zao-chart-form={definition.form.id}
+        >
+          <div className="flex flex-col gap-1">
+            <h2 className="type-heading">{definition.form.heading}</h2>
+            <p className="max-w-2xl type-body text-muted">{definition.form.description}</p>
+          </div>
+          <ChartStudy
+            label={`${definition.title} ${definition.form.heading.toLowerCase()}`}
+            cssUrl={quietStudy ? quietStudy.cssUrl : null}
+          >
+            <ChartPreview chart={chart} form={definition.form.id} />
+          </ChartStudy>
+          <ul className="flex max-w-2xl list-disc flex-col gap-2 pl-4 type-body text-muted">
+            {definition.form.use.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {definition.states && (
         <section className="docs-detail-section grid gap-5 border-t border-subtle pt-5">

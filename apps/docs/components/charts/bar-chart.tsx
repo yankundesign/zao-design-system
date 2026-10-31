@@ -7,7 +7,54 @@ import { regionCalls, regions, regionScaleMax, stepRegionCalls } from './data';
 import { crisp, useChartWidth } from './use-chart-width';
 import { LiveSimulationSwitch, useLiveSimulation } from './use-live-simulation';
 
-const count = new Intl.NumberFormat('en-US');
+export const count = new Intl.NumberFormat('en-US');
+
+/**
+ * Everything Bar says about its readings, shared by the needles and the prism form so their
+ * summary, readout, accessible names and data view never drift apart.
+ */
+export function barReading(
+  values: readonly number[],
+  active: number | null,
+  plot: { left: number; slot: number; height: number },
+) {
+  const average = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+  const lead = values.indexOf(Math.max(...values));
+  const signed = (value: number) => {
+    const difference = value - average;
+    return `${difference >= 0 ? '+' : '−'}${Math.abs(difference)}`;
+  };
+  const versus = (value: number) => `${signed(value)} vs avg`;
+  const compared = (value: number) => {
+    const difference = value - average;
+    if (difference === 0) return `at the ${average} average`;
+    return `${Math.abs(difference)} ${difference > 0 ? 'above' : 'below'} the ${average} average`;
+  };
+
+  const data = values.map((value, index) => ({
+    x: plot.left + plot.slot * index,
+    y: 0,
+    width: plot.slot,
+    height: plot.height,
+    label: `${regions[index]!.name}: ${count.format(value)} calls, ${compared(value)}`,
+  }));
+  const table = {
+    columns: [
+      { label: 'Region' },
+      { label: 'Calls', numeric: true },
+      { label: 'Difference from average', numeric: true },
+    ],
+    rows: values.map((value, index) => [regions[index]!.name, count.format(value), signed(value)]),
+  };
+  const readout =
+    active === null
+      ? `${values.length} regions · avg ${average}`
+      : `${regions[active]!.id} · ${count.format(values[active]!)} calls · ${versus(values[active]!)}`;
+  const summary = `${regions[lead]!.name} leads with ${count.format(values[lead]!)} calls, ${
+    values[lead]! - average
+  } above the ${average} average.`;
+  return { average, lead, summary, readout, table, data };
+}
 
 /** Bars as needles with square heads on one baseline; the lead bar carries the accent. */
 export function BarChart({
@@ -29,42 +76,12 @@ export function BarChart({
   const baseline = height - 30;
   const slot = (right - left) / values.length;
   const y = (value: number) => baseline - (value / regionScaleMax) * (baseline - top);
-  const average = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
-  const lead = values.indexOf(Math.max(...values));
-  const active = inspection.active;
-  const signed = (value: number) => {
-    const difference = value - average;
-    return `${difference >= 0 ? '+' : '−'}${Math.abs(difference)}`;
-  };
-  const versus = (value: number) => `${signed(value)} vs avg`;
-  const compared = (value: number) => {
-    const difference = value - average;
-    if (difference === 0) return `at the ${average} average`;
-    return `${Math.abs(difference)} ${difference > 0 ? 'above' : 'below'} the ${average} average`;
-  };
-
-  const data = values.map((value, index) => ({
-    x: left + slot * index,
-    y: 0,
-    width: slot,
+  const { average, lead, summary, readout, table, data } = barReading(values, inspection.active, {
+    left,
+    slot,
     height,
-    label: `${regions[index]!.name}: ${count.format(value)} calls, ${compared(value)}`,
-  }));
-  const table = {
-    columns: [
-      { label: 'Region' },
-      { label: 'Calls', numeric: true },
-      { label: 'Difference from average', numeric: true },
-    ],
-    rows: values.map((value, index) => [regions[index]!.name, count.format(value), signed(value)]),
-  };
-  const readout =
-    active === null
-      ? `${values.length} regions · avg ${average}`
-      : `${regions[active]!.id} · ${count.format(values[active]!)} calls · ${versus(values[active]!)}`;
-  const summary = `${regions[lead]!.name} leads with ${count.format(values[lead]!)} calls, ${
-    values[lead]! - average
-  } above the ${average} average.`;
+  });
+  const active = inspection.active;
   const averageY = crisp(y(average));
 
   return (
