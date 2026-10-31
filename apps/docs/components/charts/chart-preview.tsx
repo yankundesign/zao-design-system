@@ -3,7 +3,7 @@
 import { Button, Switch } from '@zao/react';
 import { useEffect, useRef, useState } from 'react';
 import { ChartSpecimen } from './chart-specimens';
-import type { ChartId } from './chart-ids';
+import type { ChartForm, ChartId } from './chart-ids';
 
 /** How long the local simulation keeps a chart drawn before its readings arrive. */
 const loadMs = 1800;
@@ -12,7 +12,7 @@ const loadMs = 1800;
  * A chart page's preview, with a local simulation of readings loading: the chart shows its
  * drawing, then builds when the readings arrive (charts wave 1, C3).
  */
-export function ChartPreview({ chart }: { chart: ChartId }) {
+export function ChartPreview({ chart, form }: { chart: ChartId; form?: ChartForm }) {
   const [drawing, setDrawing] = useState(false);
   const [keepLoading, setKeepLoading] = useState(false);
   const timer = useRef<number | null>(null);
@@ -41,7 +41,7 @@ export function ChartPreview({ chart }: { chart: ChartId }) {
 
   return (
     <div className="flex min-w-0 flex-col gap-5">
-      <ChartSpecimen chart={chart} drawing={drawing} />
+      <ChartSpecimen chart={chart} drawing={drawing} form={form} />
       <div
         data-zao-slot="chart-loading-demo"
         className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-subtle pt-3"

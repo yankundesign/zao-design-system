@@ -39,7 +39,35 @@ function latencyAt(index: number, random: () => number) {
   return Math.round(118 + 38 * Math.sin(index / 6.5) + 18 * random() + (index > 36 ? 22 : 0));
 }
 
-export function initialLatency() {
+/** Something that happened to the service, attached to the sample it falls on (wave 2, E1). */
+export interface LatencyEvent {
+  /** The sample the event falls on; it scrolls left with its sample. */
+  index: number;
+  /** Short label in the event lane. */
+  label: string;
+  /** Full name, for the readout's accessible name and the data view. */
+  name: string;
+  /** How the summary refers to it. */
+  noun: string;
+}
+
+const latencyEvents: readonly LatencyEvent[] = [
+  {
+    index: 19,
+    label: 'restart',
+    name: 'Metrics collector restarted',
+    noun: 'the metrics collector restart',
+  },
+  { index: 37, label: 'deploy', name: 'Deployed api 4.12', noun: 'the api 4.12 deploy' },
+];
+
+export interface LatencySeries {
+  current: (number | null)[];
+  previous: number[];
+  events: readonly LatencyEvent[];
+}
+
+export function initialLatency(): LatencySeries {
   const random = seeded(23);
   const current: (number | null)[] = [];
   const previous: number[] = [];
@@ -48,13 +76,10 @@ export function initialLatency() {
     current.push(missingSamples.has(index) ? null : value);
     previous.push(Math.round(108 + 34 * Math.sin(index / 6.5 + 0.5) + 14 * random()));
   }
-  return { current, previous };
+  return { current, previous, events: latencyEvents };
 }
 
-export function stepLatency(
-  series: { current: (number | null)[]; previous: number[] },
-  random = Math.random,
-) {
+export function stepLatency(series: LatencySeries, random = Math.random): LatencySeries {
   const last = [...series.current].reverse().find((value) => value !== null) ?? 140;
   const next = Math.round(
     Math.min(latencyScaleMax - 20, Math.max(60, last + (random() - 0.5) * 34)),
@@ -66,7 +91,36 @@ export function stepLatency(
   return {
     current: [...series.current.slice(1), next],
     previous: [...series.previous.slice(1), prevNext],
+    events: series.events
+      .map((event) => ({ ...event, index: event.index - 1 }))
+      .filter((event) => event.index >= 0),
   };
+}
+
+/** The forecast's horizon: 4 hours of 30-minute samples (wave 2, E3). */
+export const forecastSamples = 8;
+/** The forecast's shift is today's mean difference from yesterday over this many samples. */
+const forecastWindow = 12;
+
+/**
+ * Same time yesterday, shifted by today's mean difference from yesterday over the last
+ * 6 hours (E3). Yesterday at `now + k` samples is today's sample `k - 1`, 24 hours earlier.
+ * Without at least half the window's readings there is no forecast.
+ */
+export function forecastLatency(series: LatencySeries) {
+  const last = series.current.length - 1;
+  const differences: number[] = [];
+  for (let index = last - forecastWindow + 1; index <= last; index += 1) {
+    const value = series.current[index];
+    if (value !== null && value !== undefined) differences.push(value - series.previous[index]!);
+  }
+  if (differences.length < forecastWindow / 2) return null;
+  const shift = differences.reduce((sum, value) => sum + value, 0) / differences.length;
+  const values = Array.from({ length: forecastSamples }, (_, step) => {
+    const yesterday = series.current[step];
+    return yesterday === null || yesterday === undefined ? null : Math.round(yesterday + shift);
+  });
+  return { shift, values };
 }
 
 /* Heatmap: events per hour this week. "Now" is Friday 15:00. */
@@ -116,24 +170,33 @@ export function activityStep(value: number) {
 export const sessionBins = 120;
 export const sessionBinMinutes = 0.5;
 
-function sampleSessionMinutes(random: () => number) {
-  // Log-normal around 12 minutes with a long tail.
+function sampleSessionMinutes(random: () => number, typical = 11) {
+  // Log-normal around the typical length with a long tail.
   const normal = (random() + random() + random() + random() - 2) * 1.2;
-  return Math.exp(Math.log(11) + 0.72 * normal);
+  return Math.exp(Math.log(typical) + 0.72 * normal);
 }
 
-export function initialSessions() {
-  const random = seeded(7);
+function sessionsFrom(seed: number, count: number, typical: number) {
+  const random = seeded(seed);
   const bins = new Array<number>(sessionBins).fill(0);
   let latest = 0;
-  for (let index = 0; index < 1400; index += 1) {
-    const bin = Math.floor(sampleSessionMinutes(random) / sessionBinMinutes);
+  for (let index = 0; index < count; index += 1) {
+    const bin = Math.floor(sampleSessionMinutes(random, typical) / sessionBinMinutes);
     if (bin < sessionBins) {
       bins[bin]! += 1;
       latest = bin;
     }
   }
   return { bins, latest };
+}
+
+export function initialSessions() {
+  return sessionsFrom(7, 1400, 11);
+}
+
+/** Last week's sessions, for the mirrored comparison (wave 2, H2). Finished: it never changes. */
+export function lastWeekSessions() {
+  return sessionsFrom(19, 1310, 10.2).bins;
 }
 
 export function stepSessions(series: { bins: number[]; latest: number }, random = Math.random) {
