@@ -364,11 +364,12 @@ for (const study of studies) {
           };
         });
       const expectFrame = (reading: Awaited<ReturnType<typeof frame>>) => {
-        // Oct 15 (cards A and C): the edges facing the light are lit and the edges meeting the
-        // planes are in shade, in each mode's own direction.
+        // Oct 15 (cards A and C): the edges facing the light are lit, in each mode's own
+        // direction. The planes' near bands paint the edges meeting them, so the native border
+        // stays lit all round: Chromium mitres a bevelled border with unequal opposite sides
+        // across the whole box.
         const lit = mode === 'light' ? reading.subtleBorder : reading.strongBorder;
-        const shaded = mode === 'light' ? reading.strongBorder : reading.subtleBorder;
-        expect(reading.edges).toEqual({ top: lit, right: lit, bottom: shaded, left: shaded });
+        expect(reading.edges).toEqual({ top: lit, right: lit, bottom: lit, left: lit });
         // One faceted leading corner (V4); the other three stay square.
         expect(reading.radii).toEqual(['0px', reading.facet, '0px', '0px']);
         expect(reading.frontStroke).toBe(reading.stroke);
@@ -407,6 +408,61 @@ for (const study of studies) {
         expectFrame(await frame());
         await expectSamples(`Card ${depth}px rest`, depth);
         expect(await documentBoxes(targets)).toEqual(layout);
+      }
+    });
+
+    test(`${study.name}, ${mode}: Card paints each lit edge in one tone past 2:1 either way`, async ({
+      page,
+    }) => {
+      // A bevelled border with unequal opposite sides once drew the shaded side along the middle
+      // of the lit one: w − 2h of the top edge on a wide Card, h − 2w of the right on a tall one.
+      const island = await openSurface(page, 'card', study.realQuietInstrument, mode);
+      const card = island
+        .getByRole('tabpanel', { name: 'Split', exact: true })
+        .locator('[data-zao-component="card"]')
+        .first();
+      for (const [width, height, edge] of [
+        [480, 120, 'top'],
+        [100, 300, 'right'],
+      ] as const) {
+        await card.evaluate(
+          (node, size) => {
+            node.replaceChildren();
+            Object.assign((node as HTMLElement).style, {
+              flex: 'none',
+              width: `${size.width}px`,
+              height: `${size.height}px`,
+            });
+          },
+          { width, height },
+        );
+        await card.scrollIntoViewIfNeeded();
+        const box = (await card.boundingBox())!;
+        // Clear of the faceted corner and the mitres at each end.
+        const clip =
+          edge === 'top'
+            ? { x: box.x + 8, y: box.y, width: box.width - 16, height: 1 }
+            : { x: box.x + box.width - 1, y: box.y + 8, width: 1, height: box.height - 16 };
+        const image = await page.screenshot({ clip });
+        const spread = await page.evaluate(async (png) => {
+          const image = new Image();
+          image.src = `data:image/png;base64,${png}`;
+          await image.decode();
+          const canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          const context = canvas.getContext('2d')!;
+          context.drawImage(image, 0, 0);
+          const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+          let spread = 0;
+          for (let index = 4; index < pixels.length; index += 4) {
+            for (let channel = 0; channel < 3; channel++) {
+              spread = Math.max(spread, Math.abs(pixels[index + channel]! - pixels[channel]!));
+            }
+          }
+          return spread;
+        }, image.toString('base64'));
+        expect(spread, `${width}×${height} Card, ${edge} edge`).toBeLessThanOrEqual(2);
       }
     });
   }
