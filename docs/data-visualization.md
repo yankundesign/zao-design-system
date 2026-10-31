@@ -65,7 +65,7 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 - A dashed line marks the average or target, with its value as a label.
 - Segmented bars, like a level meter, fit only when the data is a level or comes in steps. Otherwise they round away precision.
 - Live updates step the needles to new values.
-- **Prism form**, where a few categories are a screen's main figure. At rest every bar is a flat front face, with no planes and no plane outlines. Hovering, focusing or selecting a bar shows its depth: it recedes along the depth axis by one depth, a third of its face, shared by every bar in the plot. A drawn bar shows its planes as `border-default` outlines. The selected bar, or the lead bar when nothing is selected, is built: an ink face, with flat planes stepping toward the canvas when it shows its depth, and the accent square beside its value. Depth appears and leaves at once; nothing grows, and the front faces never move. Needles stay the default.
+- **Prism form**, where a few categories are a screen's main figure. At rest every bar is a flat front face, with no planes and no plane outlines, and the lead bar is built in ink with the accent square beside its value. Hovering or focusing a bar previews it in full: an ink face and flat planes stepping toward the canvas, receding along the depth axis by one depth, a third of its face, shared by every bar in the plot. Selecting a bar keeps it in full, with the accent square, while other bars are previewed and until the selection is cleared. Depth appears and leaves at once; nothing grows, and the front faces never move. Needles stay the default.
 
 ### Line: change over time
 

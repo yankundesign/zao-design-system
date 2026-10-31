@@ -178,10 +178,10 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
       id: 'prism',
       heading: 'Prism form',
       description:
-        'The same reading as dimensional bars. At rest each bar is a flat front face carrying the value at true height on the ruler. Hover, focus, or select a bar to see its depth; select it to build it.',
+        'The same reading as dimensional bars. At rest each bar is a flat front face carrying the value at true height on the ruler. Hover or focus a bar to preview it in 3D; click, tap, or press Enter to keep it.',
       use: [
         'Use the prism form where a few categories are a screen’s main figure, such as a report’s cover or a summary header. Use needles in dense dashboards and wherever several charts sit together.',
-        'Only the inspected bar shows its depth, a third of the face, the same for every bar. The front faces never move, the dashed average stays in the front plane, and nothing sits on a back wall.',
+        'Only the previewed bar and the selected bar show their depth, a third of the face, the same for every bar. The selected bar stays in 3D while you preview others. The front faces never move, the dashed average stays in the front plane, and nothing sits on a back wall.',
         'Whether the depth helps comprehension is a hypothesis until a comparison with needles supports it.',
       ],
     },

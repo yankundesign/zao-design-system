@@ -103,14 +103,10 @@
 }
 
 /*
- * Bar's prism form (charts wave 2, P2-P3): resting prisms are drawings filled with the ground
- * the chart sits on, so hidden edges never show; the built prism's planes step toward the
- * canvas in flat tones. Never a gradient, blur or shadow.
+ * Bar's prism form (charts wave 2, P2-P3): a resting face is an open outline; a bar in full
+ * shows its planes stepping toward the canvas in flat tones. Never a gradient, blur or shadow.
+ * Forced colors outline the planes instead.
  */
-.chart-prism-ground {
-  fill: var(--zao-color-bg-canvas);
-}
-
 .chart-prism-plane-top {
   fill: var(--zao-color-border-strong);
 }
@@ -121,22 +117,16 @@
 
 .chart-prism-edges {
   fill: none;
-  stroke: var(--zao-color-border-default);
+  stroke: none;
   stroke-width: var(--zao-stroke-hairline, 1px);
 }
 
-.chart-prism-edges.is-built {
-  stroke: none;
-}
-
 @media (forced-colors: active) {
-  .chart-prism-ground,
   .chart-prism-plane-top,
   .chart-prism-plane-side {
     fill: Canvas;
   }
-  .chart-prism-edges,
-  .chart-prism-edges.is-built {
+  .chart-prism-edges {
     stroke: CanvasText;
   }
 }
