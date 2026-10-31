@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { AccentSquare, ChartFrame, ChartLabel, Ruler } from './chart-frame';
+import {
+  AccentSquare,
+  ChartFrame,
+  ChartLabel,
+  Ruler,
+  fittedDash,
+  polylineLength,
+} from './chart-frame';
 import { ChartInspector, useInspection } from './chart-inspector';
 import {
   formatMinutes,
@@ -16,7 +23,13 @@ import { LiveSimulationSwitch, useLiveSimulation } from './use-live-simulation';
 const spoken = ['No', 'One', 'Two', 'Three', 'Four', 'Five'];
 
 /** A trace over one faint stroke per sample; gaps stay gaps and "now" stays fixed. */
-export function LineChart({ compact = false }: { compact?: boolean }) {
+export function LineChart({
+  compact = false,
+  drawing = false,
+}: {
+  compact?: boolean;
+  drawing?: boolean;
+}) {
   const [plotRef, width] = useChartWidth<HTMLDivElement>();
   const [series, setSeries] = useState(initialLatency);
   const simulation = useLiveSimulation(() => setSeries((current) => stepLatency(current)));
@@ -42,8 +55,12 @@ export function LineChart({ compact = false }: { compact?: boolean }) {
     const command = index === 0 || current[index - 1] === null ? 'M' : 'L';
     trace += `${command}${x(index).toFixed(1)} ${y(value).toFixed(1)}`;
   });
-  const prior = previous
-    .map((value, index) => `${index ? 'L' : 'M'}${x(index).toFixed(1)} ${y(value).toFixed(1)}`)
+  const priorPoints = previous.map((value, index) => ({
+    x: Number(x(index).toFixed(1)),
+    y: Number(y(value).toFixed(1)),
+  }));
+  const prior = priorPoints
+    .map((point, index) => `${index ? 'L' : 'M'}${point.x} ${point.y}`)
     .join('');
 
   const latest = current[last] ?? null;
@@ -73,6 +90,18 @@ export function LineChart({ compact = false }: { compact?: boolean }) {
     height,
     label: `${when(index)}: ${value === null ? 'no reading' : `${value} ms`}, previous ${previous[index]} ms`,
   }));
+  const table = {
+    columns: [
+      { label: 'Time' },
+      { label: 'p95 (ms)', numeric: true },
+      { label: 'Previous (ms)', numeric: true },
+    ],
+    rows: current.map((value, index) => [
+      when(index),
+      value === null ? 'No reading' : `${value}`,
+      `${previous[index]}`,
+    ]),
+  };
 
   return (
     <ChartFrame
@@ -84,6 +113,9 @@ export function LineChart({ compact = false }: { compact?: boolean }) {
       readout={readout}
       unit="ms"
       announcement={inspection.announcement}
+      table={compact ? undefined : table}
+      drawing={drawing}
+      drawingLabel="Loading p95 latency"
       controls={
         compact ? undefined : (
           <LiveSimulationSwitch
@@ -105,93 +137,104 @@ export function LineChart({ compact = false }: { compact?: boolean }) {
                 y2={crisp(y(value))}
                 stroke="var(--zao-color-border-subtle)"
               />
-              <ChartLabel x={left - 8} y={y(value) + 4} anchor="end">
-                {value}
-              </ChartLabel>
-            </g>
-          ))}
-          <ChartLabel x={left - 8} y={baseline + 4} anchor="end">
-            0
-          </ChartLabel>
-          {current.map((value, index) =>
-            value === null ? null : (
-              <line
-                key={index}
-                data-zao-slot="chart-sample"
-                data-chart-ink="muted"
-                x1={crisp(x(index))}
-                x2={crisp(x(index))}
-                y1={crisp(baseline)}
-                y2={y(value)}
-                stroke="var(--zao-color-border-subtle)"
-                strokeWidth="1"
-              />
-            ),
-          )}
-          <Ruler x0={left} x1={right} y={baseline} ticks={ticks} />
-          {ticks
-            .filter((tick) => tick.major)
-            .map((tick, index, majors) => (
-              <ChartLabel
-                key={tick.x}
-                x={tick.x}
-                y={baseline + 22}
-                anchor={index === majors.length - 1 ? 'end' : 'middle'}
-              >
-                {index === majors.length - 1 ? 'now' : `−${(majors.length - 1 - index) * 6} h`}
-              </ChartLabel>
-            ))}
-          <path
-            data-zao-slot="chart-reference"
-            data-chart-ink="muted"
-            d={prior}
-            fill="none"
-            stroke="var(--zao-color-fg-muted)"
-            strokeWidth="1"
-            strokeDasharray="2 3"
-          />
-          <path
-            data-zao-slot="chart-mark"
-            data-chart-ink="data"
-            d={trace}
-            fill="none"
-            stroke="var(--zao-color-fg-default)"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          {active !== null && (
-            <g data-zao-slot="chart-guide">
-              <line
-                data-chart-ink="muted"
-                x1={crisp(x(active))}
-                x2={crisp(x(active))}
-                y1={top}
-                y2={crisp(baseline)}
-                stroke="var(--zao-color-fg-muted)"
-                strokeWidth="1"
-              />
-              {current[active] !== null && (
-                <rect
-                  data-chart-fill
-                  x={Math.round(x(active) - 2.5)}
-                  y={Math.round(y(current[active]!) - 2.5)}
-                  width="5"
-                  height="5"
-                  fill="var(--zao-color-fg-default)"
-                />
+              {!drawing && (
+                <ChartLabel x={left - 8} y={y(value) + 4} anchor="end">
+                  {value}
+                </ChartLabel>
               )}
             </g>
+          ))}
+          {!drawing && (
+            <ChartLabel x={left - 8} y={baseline + 4} anchor="end">
+              0
+            </ChartLabel>
           )}
-          {latest !== null && <AccentSquare x={x(last)} y={y(latest)} />}
+          {!drawing &&
+            current.map((value, index) =>
+              value === null ? null : (
+                <line
+                  key={index}
+                  data-zao-slot="chart-sample"
+                  data-chart-ink="muted"
+                  x1={crisp(x(index))}
+                  x2={crisp(x(index))}
+                  y1={crisp(baseline)}
+                  y2={y(value)}
+                  stroke="var(--zao-color-border-subtle)"
+                  strokeWidth="1"
+                />
+              ),
+            )}
+          <Ruler x0={left} x1={right} y={baseline} ticks={ticks} />
+          {!drawing && (
+            <>
+              {ticks
+                .filter((tick) => tick.major)
+                .map((tick, index, majors) => (
+                  <ChartLabel
+                    key={tick.x}
+                    x={tick.x}
+                    y={baseline + 22}
+                    anchor={index === majors.length - 1 ? 'end' : 'middle'}
+                  >
+                    {index === majors.length - 1 ? 'now' : `−${(majors.length - 1 - index) * 6} h`}
+                  </ChartLabel>
+                ))}
+              <path
+                data-zao-slot="chart-reference"
+                data-chart-ink="muted"
+                d={prior}
+                fill="none"
+                stroke="var(--zao-color-fg-muted)"
+                strokeWidth="1"
+                strokeDasharray={fittedDash(polylineLength(priorPoints))}
+              />
+              <path
+                data-zao-slot="chart-mark"
+                data-chart-ink="data"
+                d={trace}
+                fill="none"
+                stroke="var(--zao-color-fg-default)"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              {active !== null && (
+                <g data-zao-slot="chart-guide">
+                  <line
+                    data-chart-ink="muted"
+                    x1={crisp(x(active))}
+                    x2={crisp(x(active))}
+                    y1={top}
+                    y2={crisp(baseline)}
+                    stroke="var(--zao-color-fg-muted)"
+                    strokeWidth="1"
+                  />
+                  {current[active] !== null && (
+                    <rect
+                      data-chart-fill
+                      x={Math.round(x(active) - 2.5)}
+                      y={Math.round(y(current[active]!) - 2.5)}
+                      width="5"
+                      height="5"
+                      fill="var(--zao-color-fg-default)"
+                    />
+                  )}
+                </g>
+              )}
+              {latest !== null && <AccentSquare x={x(last)} y={y(latest)} />}
+            </>
+          )}
         </svg>
-        <ChartInspector
-          inspection={inspection}
-          data={data}
-          width={width}
-          height={height}
-          name="p95 latency samples"
-        />
+        {!drawing && (
+          <ChartInspector
+            inspection={inspection}
+            data={data}
+            width={width}
+            height={height}
+            name="p95 latency samples"
+          />
+        )}
       </div>
     </ChartFrame>
   );

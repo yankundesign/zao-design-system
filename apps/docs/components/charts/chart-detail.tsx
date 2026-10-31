@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { connection } from 'next/server';
 import { getQuietInstrumentStudy } from '@/lib/style-studies';
 import { ChartStudy } from './chart-study';
-import { ChartSpecimen } from './chart-specimens';
+import { ChartPreview } from './chart-preview';
+import { ChartStates } from './chart-states';
 import type { ChartId } from './chart-ids';
 
 interface ChartDefinition {
@@ -11,6 +12,8 @@ interface ChartDefinition {
   use: string[];
   anatomy: { part: string; detail: string }[];
   accessibility: string;
+  /** Finished readings for the edge cases a chart input must define. */
+  states?: string;
 }
 
 const frameSlots = (series: string, scale: string, readout: string, unit: string) => [
@@ -73,6 +76,73 @@ export const chartDefinitions: Record<ChartId, ChartDefinition> = {
     ],
     accessibility:
       'The reading is a named image with its value and remainder as visible text. Used and Available are native buttons with pressed state; focus or hover inspects, Enter or Space selects, Escape clears without moving focus. Selection is announced politely. Reduced motion removes the tracing animation; forced colors keep data, scale, and accent distinct.',
+  },
+  share: {
+    title: 'Share strip',
+    description: 'How a whole divides among two to five parts, one stroke per percentage point.',
+    use: [
+      'Use a share strip for how a known whole divides among two to five parts. For one share of a whole, use the ring; for six or more parts, or when exact values matter more than proportion, use Table.',
+      'Use a strip instead of a donut or pie: parts read as lengths on one line.',
+      'Draw 100 strokes, one per percentage point, rounded by the largest remainder so they always total 100. When the strokes would sit closer than 3px, merge pairs into 50 and say so in the scale slot.',
+      'Give every stroke one length. The lead part, or the inspected one, carries full ink; the rest stay muted.',
+      'Write each part’s name and whole share over its group. When a label doesn’t fit, every label moves to a list below the strip. A part under one stroke keeps its name, as "<1%".',
+      'A composition is a static reading; the strip has no live simulation.',
+    ],
+    anatomy: [
+      {
+        part: 'Strokes',
+        detail: '1px strokes of one length, one per percentage point, grouped by part.',
+      },
+      {
+        part: 'Groups',
+        detail: 'One stroke pitch of gap between parts, ordered by size with Other last.',
+      },
+      {
+        part: 'Ruler',
+        detail: 'A solid hairline with end stops and a graduation at each part boundary.',
+      },
+      { part: 'Labels', detail: 'The part and its whole share over each group, in mono.' },
+      { part: 'Accent', detail: 'Beside the lead part’s label, in ink.' },
+      ...frameSlots(
+        'storage.by_kind',
+        'the stroke unit and total',
+        'part, size, exact share',
+        'TB',
+      ),
+    ],
+    accessibility:
+      'One tab stop with arrow-key movement across parts, including parts too small for a stroke. Each part is a native button that names its size and exact share. Pointer inspection uses the part under the pointer. The summary names the two largest parts, and Show data lists every part.',
+    states: 'Two parts, a part under one stroke, a narrow strip, and the drawing while it loads.',
+  },
+  meter: {
+    title: 'Meter',
+    description: 'How close a measure is to its limit.',
+    use: [
+      'Use a meter for one measure against a known limit, such as a budget, quota, or capacity. For task completion, use Progress. For one share of a total with no limit, use the ring.',
+      'The meter reuses Progress’s recessed well and ink face, and steps between readings without a transition.',
+      'Mark an alert or target as a dashed tick across the well, labeled with its value.',
+      'Draw a projection only from a stated method, as an outline from the reading to the projected value, never filled. The summary names it.',
+      'Above the limit, the face fills the well and a filled square sits past the end stop. The overage is written in the readout and summary, not drawn to scale.',
+      'Without a known limit there is nothing to measure against: the meter shows its empty well and says so.',
+    ],
+    anatomy: [
+      { part: 'Well', detail: 'Progress’s recessed track, from zero to the limit.' },
+      { part: 'Face', detail: 'The reading in ink, with Progress’s contact edge.' },
+      { part: 'Reference', detail: 'The dashed alert, labeled with its value.' },
+      {
+        part: 'Projection',
+        detail: 'A hairline fg-muted outline from the reading to the projected value.',
+      },
+      {
+        part: 'Ruler',
+        detail: 'Graduations at each quarter of the limit, with zero and the limit labeled.',
+      },
+      { part: 'Accent', detail: 'The current reading on the ruler, in ink.' },
+      ...frameSlots('budget.spend', 'the period and limit', 'region, amount, share', 'USD'),
+    ],
+    accessibility:
+      'The well is a meter with a name and a value text. Used, Left, and Over are native buttons in one tab stop; focus or hover inspects, Enter, Space, or a tap selects, and Escape clears. The summary carries the reading, the projection and its method, and any overage, and Show data lists every value.',
+    states: 'Zero, a fractional reading, full, over the limit, unknown, and no limit.',
   },
   bar: {
     title: 'Bar',
@@ -198,7 +268,7 @@ export async function ChartDetail({ chart }: { chart: ChartId }) {
           label={`${definition.title} chart preview`}
           cssUrl={quietStudy ? quietStudy.cssUrl : null}
         >
-          <ChartSpecimen chart={chart} />
+          <ChartPreview chart={chart} />
         </ChartStudy>
         {chart === 'ring' && (
           <p className="type-caption text-muted">
@@ -210,6 +280,22 @@ export async function ChartDetail({ chart }: { chart: ChartId }) {
           </p>
         )}
       </section>
+
+      {definition.states && (
+        <section className="docs-detail-section grid gap-5 border-t border-subtle pt-5">
+          <div className="flex flex-col gap-1">
+            <h2 className="type-heading">States</h2>
+            <p className="max-w-2xl type-body text-muted">{definition.states}</p>
+          </div>
+          <ChartStudy
+            label={`${definition.title} states`}
+            cssUrl={quietStudy ? quietStudy.cssUrl : null}
+            framed={false}
+          >
+            <ChartStates chart={chart} />
+          </ChartStudy>
+        </section>
+      )}
 
       <section className="docs-detail-section grid gap-5 border-t border-subtle pt-5">
         <h2 className="type-heading">When to use</h2>

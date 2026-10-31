@@ -39,8 +39,25 @@
   }
 }
 
+/* Charts wave 1, C3: arriving marks and the accent appear on the Reveal role. */
+.storage-ring-study[data-zao-building]
+  :where([data-zao-slot='storage-mark'], [data-zao-slot='chart-accent']) {
+  transition:
+    stroke var(--zao-motion-duration-base) var(--zao-motion-easing-standard),
+    opacity var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+      var(--zao-motion-duration-reveal-exit);
+}
+
+@starting-style {
+  .storage-ring-study[data-zao-building]
+    :where([data-zao-slot='storage-mark'], [data-zao-slot='chart-accent']) {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .storage-ring-study [data-zao-slot='storage-mark'] {
+  .storage-ring-study [data-zao-slot='storage-mark'],
+  .storage-ring-study[data-zao-building] [data-zao-slot='chart-accent'] {
     transition: none;
   }
   .storage-inspection-guide {
@@ -54,6 +71,9 @@
   }
   .storage-ring-study [data-zao-slot='storage-scale'] * {
     stroke: GrayText;
+  }
+  .storage-ring-study[data-zao-drawing] [data-zao-slot='storage-scale'] * {
+    stroke: CanvasText;
   }
   .storage-ring-study [data-zao-slot='storage-mark'][data-state='used'],
   .storage-ring-study .storage-inspection-guide {

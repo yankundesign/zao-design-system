@@ -1,7 +1,9 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
+import { ChartDataView } from './charts/chart-data-view';
+import { useChartDrawing } from './charts/use-chart-drawing';
 import './storage-ring-study.css';
 
 type CapacityRegion = 'used' | 'available';
@@ -21,6 +23,9 @@ function polar(percent: number, radius: number) {
     y: Math.round((center + radius * Math.sin(angle)) * 100) / 100,
   };
 }
+
+/** A drawn placeholder keeps its reading's width: each digit becomes a figure space. */
+const drawn = (text: string) => text.replace(/\d/g, '\u2007');
 
 /** One mark per percentage point. The marks are parts of the whole, not individual records. */
 const markAngles = Array.from({ length: 100 }, (_, index) => index + 0.5);
@@ -42,8 +47,18 @@ function inspectionArc(start: number, end: number) {
  * Capacity ring, refined Oct 9 with the five data visualization rules: hairline marks,
  * structure separate from data, four slots, and one accent square. Docs-local study.
  */
-export function StorageRingStudy() {
+export function StorageRingStudy({
+  drawing = false,
+  dataView = false,
+}: {
+  /** Scale only, no marks and no numbers, while storage use loads (charts wave 1, C3). */
+  drawing?: boolean;
+  /** Offer the reading in Table below the ring (C2). The Charts page shows it; Card doesn't. */
+  dataView?: boolean;
+} = {}) {
   const detailId = useId();
+  const root = useRef<HTMLDivElement>(null);
+  const building = useChartDrawing(drawing, root);
   const used = 68;
   const [hovered, setHovered] = useState<CapacityRegion | null>(null);
   const [focused, setFocused] = useState<CapacityRegion | null>(null);
@@ -68,7 +83,11 @@ export function StorageRingStudy() {
 
   return (
     <div
+      ref={root}
       data-zao-slot="storage-study"
+      data-zao-drawing={drawing ? '' : undefined}
+      data-zao-building={building ? '' : undefined}
+      aria-busy={drawing || undefined}
       data-inspection={activeRegion ?? 'none'}
       className="storage-ring-study relative flex min-w-0 flex-col gap-3"
       onKeyDown={(event) => {
@@ -88,7 +107,7 @@ export function StorageRingStudy() {
       <div
         className="flex min-w-0 flex-wrap items-center justify-center gap-4"
         role="img"
-        aria-label={`Storage use at ${used} percent`}
+        aria-label={drawing ? 'Loading storage use' : `Storage use at ${used} percent`}
       >
         <svg
           data-zao-slot="storage-chart"
@@ -129,25 +148,26 @@ export function StorageRingStudy() {
             ))}
           </g>
           <g strokeWidth="1">
-            {markAngles.map((percent, index) => {
-              const state = index < used ? 'used' : 'available';
-              const from = polar(percent, markStart);
-              const to = polar(percent, markEnd[state]);
-              return (
-                <line
-                  key={index}
-                  data-zao-slot="storage-mark"
-                  data-state={state}
-                  x1={from.x}
-                  y1={from.y}
-                  x2={to.x}
-                  y2={to.y}
-                  vectorEffect="non-scaling-stroke"
-                />
-              );
-            })}
+            {!drawing &&
+              markAngles.map((percent, index) => {
+                const state = index < used ? 'used' : 'available';
+                const from = polar(percent, markStart);
+                const to = polar(percent, markEnd[state]);
+                return (
+                  <line
+                    key={index}
+                    data-zao-slot="storage-mark"
+                    data-state={state}
+                    x1={from.x}
+                    y1={from.y}
+                    x2={to.x}
+                    y2={to.y}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                );
+              })}
           </g>
-          {activeRegion ? (
+          {activeRegion && !drawing ? (
             <path
               key={activeRegion}
               data-zao-slot="storage-inspection-guide"
@@ -173,19 +193,28 @@ export function StorageRingStudy() {
             strokeWidth="1"
             vectorEffect="non-scaling-stroke"
           />
-          <rect
-            data-zao-slot="chart-accent"
-            x="77"
-            y="77"
-            width="6"
-            height="6"
-            fill="var(--zao-color-fg-default)"
-          />
+          {!drawing && (
+            <rect
+              data-zao-slot="chart-accent"
+              x="77"
+              y="77"
+              width="6"
+              height="6"
+              fill="var(--zao-color-fg-default)"
+            />
+          )}
         </svg>
-        <div className="figure-mark flex min-w-0 flex-col gap-1">
-          <span className="type-heading figures-tabular">{used}%</span>
+        <div
+          className={`figure-mark flex min-w-0 flex-col gap-1${drawing ? ' construction-drawing' : ''}`}
+          aria-hidden={drawing || undefined}
+        >
+          <span className="type-heading figures-tabular">
+            {drawing ? drawn(`${used}%`) : `${used}%`}
+          </span>
           <small className="type-caption text-muted">Storage used</small>
-          <span className="type-caption figures-tabular text-muted">{available}% available</span>
+          <span className="type-caption figures-tabular text-muted">
+            {drawing ? drawn(`${available}% available`) : `${available}% available`}
+          </span>
         </div>
       </div>
 
@@ -202,6 +231,7 @@ export function StorageRingStudy() {
             aria-label={`Inspect ${region} capacity`}
             aria-pressed={selected === region}
             aria-describedby={detailId}
+            disabled={drawing}
             data-active={activeRegion === region ? '' : undefined}
             onPointerEnter={(event) => {
               if (event.pointerType === 'touch') return;
@@ -236,16 +266,41 @@ export function StorageRingStudy() {
         data-zao-slot="chart-foot"
         className="docs-rule-capped flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2 font-mono type-caption figures-tabular"
       >
-        <p id={detailId} data-zao-slot="storage-detail">
-          {activeRegion
-            ? `${activeRegion === 'used' ? 'Used' : 'Available'} capacity: ${activeRegion === 'used' ? used : available} of 100 parts.`
-            : 'Total capacity: 100 parts.'}
+        <p
+          id={detailId}
+          data-zao-slot="storage-detail"
+          className={drawing ? 'construction-drawing' : undefined}
+        >
+          <span aria-hidden={drawing || undefined}>
+            {drawing
+              ? drawn('Total capacity: 100 parts.')
+              : activeRegion
+                ? `${activeRegion === 'used' ? 'Used' : 'Available'} capacity: ${activeRegion === 'used' ? used : available} of 100 parts.`
+                : 'Total capacity: 100 parts.'}
+          </span>
         </p>
         <span className="text-muted">parts</span>
       </div>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {announcement}
+        {drawing ? 'Loading storage use' : announcement}
       </span>
+      {dataView && (
+        <ChartDataView
+          title="Storage use"
+          table={{
+            columns: [
+              { label: 'Region' },
+              { label: 'Share', numeric: true },
+              { label: 'Parts', numeric: true },
+            ],
+            rows: [
+              ['Used', `${used}%`, `${used}`],
+              ['Available', `${available}%`, `${available}`],
+            ],
+          }}
+          disabled={drawing}
+        />
+      )}
     </div>
   );
 }
