@@ -43,6 +43,8 @@ export const docsSections = [
     links: [
       { href: '/charts', label: 'Overview' },
       { href: '/charts/ring', label: 'Ring' },
+      { href: '/charts/share', label: 'Share strip' },
+      { href: '/charts/meter', label: 'Meter' },
       { href: '/charts/bar', label: 'Bar' },
       { href: '/charts/line', label: 'Line' },
       { href: '/charts/heatmap', label: 'Heatmap' },

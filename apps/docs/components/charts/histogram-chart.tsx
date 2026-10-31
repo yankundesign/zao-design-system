@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AccentSquare, ChartFrame, ChartLabel, Ruler } from './chart-frame';
+import { AccentSquare, ChartFrame, ChartLabel, Ruler, fittedDash } from './chart-frame';
 import { ChartInspector, useInspection } from './chart-inspector';
 import {
   formatMinutes,
@@ -22,7 +22,13 @@ function binLabel(minutes: number) {
 }
 
 /** A comb of hairlines, one per bin: the instrument's ring, unrolled. */
-export function HistogramChart({ compact = false }: { compact?: boolean }) {
+export function HistogramChart({
+  compact = false,
+  drawing = false,
+}: {
+  compact?: boolean;
+  drawing?: boolean;
+}) {
   const [plotRef, width] = useChartWidth<HTMLDivElement>();
   const [series, setSeries] = useState(initialSessions);
   const simulation = useLiveSimulation(() => setSeries((current) => stepSessions(current)));
@@ -93,6 +99,10 @@ export function HistogramChart({ compact = false }: { compact?: boolean }) {
     height,
     label: `${range(index)}: ${count.format(value)} sessions${index === latest ? ', latest' : ''}`,
   }));
+  const table = {
+    columns: [{ label: 'Session length' }, { label: 'Sessions', numeric: true }],
+    rows: bins.map((value, index) => [range(index), count.format(value)]),
+  };
 
   return (
     <ChartFrame
@@ -104,6 +114,9 @@ export function HistogramChart({ compact = false }: { compact?: boolean }) {
       readout={readout}
       unit="sessions"
       announcement={inspection.announcement}
+      table={compact ? undefined : table}
+      drawing={drawing}
+      drawingLabel="Loading session lengths"
       controls={
         compact ? undefined : (
           <LiveSimulationSwitch
@@ -115,72 +128,82 @@ export function HistogramChart({ compact = false }: { compact?: boolean }) {
     >
       <div ref={plotRef} className="chart-plot" style={{ height }}>
         <svg width={width} height={height} aria-hidden="true" focusable="false">
-          <line
-            data-zao-slot="chart-reference"
-            data-chart-ink="muted"
-            x1={medianX}
-            x2={medianX}
-            y1={top - 8}
-            y2={crisp(baseline)}
-            stroke="var(--zao-color-fg-muted)"
-            strokeWidth="1"
-            strokeDasharray="2 3"
-          />
-          <ChartLabel x={medianX + 6} y={top - 4} anchor="start">
-            p50 {formatMinutes(medianMinutes)} min
-          </ChartLabel>
-          {bins.map((value, index) =>
-            value === 0 ? null : (
+          {!drawing && (
+            <>
               <line
-                key={index}
-                data-zao-slot="chart-mark"
-                data-chart-ink={active === null || active === index ? 'data' : 'muted'}
-                x1={crisp(x(index))}
-                x2={crisp(x(index))}
-                y1={crisp(baseline)}
-                y2={y(value)}
-                stroke={
-                  active === null || active === index
-                    ? 'var(--zao-color-fg-default)'
-                    : 'var(--zao-color-fg-muted)'
-                }
+                data-zao-slot="chart-reference"
+                data-chart-ink="muted"
+                x1={medianX}
+                x2={medianX}
+                y1={top - 8}
+                y2={crisp(baseline)}
+                stroke="var(--zao-color-fg-muted)"
                 strokeWidth="1"
+                strokeDasharray={fittedDash(crisp(baseline) - (top - 8))}
               />
-            ),
+              <ChartLabel x={medianX + 6} y={top - 4} anchor="start">
+                p50 {formatMinutes(medianMinutes)} min
+              </ChartLabel>
+              {bins.map((value, index) =>
+                value === 0 ? null : (
+                  <line
+                    key={index}
+                    data-zao-slot="chart-mark"
+                    data-chart-ink={active === null || active === index ? 'data' : 'muted'}
+                    x1={crisp(x(index))}
+                    x2={crisp(x(index))}
+                    y1={crisp(baseline)}
+                    y2={y(value)}
+                    stroke={
+                      active === null || active === index
+                        ? 'var(--zao-color-fg-default)'
+                        : 'var(--zao-color-fg-muted)'
+                    }
+                    strokeWidth="1"
+                  />
+                ),
+              )}
+            </>
           )}
           <Ruler x0={left} x1={right} y={baseline} ticks={ticks} />
-          {ticks
-            .filter((tick) => tick.major)
-            .map((tick, index, majors) => (
-              <ChartLabel
-                key={tick.x}
-                x={tick.x}
-                y={baseline + 22}
-                anchor={index === 0 ? 'start' : index === majors.length - 1 ? 'end' : 'middle'}
-              >
-                {index === majors.length - 1 ? '60 min' : index * 15}
-              </ChartLabel>
-            ))}
-          {active !== null && (
-            <rect
-              data-zao-slot="chart-guide"
-              data-chart-fill
-              x={Math.round(x(active) - 2.5)}
-              y={Math.round(y(bins[active]!) - 2.5)}
-              width="5"
-              height="5"
-              fill="var(--zao-color-fg-default)"
-            />
+          {!drawing && (
+            <>
+              {ticks
+                .filter((tick) => tick.major)
+                .map((tick, index, majors) => (
+                  <ChartLabel
+                    key={tick.x}
+                    x={tick.x}
+                    y={baseline + 22}
+                    anchor={index === 0 ? 'start' : index === majors.length - 1 ? 'end' : 'middle'}
+                  >
+                    {index === majors.length - 1 ? '60 min' : index * 15}
+                  </ChartLabel>
+                ))}
+              {active !== null && (
+                <rect
+                  data-zao-slot="chart-guide"
+                  data-chart-fill
+                  x={Math.round(x(active) - 2.5)}
+                  y={Math.round(y(bins[active]!) - 2.5)}
+                  width="5"
+                  height="5"
+                  fill="var(--zao-color-fg-default)"
+                />
+              )}
+              <AccentSquare x={x(latest)} y={y(bins[latest]!)} />
+            </>
           )}
-          <AccentSquare x={x(latest)} y={y(bins[latest]!)} />
         </svg>
-        <ChartInspector
-          inspection={inspection}
-          data={data}
-          width={width}
-          height={height}
-          name="session length bins"
-        />
+        {!drawing && (
+          <ChartInspector
+            inspection={inspection}
+            data={data}
+            width={width}
+            height={height}
+            name="session length bins"
+          />
+        )}
       </div>
     </ChartFrame>
   );

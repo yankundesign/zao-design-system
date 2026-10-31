@@ -1,6 +1,6 @@
 # Data visualization
 
-_Working guideline · Revised October 9, 2026 · See every chart in the [Charts](/charts) section._
+_Working guideline · Revised October 31, 2026 · See every chart in the [Charts](/charts) section._
 
 ZAO charts are quiet instruments. They are complete at rest, exact when inspected, and they move only when their data moves. They share the construction of the rest of the interface: hairline drawing, square parts, mono labels, and one point of emphasis. A clear question and an accurate encoding come first; character follows from how carefully the chart is built.
 
@@ -20,7 +20,8 @@ Yankun shared a short recording of an audio instrument: fine radial strokes arou
 
 Choose the encoding that answers the reader's question with the least effort.
 
-- **How much of a whole?** A capacity ring, or a linear meter. Make the total and the remainder clear.
+- **How much of a whole?** A capacity ring for one share. For two to five parts, a share strip. Make the total and the remainder clear.
+- **How close to a limit?** A meter, with the limit and any alert as labeled references.
 - **Which is larger?** Bars on a shared baseline, in an explicit order.
 - **How did it change?** A line on a time axis, with units and a named period. Keep gaps where observations are missing.
 - **When does it happen?** A heatmap across two cycles, such as days and hours.
@@ -39,6 +40,23 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 - The center square is the accent. In a single-reading ring it belongs to the reading as a whole.
 - Name the regions. Used and Available are native controls; the readout states the region and its share of the total.
 - A storage reading is static. The ring never simulates updates or animates from zero.
+
+### Share strip: a whole in two to five parts
+
+- One stroke per percentage point, 100 in all, rounded by the largest remainder so they always total 100. Below a 3px pitch, merge pairs into 50 strokes and say so in the scale slot.
+- Group the strokes by part, largest first and Other last, with one pitch of gap and a graduation on the ruler at each boundary.
+- Every stroke has one length. Emphasize by ink: the lead or inspected part in `fg-default`, the rest in `fg-muted`.
+- Write each part's name and whole share over its group. When any label doesn't fit, every label moves to a list below the strip. A part under one stroke keeps its name, as "<1%".
+- The accent square sits beside the lead part's label. Use a strip instead of a donut or pie.
+- A composition is static. The strip never simulates updates.
+
+### Meter: one measure against its limit
+
+- Progress's recessed well runs from zero to the limit, with Progress's ink face. The face steps between readings without a transition.
+- A dashed tick across the well marks an alert or target, labeled with its value.
+- A projection is a drawing: a hairline outline from the reading to the projected value, never filled, and only from a stated method, which the summary names.
+- Above the limit, the face fills the well and a filled square sits past the end stop. The overage is written in the readout and summary, not drawn to scale.
+- The accent square sits on the ruler under the reading. Without a known limit there is nothing to measure against; the meter shows its empty well and says so.
 
 ### Bar: a few categories
 
@@ -77,7 +95,7 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 
 - **Scatter:** small crosshair marks, nearest-point inspection.
 - **Stat tile:** a proportional figure, a mono readout row, and an optional hairline sparkline.
-- **Meter and progress:** a recessed track with graduations, as in Progress and the Tabs ruler.
+- **Progress:** task completion in a recessed track, as in the Progress component. For a measure against a limit, use the meter.
 
 ## Keep the reading honest
 
@@ -86,8 +104,10 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 - Do not invent breakdowns, capacities, thresholds, trends, or forecasts. A percentage alone cannot supply them.
 - Keep geometry steady during inspection. Hover never changes lengths, angles, ordering, or scale.
 - Use depth to clarify construction, never to tilt or extrude marks in a way that distorts magnitude.
+- A loading chart is a drawing: structure only, no marks and no numbers. The frame, ruler, scale and any known grid are drawn; the summary and readout are drawn placeholders. When data arrives, the chart builds in place on Card and Table's timing, and nothing grows from zero.
 - Use semantic colors. Pair color with text, position, or shape; status colors are only for status.
 - Label the important values directly. The summary sentence and a data view must carry every essential value; nothing requires hover.
+- A dashed reference starts and ends on a whole dash: the 2px dash stays and its gap stretches near 3px to fit the line.
 
 ## Compose the resting state
 
@@ -109,11 +129,11 @@ Show a difference only against a named reference with known data. Keep units exp
 
 ### Update
 
-Respond only to real data or a labeled simulation. In the docs, a "Simulate live updates" switch starts the simulation; it is off by default, stops when switched off or when the chart leaves the page, and never runs on the ring. Keep tick positions, category order, and identities fixed while values change. Updates are discrete and need no reduced-motion variant; any transition that a future study adds must be removed under reduced motion.
+Respond only to real data or a labeled simulation. In the docs, a "Simulate live updates" switch starts the simulation; it is off by default, stops when switched off or when the chart leaves the page, and never runs on the ring or the share strip. Keep tick positions, category order, and identities fixed while values change. Updates are discrete and need no reduced-motion variant; any transition that a future study adds must be removed under reduced motion.
 
 ### Explain
 
-Each chart states its question and reading in the summary sentence. A complex chart may need a data table or expanded detail. Keep actions that change real data separate from inspection.
+Each chart states its question and reading in the summary sentence. Every chart offers its numbers in a data view: a "Show data" button below the frame opens them in Table, from the same data as the marks. Keep actions that change real data separate from inspection.
 
 ## Access and resilience
 

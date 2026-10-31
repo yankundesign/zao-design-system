@@ -48,3 +48,56 @@
     fill: GrayText;
   }
 }
+
+/*
+ * Charts wave 1, C3: when data arrives, the marks appear on the Reveal role once the drawn
+ * text has cleared on Reveal exit. Their geometry is already final; only opacity changes.
+ */
+.chart-frame[data-zao-building]
+  svg
+  :where([data-zao-slot], [data-chart-ink], [data-chart-fill], .chart-label) {
+  transition: opacity var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal)
+    var(--zao-motion-duration-reveal-exit);
+}
+
+@starting-style {
+  .chart-frame[data-zao-building]
+    svg
+    :where([data-zao-slot], [data-chart-ink], [data-chart-fill], .chart-label) {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-frame[data-zao-building]
+    svg
+    :where([data-zao-slot], [data-chart-ink], [data-chart-fill], .chart-label) {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .chart-frame[data-zao-drawing] .chart-structure {
+    stroke: CanvasText;
+  }
+}
+
+/* Meter reuses Progress's well and face, but a chart steps between readings (rule 5). */
+.chart-meter .progress-construction [data-zao-slot='indicator'] {
+  transition: none;
+}
+
+/* The share strip's accent beside the lead part when its labels move to a list. */
+.chart-accent-chip {
+  display: inline-block;
+  inline-size: var(--zao-space-1-5);
+  block-size: var(--zao-space-1-5);
+  background: var(--zao-color-fg-default);
+}
+
+@media (forced-colors: active) {
+  .chart-accent-chip {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+}

@@ -153,3 +153,76 @@ export function stepSessions(series: { bins: number[]; latest: number }, random 
 export function formatMinutes(minutes: number) {
   return Number.isInteger(minutes) ? `${minutes}` : minutes.toFixed(1);
 }
+
+/* Meter: October cloud spend against its budget, read on Oct 20 of 31 days. */
+export interface SpendReading {
+  /** Month-to-date spend in USD; null while unknown. */
+  spent: number | null;
+  /** The budget in USD. Without a positive budget there is nothing to measure against. */
+  budget: number | null;
+  /** An alert threshold in USD, drawn as a dashed reference when set. */
+  alert?: number;
+  /** Days elapsed and days in the period; the projection runs only while the period does. */
+  day: number;
+  days: number;
+  month: string;
+}
+
+export const octoberSpend: SpendReading = {
+  spent: 3720,
+  budget: 6000,
+  alert: 5400,
+  day: 20,
+  days: 31,
+  month: 'Oct',
+};
+
+/** The simulation never runs spend past this share of the budget. */
+export const spendCeiling = 1.25;
+
+export function stepSpend(reading: SpendReading, random = Math.random): SpendReading {
+  if (reading.spent === null || reading.budget === null) return reading;
+  const next = Math.min(reading.budget * spendCeiling, reading.spent + 40 + random() * 120);
+  return { ...reading, spent: Math.round(next) };
+}
+
+/* Share strip: storage in use by kind, in TB. Not the ring's 68%. */
+export interface SharePart {
+  id: string;
+  name: string;
+  size: number;
+  /** Takes a plural verb in the summary. */
+  plural: boolean;
+}
+
+export const storageKinds: readonly SharePart[] = [
+  { id: 'media', name: 'Media', size: 1.02, plural: false },
+  { id: 'backups', name: 'Backups', size: 0.69, plural: true },
+  { id: 'documents', name: 'Documents', size: 0.45, plural: true },
+  { id: 'logs', name: 'Logs', size: 0.31, plural: true },
+  { id: 'other', name: 'Other', size: 0.01, plural: false },
+];
+
+/**
+ * Whole strokes per part by the largest-remainder method, so the strip always totals `count`
+ * strokes. Shares are never negative.
+ */
+export function wholeShares(sizes: readonly number[], count: number) {
+  if (process.env.NODE_ENV !== 'production' && sizes.some((size) => size < 0)) {
+    throw new Error('A share strip part cannot be negative.');
+  }
+  const total = sizes.reduce((sum, size) => sum + size, 0);
+  if (!(total > 0)) return sizes.map(() => 0);
+  const exact = sizes.map((size) => (size / total) * count);
+  const whole = exact.map(Math.floor);
+  let left = count - whole.reduce((sum, value) => sum + value, 0);
+  exact
+    .map((value, index) => ({ index, remainder: value - Math.floor(value) }))
+    .sort((a, b) => b.remainder - a.remainder || a.index - b.index)
+    .forEach(({ index }) => {
+      if (left <= 0) return;
+      whole[index]! += 1;
+      left -= 1;
+    });
+  return whole;
+}

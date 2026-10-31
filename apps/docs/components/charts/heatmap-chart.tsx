@@ -26,7 +26,13 @@ const ramp = [14, 32, 52, 74, 100].map(
 const hourLabel = (hour: number) => `${String(hour).padStart(2, '0')}:00`;
 
 /** Square cells in five gray steps; the current hour gets ink accent brackets. */
-export function HeatmapChart({ compact = false }: { compact?: boolean }) {
+export function HeatmapChart({
+  compact = false,
+  drawing = false,
+}: {
+  compact?: boolean;
+  drawing?: boolean;
+}) {
   const [plotRef, width] = useChartWidth<HTMLDivElement>();
   const [values, setValues] = useState(initialActivity);
   const simulation = useLiveSimulation(() =>
@@ -83,6 +89,16 @@ export function HeatmapChart({ compact = false }: { compact?: boolean }) {
       };
     }),
   );
+  const table = {
+    columns: [
+      { label: 'Day' },
+      ...Array.from({ length: 24 }, (_, hour) => ({ label: hourLabel(hour), numeric: true })),
+    ],
+    rows: values.map((row, day) => [
+      weekdayNames[day]!,
+      ...row.map((value) => (value === null ? 'No data yet' : `${value}`)),
+    ]),
+  };
   const readout = (() => {
     if (active === null)
       return `${total} events so far · peak ${weekdays[peak.day]} ${hourLabel(peak.hour)}`;
@@ -119,6 +135,9 @@ export function HeatmapChart({ compact = false }: { compact?: boolean }) {
       readout={readout}
       unit="events"
       announcement={inspection.announcement}
+      table={compact ? undefined : table}
+      drawing={drawing}
+      drawingLabel="Loading events per hour"
       controls={
         compact ? undefined : (
           <LiveSimulationSwitch
@@ -130,117 +149,156 @@ export function HeatmapChart({ compact = false }: { compact?: boolean }) {
     >
       <div ref={plotRef} className="chart-plot" style={{ height }}>
         <svg width={width} height={height} aria-hidden="true" focusable="false">
-          {weekdays.map((name, day) =>
-            // Below 14px rows, label every other day so caption text never overlaps.
-            pitch < 14 && day % 2 === 1 ? null : (
-              <ChartLabel key={name} x={left - 8} y={top + day * pitch + cell / 2 + 4} anchor="end">
-                {name}
-              </ChartLabel>
-            ),
-          )}
-          {values.map((row, day) =>
-            row.map((value, hour) => {
-              const x = left + hour * pitch;
-              const y = top + day * pitch;
-              if (value === null || isFutureCell(day, hour)) {
-                return (
+          {drawing && (
+            <g
+              data-zao-slot="chart-drawing"
+              className="chart-structure"
+              stroke="var(--zao-color-border-default)"
+            >
+              {weekdays.map((name, day) =>
+                Array.from({ length: 24 }, (_, hour) => (
                   <rect
-                    key={`${day}-${hour}`}
-                    data-zao-slot="chart-unknown"
+                    key={`${name}-${hour}`}
+                    x={left + hour * pitch + 0.5}
+                    y={top + day * pitch + 0.5}
+                    width={cell - 1}
+                    height={cell - 1}
+                  />
+                )),
+              )}
+              {activitySteps.map((bound, step) => (
+                <rect
+                  key={bound}
+                  x={left + step * legendStep + 0.5}
+                  y={legendY - 8.5}
+                  width="9"
+                  height="9"
+                />
+              ))}
+            </g>
+          )}
+          {!drawing && (
+            <>
+              {weekdays.map((name, day) =>
+                // Below 14px rows, label every other day so caption text never overlaps.
+                pitch < 14 && day % 2 === 1 ? null : (
+                  <ChartLabel
+                    key={name}
+                    x={left - 8}
+                    y={top + day * pitch + cell / 2 + 4}
+                    anchor="end"
+                  >
+                    {name}
+                  </ChartLabel>
+                ),
+              )}
+              {values.map((row, day) =>
+                row.map((value, hour) => {
+                  const x = left + hour * pitch;
+                  const y = top + day * pitch;
+                  if (value === null || isFutureCell(day, hour)) {
+                    return (
+                      <rect
+                        key={`${day}-${hour}`}
+                        data-zao-slot="chart-unknown"
+                        data-chart-fill
+                        x={Math.round(x + cell / 2 - 1)}
+                        y={Math.round(y + cell / 2 - 1)}
+                        width="2"
+                        height="2"
+                        fill="var(--zao-color-fg-muted)"
+                      />
+                    );
+                  }
+                  return (
+                    <rect
+                      key={`${day}-${hour}`}
+                      data-zao-slot="chart-mark"
+                      data-step={activityStep(value)}
+                      x={x}
+                      y={y}
+                      width={cell}
+                      height={cell}
+                      fill={ramp[activityStep(value)]}
+                    />
+                  );
+                }),
+              )}
+              {active !== null && (
+                <rect
+                  data-zao-slot="chart-guide"
+                  data-chart-ink="data"
+                  x={crisp(left + (active % 24) * pitch - 2)}
+                  y={crisp(top + Math.floor(active / 24) * pitch - 2)}
+                  width={cell + 3}
+                  height={cell + 3}
+                  fill="none"
+                  stroke="var(--zao-color-fg-default)"
+                  strokeWidth="1"
+                />
+              )}
+              <path
+                data-zao-slot="chart-accent"
+                className="chart-accent-stroke"
+                d={bracket}
+                fill="none"
+                stroke="var(--zao-color-fg-default)"
+                strokeWidth="1.5"
+              />
+              {[0, 6, 12, 18].map((hour) => (
+                <ChartLabel key={hour} x={left + hour * pitch} y={gridBottom + 14} anchor="start">
+                  {String(hour).padStart(2, '0')}
+                </ChartLabel>
+              ))}
+              <g data-zao-slot="chart-legend">
+                {activitySteps.map((bound, step) => (
+                  <g key={bound}>
+                    <rect
+                      x={left + step * legendStep}
+                      y={legendY - 9}
+                      width="10"
+                      height="10"
+                      fill={ramp[step]}
+                    />
+                    <ChartLabel x={left + step * legendStep + 14} y={legendY} anchor="start">
+                      {step === activitySteps.length - 1 ? `${bound}+` : bound}
+                    </ChartLabel>
+                  </g>
+                ))}
+                <g
+                  transform={
+                    wrapLegend
+                      ? `translate(${left} ${legendY + 20})`
+                      : `translate(${left + legendStep * 5 + 4} ${legendY})`
+                  }
+                >
+                  <rect
                     data-chart-fill
-                    x={Math.round(x + cell / 2 - 1)}
-                    y={Math.round(y + cell / 2 - 1)}
+                    x="4"
+                    y="-5"
                     width="2"
                     height="2"
                     fill="var(--zao-color-fg-muted)"
                   />
-                );
-              }
-              return (
-                <rect
-                  key={`${day}-${hour}`}
-                  data-zao-slot="chart-mark"
-                  data-step={activityStep(value)}
-                  x={x}
-                  y={y}
-                  width={cell}
-                  height={cell}
-                  fill={ramp[activityStep(value)]}
-                />
-              );
-            }),
-          )}
-          {active !== null && (
-            <rect
-              data-zao-slot="chart-guide"
-              data-chart-ink="data"
-              x={crisp(left + (active % 24) * pitch - 2)}
-              y={crisp(top + Math.floor(active / 24) * pitch - 2)}
-              width={cell + 3}
-              height={cell + 3}
-              fill="none"
-              stroke="var(--zao-color-fg-default)"
-              strokeWidth="1"
-            />
-          )}
-          <path
-            data-zao-slot="chart-accent"
-            className="chart-accent-stroke"
-            d={bracket}
-            fill="none"
-            stroke="var(--zao-color-fg-default)"
-            strokeWidth="1.5"
-          />
-          {[0, 6, 12, 18].map((hour) => (
-            <ChartLabel key={hour} x={left + hour * pitch} y={gridBottom + 14} anchor="start">
-              {String(hour).padStart(2, '0')}
-            </ChartLabel>
-          ))}
-          <g data-zao-slot="chart-legend">
-            {activitySteps.map((bound, step) => (
-              <g key={bound}>
-                <rect
-                  x={left + step * legendStep}
-                  y={legendY - 9}
-                  width="10"
-                  height="10"
-                  fill={ramp[step]}
-                />
-                <ChartLabel x={left + step * legendStep + 14} y={legendY} anchor="start">
-                  {step === activitySteps.length - 1 ? `${bound}+` : bound}
-                </ChartLabel>
+                  <ChartLabel x={14} y={0} anchor="start">
+                    no data yet
+                  </ChartLabel>
+                </g>
               </g>
-            ))}
-            <g
-              transform={
-                wrapLegend
-                  ? `translate(${left} ${legendY + 20})`
-                  : `translate(${left + legendStep * 5 + 4} ${legendY})`
-              }
-            >
-              <rect
-                data-chart-fill
-                x="4"
-                y="-5"
-                width="2"
-                height="2"
-                fill="var(--zao-color-fg-muted)"
-              />
-              <ChartLabel x={14} y={0} anchor="start">
-                no data yet
-              </ChartLabel>
-            </g>
-          </g>
+            </>
+          )}
         </svg>
-        <ChartInspector
-          inspection={inspection}
-          data={data}
-          width={width}
-          height={gridBottom}
-          name="events per hour"
-          columns={24}
-          nearest="box"
-        />
+        {!drawing && (
+          <ChartInspector
+            inspection={inspection}
+            data={data}
+            width={width}
+            height={gridBottom}
+            name="events per hour"
+            columns={24}
+            nearest="box"
+          />
+        )}
       </div>
     </ChartFrame>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AccentSquare, ChartFrame, ChartLabel, Ruler } from './chart-frame';
+import { AccentSquare, ChartFrame, ChartLabel, Ruler, fittedDash } from './chart-frame';
 import { ChartInspector, useInspection } from './chart-inspector';
 import { regionCalls, regions, regionScaleMax, stepRegionCalls } from './data';
 import { crisp, useChartWidth } from './use-chart-width';
@@ -10,7 +10,13 @@ import { LiveSimulationSwitch, useLiveSimulation } from './use-live-simulation';
 const count = new Intl.NumberFormat('en-US');
 
 /** Bars as needles with square heads on one baseline; the lead bar carries the accent. */
-export function BarChart({ compact = false }: { compact?: boolean }) {
+export function BarChart({
+  compact = false,
+  drawing = false,
+}: {
+  compact?: boolean;
+  drawing?: boolean;
+}) {
   const [plotRef, width] = useChartWidth<HTMLDivElement>();
   const [values, setValues] = useState(regionCalls);
   const simulation = useLiveSimulation(() => setValues((current) => stepRegionCalls(current)));
@@ -26,9 +32,15 @@ export function BarChart({ compact = false }: { compact?: boolean }) {
   const average = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
   const lead = values.indexOf(Math.max(...values));
   const active = inspection.active;
-  const versus = (value: number) => {
+  const signed = (value: number) => {
     const difference = value - average;
-    return `${difference >= 0 ? '+' : '−'}${Math.abs(difference)} vs avg`;
+    return `${difference >= 0 ? '+' : '−'}${Math.abs(difference)}`;
+  };
+  const versus = (value: number) => `${signed(value)} vs avg`;
+  const compared = (value: number) => {
+    const difference = value - average;
+    if (difference === 0) return `at the ${average} average`;
+    return `${Math.abs(difference)} ${difference > 0 ? 'above' : 'below'} the ${average} average`;
   };
 
   const data = values.map((value, index) => ({
@@ -36,8 +48,16 @@ export function BarChart({ compact = false }: { compact?: boolean }) {
     y: 0,
     width: slot,
     height,
-    label: `${regions[index]!.name}: ${count.format(value)} calls`,
+    label: `${regions[index]!.name}: ${count.format(value)} calls, ${compared(value)}`,
   }));
+  const table = {
+    columns: [
+      { label: 'Region' },
+      { label: 'Calls', numeric: true },
+      { label: 'Difference from average', numeric: true },
+    ],
+    rows: values.map((value, index) => [regions[index]!.name, count.format(value), signed(value)]),
+  };
   const readout =
     active === null
       ? `${values.length} regions · avg ${average}`
@@ -57,6 +77,9 @@ export function BarChart({ compact = false }: { compact?: boolean }) {
       readout={readout}
       unit="calls"
       announcement={inspection.announcement}
+      table={compact ? undefined : table}
+      drawing={drawing}
+      drawingLabel="Loading calls by region"
       controls={
         compact ? undefined : (
           <LiveSimulationSwitch
@@ -69,69 +92,77 @@ export function BarChart({ compact = false }: { compact?: boolean }) {
       <div ref={plotRef} className="chart-plot" style={{ height }}>
         <svg width={width} height={height} aria-hidden="true" focusable="false">
           <Ruler x0={left} x1={right} y={baseline} />
-          <line
-            data-zao-slot="chart-reference"
-            data-chart-ink="muted"
-            x1={left}
-            x2={right}
-            y1={averageY}
-            y2={averageY}
-            stroke="var(--zao-color-fg-muted)"
-            strokeWidth="1"
-            strokeDasharray="2 3"
-          />
-          <ChartLabel x={right} y={averageY - 6} anchor="end">
-            avg {average}
-          </ChartLabel>
-          {values.map((value, index) => {
-            const x = crisp(left + slot * (index + 0.5));
-            const head = y(value);
-            const emphasized = index === lead || index === active;
-            const ink = emphasized ? 'var(--zao-color-fg-default)' : 'var(--zao-color-fg-muted)';
-            return (
-              <g
-                key={regions[index]!.id}
-                data-zao-slot="chart-mark"
-                data-state={index === active ? 'active' : index === lead ? 'lead' : 'rest'}
-              >
-                <line
-                  data-chart-ink={emphasized ? 'data' : 'muted'}
-                  x1={x}
-                  x2={x}
-                  y1={crisp(baseline)}
-                  y2={head}
-                  stroke={ink}
-                  strokeWidth="1.5"
-                />
-                {index === lead ? (
-                  <AccentSquare x={x} y={head} />
-                ) : (
-                  <rect
-                    data-chart-fill
-                    x={Math.round(x - 3)}
-                    y={Math.round(head - 3)}
-                    width="6"
-                    height="6"
-                    fill={ink}
-                  />
-                )}
-                <ChartLabel x={x} y={head - 9} strong={emphasized}>
-                  {count.format(value)}
-                </ChartLabel>
-                <ChartLabel x={x} y={baseline + 20} strong={index === active}>
-                  {regions[index]!.id}
-                </ChartLabel>
-              </g>
-            );
-          })}
+          {!drawing && (
+            <>
+              <line
+                data-zao-slot="chart-reference"
+                data-chart-ink="muted"
+                x1={left}
+                x2={right}
+                y1={averageY}
+                y2={averageY}
+                stroke="var(--zao-color-fg-muted)"
+                strokeWidth="1"
+                strokeDasharray={fittedDash(right - left)}
+              />
+              <ChartLabel x={right} y={averageY - 6} anchor="end">
+                avg {average}
+              </ChartLabel>
+              {values.map((value, index) => {
+                const x = crisp(left + slot * (index + 0.5));
+                const head = y(value);
+                const emphasized = index === lead || index === active;
+                const ink = emphasized
+                  ? 'var(--zao-color-fg-default)'
+                  : 'var(--zao-color-fg-muted)';
+                return (
+                  <g
+                    key={regions[index]!.id}
+                    data-zao-slot="chart-mark"
+                    data-state={index === active ? 'active' : index === lead ? 'lead' : 'rest'}
+                  >
+                    <line
+                      data-chart-ink={emphasized ? 'data' : 'muted'}
+                      x1={x}
+                      x2={x}
+                      y1={crisp(baseline)}
+                      y2={head}
+                      stroke={ink}
+                      strokeWidth="1.5"
+                    />
+                    {index === lead ? (
+                      <AccentSquare x={x} y={head} />
+                    ) : (
+                      <rect
+                        data-chart-fill
+                        x={Math.round(x - 3)}
+                        y={Math.round(head - 3)}
+                        width="6"
+                        height="6"
+                        fill={ink}
+                      />
+                    )}
+                    <ChartLabel x={x} y={head - 9} strong={emphasized}>
+                      {count.format(value)}
+                    </ChartLabel>
+                    <ChartLabel x={x} y={baseline + 20} strong={index === active}>
+                      {regions[index]!.id}
+                    </ChartLabel>
+                  </g>
+                );
+              })}
+            </>
+          )}
         </svg>
-        <ChartInspector
-          inspection={inspection}
-          data={data}
-          width={width}
-          height={height}
-          name="calls by region"
-        />
+        {!drawing && (
+          <ChartInspector
+            inspection={inspection}
+            data={data}
+            width={width}
+            height={height}
+            name="calls by region"
+          />
+        )}
       </div>
     </ChartFrame>
   );
