@@ -67,6 +67,8 @@ export type SequencePhase = 'sequence' | 'done' | 'fallback';
 
 interface SequenceContextValue {
   phase: SequencePhase;
+  /** The tab's session had already been through the sequence when this page loaded. */
+  restored: boolean;
   /** Whether the sequence runs now. */
   active: boolean;
   spacer: RefObject<HTMLDivElement | null>;
@@ -79,6 +81,7 @@ interface SequenceContextValue {
 
 const SequenceContext = createContext<SequenceContextValue>({
   phase: 'fallback',
+  restored: false,
   active: false,
   spacer: { current: null },
   setReady: () => {},
@@ -98,13 +101,16 @@ export function LandingSequence({ children }: { children: ReactNode }) {
   const restore = useRef<number | null>(null);
   const [mounted, setMounted] = useState(false);
   const [played, setPlayed] = useState(false);
+  const [restored, setRestored] = useState(false);
   const [sequenceReady, setReady] = useState(false);
   const last = useRef({ scroll: 0, spacer: 0 });
   const phase: SequencePhase = !eligible ? 'fallback' : played ? 'done' : 'sequence';
   const active = phase === 'sequence';
 
   useEffect(() => {
-    setPlayed(readPlayed());
+    const already = readPlayed();
+    setPlayed(already);
+    setRestored(already);
     setMounted(true);
   }, []);
 
@@ -151,7 +157,9 @@ export function LandingSequence({ children }: { children: ReactNode }) {
       style={{ display: 'contents' }}
     >
       {active ? <div ref={spacer} className="landing-sequence-spacer" aria-hidden="true" /> : null}
-      <SequenceContext.Provider value={{ phase, active, spacer, setReady, finish, restore }}>
+      <SequenceContext.Provider
+        value={{ phase, restored, active, spacer, setReady, finish, restore }}
+      >
         {children}
       </SequenceContext.Provider>
     </div>
@@ -223,7 +231,7 @@ function painted(s: number, g: Geometry, ease: (t: number) => number) {
  * scroll timeline, and switches the pose, picking and cover as the reader crosses each scene.
  */
 export function useSequenceStage() {
-  const { phase, active, spacer, setReady, finish, restore } = useSequence();
+  const { phase, restored, active, spacer, setReady, finish, restore } = useSequence();
   const section = useRef<HTMLElement>(null);
   const slot = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -437,5 +445,5 @@ export function useSequenceStage() {
     };
   }, [active, spacer, setReady, finish, restore]);
 
-  return { phase, active, section, slot, stage, pose, pickable, scrub };
+  return { phase, restored, active, section, slot, stage, pose, pickable, scrub };
 }

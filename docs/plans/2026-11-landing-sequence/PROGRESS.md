@@ -179,3 +179,13 @@ The first CI run at `87a4a0b` failed 2 of 705 on Linux; both pass locally and we
 
 - **The room moved the page** (`landing.spec.ts`, the fallback hero test): plates that grew to fit their parts pushed Two readers down 152px as Plan's steps arrived. Fixed by the room's fixed 128-fen plate height. It was 32rem at first, but this site's root font size makes that 448px, which was too short.
 - **A click below the fold** (`landing-sequence.spec.ts`): during the Built hold, the window's bottom waits below the fold (LS4). After approving, "Reopen 2 requests" was out of view on CI's text wrapping, and Playwright's scroll to reach it moved the sequence. The test now only approves; `landing.spec.ts` covers reopening.
+
+## Deployed, Nov 4
+
+PR #2 was rebase-merged into `main` (`9884227`), and Cloudflare Pages deployed it to zaoui.dev. Checked live in a fresh session at 1440 × 900:
+
+- the sequence opens on Parts, builds, steps back and collapses at the dock (the scroll returns to 0 with the headline unmoved)
+- "Browse components" lands on the room's 13 plates
+- no page errors
+
+**Found live: a restored session flashed the drawing's copies.** After a reload in a tab that had already docked, the hero showed the flattened copies for about half a second, including the overlay layer's open View menu and the focus brackets. The server renders the fallback's Parts, and the stage's ordinary pose switch waits for a transition fallback timer before showing the live window. The fix remounts the stage when the session restores "played", so it starts at Built. The test reads the stage at the first visible frame after a reload. Fixed on `landing/restored-stage`, not yet deployed.
