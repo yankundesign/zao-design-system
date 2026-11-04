@@ -101,3 +101,32 @@
     background: Highlight;
   }
 }
+
+/*
+ * Bar's prism form (charts wave 2, P2-P3): a resting face is an open outline; a bar in full
+ * shows its planes stepping toward the canvas in flat tones. Never a gradient, blur or shadow.
+ * Forced colors outline the planes instead.
+ */
+.chart-prism-plane-top {
+  fill: var(--zao-color-border-strong);
+}
+
+.chart-prism-plane-side {
+  fill: var(--zao-color-fg-muted);
+}
+
+.chart-prism-edges {
+  fill: none;
+  stroke: none;
+  stroke-width: var(--zao-stroke-hairline, 1px);
+}
+
+@media (forced-colors: active) {
+  .chart-prism-plane-top,
+  .chart-prism-plane-side {
+    fill: Canvas;
+  }
+  .chart-prism-edges {
+    stroke: CanvasText;
+  }
+}

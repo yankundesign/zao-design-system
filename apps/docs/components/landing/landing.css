@@ -906,3 +906,190 @@
     outline-color: CanvasText;
   }
 }
+
+/* Landing sequence (docs/plans/2026-11-landing-sequence) -------------------------------- */
+
+/*
+ * LS7: "Browse components" is a hint down the page, not an action: a quiet text link with an
+ * arrow, beside View on GitHub.
+ */
+.landing-hint-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zao-space-1-5);
+  min-block-size: var(--zao-size-control-md, var(--zao-space-8));
+  padding-inline: var(--zao-space-1);
+  color: var(--zao-color-fg-muted);
+  font: inherit;
+  outline-color: var(--zao-color-focus-ring);
+  transition: color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+}
+
+.landing-hint-link:hover {
+  color: var(--zao-color-fg-default);
+}
+
+.landing-hint-link:focus-visible {
+  outline-style: solid;
+  outline-width: 2px;
+  outline-offset: 2px;
+}
+
+.landing-hint-icon {
+  inline-size: var(--zao-space-4);
+  block-size: var(--zao-space-4);
+  flex: none;
+}
+
+.landing-sequence-slot {
+  position: relative;
+}
+
+/* The stage stays in its slot and is painted over the screen from its top-left corner. */
+.landing-sequence-stage {
+  transform-origin: 0 0;
+}
+
+/*
+ * The screen, as a box inside the held hero: the sequence measures the hero's offset to the
+ * viewport, which stays constant while the frame is held. The ground sits above the copy and
+ * below the stage; the foot sits above both.
+ */
+.landing-sequence-screen {
+  position: absolute;
+  /* Physical, like the measured offsets and the stage's transform, so RTL needs no mirror. */
+  top: var(--landing-screen-top, 0);
+  left: var(--landing-screen-left, 0);
+  inline-size: var(--landing-screen-width, 100%);
+  block-size: var(--landing-screen-height, 100%);
+  pointer-events: none;
+}
+
+.landing-sequence-ground {
+  background-color: var(--zao-color-bg-sunken);
+}
+
+.landing-sequence-ground::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--zao-color-border-strong);
+  mask-image:
+    var(--landing-field, linear-gradient(transparent, transparent)),
+    radial-gradient(closest-side, rgb(0 0 0 / 0.3), #000);
+  mask-size:
+    var(--landing-field-width, 100%) var(--landing-field-height, 100%),
+    100% 100%;
+  mask-repeat: repeat, no-repeat;
+  mask-composite: intersect;
+}
+
+/* Over the whole screen's ground, the stage's own ground and frame wait until it is built. */
+.landing-sequence-stage[data-ground='screen'] .exploded-stage {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.landing-sequence-stage[data-ground='screen'] .exploded-stage::before {
+  visibility: hidden;
+}
+
+/* The first screen's foot: the picked layer, or a still hint to scroll. */
+.landing-sequence-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-block-end: var(--zao-space-6);
+  padding-inline: var(--zao-space-6);
+}
+
+.landing-sequence-caption {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--zao-space-1-5);
+  max-inline-size: calc(var(--zao-space-20) * 8);
+  margin: 0;
+  text-align: center;
+}
+
+/*
+ * Until the first scene is in place, the page waits rather than flashing the docs first. A
+ * reveal after 4s keeps it readable if the script never runs.
+ */
+@media (prefers-reduced-motion: no-preference) and (min-width: 64rem) and (min-height: 40rem) {
+  [data-landing-sequence]:not([data-ready]) > *,
+  body:has([data-landing-sequence]:not([data-ready])) > header,
+  body:has([data-landing-sequence]:not([data-ready])) > footer {
+    visibility: hidden;
+    animation: landing-sequence-reveal 0s 4s forwards;
+  }
+}
+
+@keyframes landing-sequence-reveal {
+  to {
+    visibility: visible;
+  }
+}
+
+@media (forced-colors: active) {
+  .landing-sequence-ground::before {
+    display: none;
+  }
+
+  .landing-hint-link {
+    color: LinkText;
+  }
+}
+
+/*
+ * The nav's links carry their own z-index; isolating the nav keeps them under the window
+ * while the sequence covers the frame.
+ */
+[data-landing-sequence][data-active] .docs-nav-aside {
+  isolation: isolate;
+}
+
+/*
+ * The room (landing sequence, LS8): parts and charts share one wall, two to a row, where a
+ * chart has less room than on its own wall. Every plate keeps one fixed height, 128 fen, tall
+ * enough for the tallest part with the plate's padding (the built Line chart on its Card, 491px),
+ * so a part that grows as it arrives, like Plan, never moves the page; the plates in a row match.
+ */
+[data-landing-section='room'] .gallery-stage {
+  min-height: calc(var(--zao-space-1) * 128);
+}
+
+/* One track the plate's width: a chart sizes itself to its container. */
+[data-landing-section='room'] .gallery-plate-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* On phones the plate gives its part more of its width. */
+@media (max-width: 29.99rem) {
+  [data-landing-section='room'] .gallery-plate-body {
+    padding-inline: var(--zao-space-2);
+  }
+
+  [data-landing-section='room'] .gallery-demo {
+    width: 100%;
+  }
+}
+
+/*
+ * Under 360px a chart on its Card needs more width than the screen has, so the chart plates
+ * draw their part slightly smaller rather than scroll the page sideways (rule 9).
+ */
+@media (max-width: 22.49rem) {
+  [data-landing-section='room']
+    :is(
+      [data-plate='line'],
+      [data-plate='bar-prism'],
+      [data-plate='heatmap'],
+      [data-plate='histogram'],
+      [data-plate='bar']
+    )
+    .gallery-plate-body
+    > * {
+    zoom: 0.85;
+  }
+}

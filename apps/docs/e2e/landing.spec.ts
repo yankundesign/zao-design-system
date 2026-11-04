@@ -5,18 +5,35 @@ import type { Locator, Page } from '@playwright/test';
 // The landing page (docs/plans/2026-10-landing). L5–L9 and L14–L17 are decided; L12 and L13
 // remain open and have no option sheet. Since Oct 11 (finish plan V9, V10) the hero is the
 // workspace taken apart along the depth axis, resting on Parts, and the bracket set closes the
-// page in Explore.
+// page in Explore. Since Nov 3 (docs/plans/2026-11-landing-sequence) a desktop with motion
+// allowed opens on a scroll sequence; `open` scrolls past it to the docs, and
+// landing-sequence.spec.ts covers the sequence itself. Tests of the Parts/Built switch run in
+// the fallback, under reduced motion.
 
-async function chooseMode(page: Page, mode: 'light' | 'dark') {
-  await page
-    .getByRole('radiogroup', { name: 'Mode' })
-    .getByRole('radio', { name: mode === 'light' ? 'Light' : 'Dark', exact: true })
-    .click();
+/**
+ * Past the sequence, where the page is the docs and the workspace rests in its slot. Docking ends
+ * the sequence for the session, so the page's top is then the docs' top.
+ */
+async function dock(page: Page) {
+  await page.locator('[data-landing-sequence][data-ready]').waitFor({ state: 'attached' });
+  const spacer = await page.evaluate(
+    () => document.querySelector<HTMLElement>('.landing-sequence-spacer')?.offsetHeight ?? 0,
+  );
+  if (!spacer) return;
+  await page.evaluate((top) => window.scrollTo(0, top), spacer);
+  await expect(page.locator('[data-landing-sequence]')).toHaveAttribute('data-phase', 'done');
+  await expect(page.locator('body > header')).not.toHaveAttribute('inert');
 }
 
+/**
+ * Opens the landing in a mode. The finish follows the system by default, so the mode comes from
+ * the emulated color scheme: clicking the sticky header's switch would make Playwright scroll it
+ * "into view", back into the sequence.
+ */
 async function open(page: Page, query = '', mode: 'light' | 'dark' = 'light') {
+  await page.emulateMedia({ colorScheme: mode });
   await page.goto(`/${query}`);
-  await chooseMode(page, mode);
+  await dock(page);
   await page.evaluate(() => document.fonts.ready);
   await expect(page.locator('[data-landing]')).toHaveAttribute('data-zao-mode', mode);
 }
@@ -34,7 +51,8 @@ function lift(page: Page, course: number) {
 
 /** Points at the drawing: across is 0–1 of its width, `y` is in figure units. */
 async function pointAt(page: Page, across: number, y: number) {
-  await page.locator('[data-landing-bracket]').scrollIntoViewIfNeeded();
+  // No scrolling into view: its room for opened courses hangs above it, under the sticky header,
+  // and scrolling up to show that room would go back into the sequence.
   const box = (await page.locator('[data-landing-bracket] svg').boundingBox())!;
   await page.mouse.move(box.x + box.width * across, box.y + ((y - 1.5) / 92) * box.height);
 }
@@ -76,12 +94,13 @@ const caption = (page: Page) => page.locator('.landing-bracket-caption [data-cur
 const liveWindow = (page: Page) => page.locator('.exploded-live [data-landing-window]');
 const stage = (page: Page) => page.locator('[data-landing-section="hero"] .exploded-stage');
 
-/** Puts the workspace back together so its controls can be used. */
+/**
+ * Puts the workspace back together so its controls can be used: the Built switch in the
+ * fallback; past the sequence it is already built.
+ */
 async function build(page: Page) {
-  await page
-    .getByRole('radiogroup', { name: 'Workspace view' })
-    .getByRole('radio', { name: 'Built' })
-    .click();
+  const radios = page.getByRole('radiogroup', { name: 'Workspace view' });
+  if (await radios.count()) await radios.getByRole('radio', { name: 'Built' }).click();
   await expect(stage(page)).toHaveAttribute('data-pose', 'built');
   // Let the assembly finish settling before anything is measured.
   await stage(page).evaluate((node) =>
@@ -107,8 +126,8 @@ test('sections follow the plan order with one page title', async ({ page }) => {
     .evaluateAll((sections) =>
       sections.map((section) => section.getAttribute('data-landing-section')),
     );
-  expect(order).toEqual(['hero', 'readers', 'explore']);
-  for (const name of ['Written for two readers.', 'Explore ZAO']) {
+  expect(order).toEqual(['hero', 'room', 'readers', 'explore']);
+  for (const name of ['Every part, live.', 'Written for two readers.', 'Explore ZAO']) {
     await expect(page.getByRole('heading', { level: 2, name })).toBeVisible();
   }
   // The Button close-up and the standalone Depth section were dropped on Oct 10 (L16).
@@ -117,28 +136,34 @@ test('sections follow the plan order with one page title', async ({ page }) => {
   await expect(page.getByText('Local Su study')).toHaveCount(0);
 });
 
-test('hero actions are real links drawn with Button construction', async ({ page }) => {
+test('hero actions: View on GitHub is a Button link, Browse components a hint down', async ({
+  page,
+}) => {
   await open(page);
   const browse = page.getByRole('link', { name: 'Browse components' });
   const github = page.getByRole('link', { name: 'View on GitHub' });
-  await expect(browse).toHaveAttribute('href', '/components/button');
-  await expect(browse).toHaveAttribute('data-zao-variant', 'primary');
+  // LS7: a quiet hint down the page, after GitHub; the first screen has no primary action.
+  await expect(browse).toHaveAttribute('href', '#components');
+  await expect(browse.locator('[data-zao-slot="face"]')).toHaveCount(0);
+  await expect(browse.locator('svg')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('.landing-hero-copy [data-zao-variant="primary"]')).toHaveCount(0);
   await expect(github).toHaveAttribute('href', 'https://github.com/yankundesign/zao-design-system');
   await expect(github).toHaveAttribute('target', '_blank');
-  await expect(browse.locator('[data-zao-slot="face"]')).toHaveCount(1);
+  await expect(github).toHaveAttribute('data-zao-variant', 'secondary');
+  await expect(github.locator('[data-zao-slot="face"]')).toHaveCount(1);
 
   // Hover lifts the face 2px along the depth axis; the link's own box stays where it is.
-  const before = await browse.boundingBox();
+  const before = await github.boundingBox();
   const travel = () =>
-    browse.locator('[data-zao-slot="face"]').evaluate((face) => {
+    github.locator('[data-zao-slot="face"]').evaluate((face) => {
       const transform = getComputedStyle(face).transform;
       const matrix = new DOMMatrixReadOnly(transform === 'none' ? undefined : transform);
       return [matrix.m41, matrix.m42];
     });
   expect(await travel()).toEqual([0, 0]);
-  await browse.hover();
+  await github.hover();
   await expect.poll(travel).toEqual([2, -2]);
-  expect(await browse.boundingBox()).toEqual(before);
+  expect(await github.boundingBox()).toEqual(before);
 });
 
 test.describe('the bracket set answers the pointer', () => {
@@ -313,9 +338,15 @@ test.describe('the character field', () => {
   test('grounds the drawing, its copies and the transcript in the mode’s ink', async ({ page }) => {
     // Oct 16: one tile, painted once on the landing root and used as a mask.
     await page.setViewportSize({ width: 1440, height: 900 });
+    // Each pass opens a fresh sequence, which rests on Parts, where the copies are drawn.
+    await page.addInitScript(() => window.sessionStorage.removeItem('zao-landing-sequence'));
     for (const mode of ['light', 'dark'] as const) {
-      await open(page, '', mode);
+      await page.emulateMedia({ colorScheme: mode });
+      await page.goto('/');
+      await page.locator('[data-landing-sequence][data-ready]').waitFor({ state: 'attached' });
+      await expect(page.locator('[data-landing]')).toHaveAttribute('data-zao-mode', mode);
       await painted(page);
+      await expect(stage(page)).toHaveAttribute('data-pose', 'parts');
       const drawing = await ground(page, '[data-landing-section="hero"] .exploded-stage');
       expect(drawing.mask).toContain('blob:');
       expect(drawing.events).toBe('none');
@@ -327,6 +358,7 @@ test.describe('the character field', () => {
       );
       expect(copy.display).toBe('block');
       expect(copy.mask).toContain('blob:');
+      await dock(page);
       const transcript = await ground(page, '.exploded-live .landing-window-conversation');
       expect(transcript.display).toBe('block');
       expect(transcript.ink).toBe(await role(page, '--zao-color-border-default'));
@@ -351,6 +383,7 @@ test.describe('the character field', () => {
 });
 
 test.describe('the workspace', () => {
+  // Past the sequence, the page is the docs and its top is the real top (one-time, Nov 3).
   test.use({ viewport: { width: 1440, height: 900 } });
 
   const status = (page: Page, id: string) => page.locator(`[data-request-status="${id}"]`).first();
@@ -364,7 +397,7 @@ test.describe('the workspace', () => {
     await build(page);
     await expect(status(page, 'REQ-0137')).toHaveText('Needs review');
     await expect(status(page, 'REQ-1186')).toHaveText('Needs review');
-    const action = page.getByRole('button', { name: 'Approve 2 requests' });
+    const action = liveWindow(page).getByRole('button', { name: 'Approve 2 requests' });
     await action.click();
     await expect(status(page, 'REQ-0137')).toHaveText('Ready');
     await expect(status(page, 'REQ-1186')).toHaveText('Ready');
@@ -373,11 +406,13 @@ test.describe('the workspace', () => {
         'Approved 2 requests. Policy update and Storage audit are now Ready.',
       ),
     ).toBeVisible();
-    const reopen = page.getByRole('button', { name: 'Reopen 2 requests' });
+    const reopen = liveWindow(page).getByRole('button', { name: 'Reopen 2 requests' });
     await expect(reopen).toBeFocused();
     await reopen.click();
     await expect(status(page, 'REQ-0137')).toHaveText('Needs review');
-    await expect(page.getByRole('button', { name: 'Approve 2 requests' })).toBeFocused();
+    await expect(
+      liveWindow(page).getByRole('button', { name: 'Approve 2 requests' }),
+    ).toBeFocused();
   });
 
   test('the header names North and its readings follow the requests', async ({ page }) => {
@@ -389,15 +424,17 @@ test.describe('the workspace', () => {
     const readings = window.locator('[aria-label="North readings"]');
     await expect(readings).toContainText('Members48');
     await expect(readings).toContainText('Open4');
-    await page.getByRole('button', { name: 'Approve 2 requests' }).click();
+    await liveWindow(page).getByRole('button', { name: 'Approve 2 requests' }).click();
     await expect(readings).toContainText('Open2');
   });
 
   test('a written request to approve does the same', async ({ page }) => {
     await open(page);
     await build(page);
-    await page.getByRole('textbox', { name: 'Message the assistant' }).fill('Approve them, please');
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await liveWindow(page)
+      .getByRole('textbox', { name: 'Message the assistant' })
+      .fill('Approve them, please');
+    await liveWindow(page).getByRole('button', { name: 'Send', exact: true }).click();
     await expect(status(page, 'REQ-1186')).toHaveText('Ready');
     await expect(transcript(page).getByText('Approve them, please')).toBeVisible();
   });
@@ -407,149 +444,255 @@ test.describe('the workspace', () => {
     await build(page);
     const window = liveWindow(page);
     const before = await pageBox(window);
-    await page.getByRole('tab', { name: /^Members/ }).click();
-    await expect(page.getByRole('table', { name: 'North members' })).toBeVisible();
+    await liveWindow(page)
+      .getByRole('tab', { name: /^Members/ })
+      .click();
+    await expect(liveWindow(page).getByRole('table', { name: 'North members' })).toBeVisible();
     expect(await pageBox(window)).toEqual(before);
-    await page.getByRole('button', { name: 'Workspace settings' }).click();
-    await expect(page.getByRole('tab', { name: 'Settings' })).toHaveAttribute(
+    await liveWindow(page).getByRole('button', { name: 'Workspace settings' }).click();
+    await expect(liveWindow(page).getByRole('tab', { name: 'Settings' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
-    await page.getByRole('button', { name: 'View', exact: true }).click();
-    await page.getByRole('menuitem', { name: 'All requests' }).click();
-    await expect(page.getByRole('tab', { name: /^Requests/ })).toHaveAttribute(
+    await liveWindow(page).getByRole('button', { name: 'View', exact: true }).click();
+    await liveWindow(page).getByRole('menuitem', { name: 'All requests' }).click();
+    await expect(liveWindow(page).getByRole('tab', { name: /^Requests/ })).toHaveAttribute(
       'aria-selected',
       'true',
     );
     expect(await pageBox(window)).toEqual(before);
   });
 
-  test('the hero rests on Parts: six named layers that keep the stage and the page still', async ({
+  // The Parts/Built switch and the depth control are the fallback's (LS10).
+  test.describe('the fallback hero', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('the hero rests on Parts: six named layers that keep the stage and the page still', async ({
+      page,
+    }) => {
+      await open(page);
+      const drawing = stage(page);
+      await expect(drawing).toHaveAttribute('data-pose', 'parts');
+      await expect(drawing).toHaveAttribute('data-apart', 'true');
+      const radios = page.getByRole('radiogroup', { name: 'Workspace view' });
+      await expect(radios.getByRole('radio', { name: 'Parts' })).toHaveAttribute(
+        'aria-checked',
+        'true',
+      );
+      // The working window is hidden and inert; six layers, each a static copy, stand in for it.
+      await expect(liveWindow(page)).toBeHidden();
+      await expect(page.getByRole('button', { name: 'Approve 2 requests' })).toHaveCount(0);
+      await expect(drawing.locator('.exploded-layer')).toHaveCount(6);
+      const cards = drawing.locator('.exploded-layer[data-layer="card"] [data-exploded-copy]');
+      await expect(cards.locator('[data-zao-component="composer"]')).toHaveCSS(
+        'visibility',
+        'visible',
+      );
+      await expect(
+        cards.locator('[data-zao-component="message"][data-zao-kind="user"]').first(),
+      ).toHaveCSS('visibility', 'visible');
+      for (const control of await cards.locator('[data-zao-component="icon-button"]').all()) {
+        await expect(control).toHaveCSS('visibility', 'hidden');
+      }
+      await expect(drawing.locator('.exploded-tag-name')).toHaveText([
+        /^00 canvas/,
+        /^01 surface/,
+        /^02 cards/,
+        /^03 controls/,
+        /^04 overlay/,
+        /^05 focus/,
+      ]);
+      const hero = page.locator('[data-landing-section="hero"]');
+      const heroCaption = hero.locator('.landing-hero-caption');
+      await expect(heroCaption).toContainText('six layers along the depth axis');
+
+      // Every layer stays inside the stage.
+      const box = await drawing.boundingBox();
+      for (const layer of await drawing.locator('.exploded-layer').all()) {
+        const part = (await layer.boundingBox())!;
+        expect(part.x).toBeGreaterThanOrEqual(box!.x - 1);
+        expect(part.y).toBeGreaterThanOrEqual(box!.y - 1);
+        expect(part.x + part.width).toBeLessThanOrEqual(box!.x + box!.width + 1);
+        expect(part.y + part.height).toBeLessThanOrEqual(box!.y + box!.height + 1);
+      }
+
+      // The keyboard picks layers from the canvas up, and Escape clears the pick.
+      const group = page.getByRole('group', {
+        name: 'North workspace, taken apart into six layers',
+      });
+      await group.focus();
+      await page.keyboard.press('ArrowUp');
+      await expect(heroCaption).toHaveText('00 Canvas: the ground every part stands on.');
+      await page.keyboard.press('ArrowUp');
+      await expect(heroCaption).toContainText('01 Surface');
+      await expect(drawing.locator('.exploded-layer[data-picked="true"]')).toHaveAttribute(
+        'data-layer',
+        'surface',
+      );
+      await page.keyboard.press('Escape');
+      await expect(heroCaption).toContainText('six layers along the depth axis');
+
+      // Built puts the window back in the same box; nothing below moves.
+      const before = await pageBox(drawing);
+      const below = await pageBox(page.locator('[data-landing-section="readers"]'));
+      await build(page);
+      await expect(liveWindow(page)).toBeVisible();
+      const named = await liveWindow(page)
+        .locator('[data-showcase-part]')
+        .evaluateAll((parts) => [
+          ...new Set(parts.map((part) => part.getAttribute('data-showcase-part'))),
+        ]);
+      expect(named.length).toBe(11);
+      await expect(heroCaption).toContainText(`made from ${named.length} ZAO components`);
+      expect(await pageBox(drawing)).toEqual(before);
+      expect(await pageBox(page.locator('[data-landing-section="readers"]'))).toEqual(below);
+      await radios.getByRole('radio', { name: 'Parts' }).click();
+      await expect(drawing).toHaveAttribute('data-pose', 'parts');
+      await expect(liveWindow(page)).toBeHidden();
+    });
+
+    test('depth scales the window’s painted distances, never its layout', async ({ page }) => {
+      await open(page);
+      await build(page);
+      const window = liveWindow(page);
+      const before = await pageBox(window);
+      const slider = page.getByRole('slider', { name: 'Depth scale' });
+      await slider.fill('4');
+      await expect(window).toHaveAttribute('data-depth-scale', '4');
+      const lift = await window.evaluate((node) =>
+        getComputedStyle(node).getPropertyValue('--zao-depth-lift'),
+      );
+      expect(Number.parseFloat(lift)).toBeGreaterThan(4);
+      expect(await pageBox(window)).toEqual(before);
+    });
+  });
+});
+
+for (const fallback of [false, true]) {
+  test.describe(fallback ? 'the fallback hero' : 'past the sequence', () => {
+    if (fallback) test.use({ reducedMotion: 'reduce' });
+
+    test('keyboard order follows the reading order', async ({ page }) => {
+      await open(page);
+      const main = page.locator('main');
+      const targets: Locator[] = [
+        main.getByRole('link', { name: 'View on GitHub' }),
+        main.getByRole('link', { name: 'Browse components' }),
+        main.getByRole('group', { name: 'Bracket set drawing' }),
+        ...(fallback
+          ? [
+              main.getByRole('radio', { name: 'Parts' }),
+              main.getByRole('group', { name: 'North workspace, taken apart into six layers' }),
+              main.getByRole('slider', { name: 'Depth scale' }),
+            ]
+          : [main.getByRole('button', { name: 'Approve 2 requests' })]),
+        main.getByRole('link', { name: /^Foundations/ }),
+      ];
+      const positions: number[] = [];
+      for (const target of targets) {
+        positions.push(
+          await target.first().evaluate((node) => {
+            const all = [
+              ...document.querySelectorAll<HTMLElement>(
+                'main a[href], main button:not([disabled]), main input:not([disabled]), main [tabindex="0"]',
+              ),
+            ];
+            return all.indexOf(node as HTMLElement);
+          }),
+        );
+      }
+      expect(positions.every((position) => position >= 0)).toBe(true);
+      expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+    });
+  });
+}
+
+test('the room shows thirteen live plates, a part beside a chart', async ({ page }) => {
+  await open(page);
+  const room = page.locator('[data-landing-section="room"]');
+  await expect(room).toHaveAttribute('id', 'components');
+  // LS8: each row pairs a part with a chart; the components wall's Storage ring is left out.
+  expect(
+    await room
+      .locator('.gallery-plate')
+      .evaluateAll((plates) => plates.map((plate) => plate.getAttribute('data-plate'))),
+  ).toEqual([
+    'button',
+    'ring',
+    'switch',
+    'line',
+    'tabs',
+    'bar-prism',
+    'menu',
+    'heatmap',
+    'composer',
+    'histogram',
+    'plan',
+    'bar',
+    'approval-gate',
+  ]);
+  // Every part stays on its plate, charts included, two to a row.
+  const spills = await room.locator('.gallery-plate').evaluateAll((plates) =>
+    plates.flatMap((plate) => {
+      const stage = plate.querySelector('.gallery-stage')!.getBoundingClientRect();
+      const part = plate.querySelector('.gallery-plate-body > *')!.getBoundingClientRect();
+      const out =
+        part.top < stage.top - 1 ||
+        part.bottom > stage.bottom + 1 ||
+        part.left < stage.left - 1 ||
+        part.right > stage.right + 1;
+      return out ? [plate.getAttribute('data-plate')] : [];
+    }),
+  );
+  expect(spills).toEqual([]);
+  // LS7: the hint lands on the room.
+  await page.getByRole('link', { name: 'Browse components' }).click();
+  await expect(page).toHaveURL(/#components$/);
+  await expect(room.getByRole('heading', { name: 'Every part, live.' })).toBeInViewport();
+  // The plates run the real parts.
+  const toggle = room.locator('[data-plate="switch"]').getByRole('switch').first();
+  const checked = await toggle.getAttribute('aria-checked');
+  await toggle.click();
+  await expect(toggle).not.toHaveAttribute('aria-checked', checked ?? '');
+});
+
+for (const width of [1280, 390, 320]) {
+  test(`${width}px: every part in the room stays on its plate, and the page never scrolls sideways`, async ({
     page,
   }) => {
+    await page.setViewportSize({ width, height: 800 });
     await open(page);
-    const drawing = stage(page);
-    await expect(drawing).toHaveAttribute('data-pose', 'parts');
-    await expect(drawing).toHaveAttribute('data-apart', 'true');
-    const radios = page.getByRole('radiogroup', { name: 'Workspace view' });
-    await expect(radios.getByRole('radio', { name: 'Parts' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
-    // The working window is hidden and inert; six layers, each a static copy, stand in for it.
-    await expect(liveWindow(page)).toBeHidden();
-    await expect(page.getByRole('button', { name: 'Approve 2 requests' })).toHaveCount(0);
-    await expect(drawing.locator('.exploded-layer')).toHaveCount(6);
-    const cards = drawing.locator('.exploded-layer[data-layer="card"] [data-exploded-copy]');
-    await expect(cards.locator('[data-zao-component="composer"]')).toHaveCSS(
-      'visibility',
-      'visible',
-    );
-    await expect(
-      cards.locator('[data-zao-component="message"][data-zao-kind="user"]').first(),
-    ).toHaveCSS('visibility', 'visible');
-    for (const control of await cards.locator('[data-zao-component="icon-button"]').all()) {
-      await expect(control).toHaveCSS('visibility', 'hidden');
+    // Every chart plate arrives as its drawing when it comes into view, then builds: measure the
+    // built parts, which are the tallest, and check the page below never moves.
+    const readers = page.locator('[data-landing-section="readers"]');
+    const before = await pageBox(readers);
+    for (const plate of await page.locator('[data-landing-section="room"] .gallery-plate').all()) {
+      await plate.scrollIntoViewIfNeeded();
     }
-    await expect(drawing.locator('.exploded-tag-name')).toHaveText([
-      /^00 canvas/,
-      /^01 surface/,
-      /^02 cards/,
-      /^03 controls/,
-      /^04 overlay/,
-      /^05 focus/,
-    ]);
-    const hero = page.locator('[data-landing-section="hero"]');
-    const heroCaption = hero.locator('.landing-hero-caption');
-    await expect(heroCaption).toContainText('six layers along the depth axis');
-
-    // Every layer stays inside the stage.
-    const box = await drawing.boundingBox();
-    for (const layer of await drawing.locator('.exploded-layer').all()) {
-      const part = (await layer.boundingBox())!;
-      expect(part.x).toBeGreaterThanOrEqual(box!.x - 1);
-      expect(part.y).toBeGreaterThanOrEqual(box!.y - 1);
-      expect(part.x + part.width).toBeLessThanOrEqual(box!.x + box!.width + 1);
-      expect(part.y + part.height).toBeLessThanOrEqual(box!.y + box!.height + 1);
-    }
-
-    // The keyboard picks layers from the canvas up, and Escape clears the pick.
-    const group = page.getByRole('group', { name: 'North workspace, taken apart into six layers' });
-    await group.focus();
-    await page.keyboard.press('ArrowUp');
-    await expect(heroCaption).toHaveText('00 Canvas: the ground every part stands on.');
-    await page.keyboard.press('ArrowUp');
-    await expect(heroCaption).toContainText('01 Surface');
-    await expect(drawing.locator('.exploded-layer[data-picked="true"]')).toHaveAttribute(
-      'data-layer',
-      'surface',
-    );
-    await page.keyboard.press('Escape');
-    await expect(heroCaption).toContainText('six layers along the depth axis');
-
-    // Built puts the window back in the same box; nothing below moves.
-    const before = await pageBox(drawing);
-    const below = await pageBox(page.locator('[data-landing-section="readers"]'));
-    await build(page);
-    await expect(liveWindow(page)).toBeVisible();
-    const named = await liveWindow(page)
-      .locator('[data-showcase-part]')
-      .evaluateAll((parts) => [
-        ...new Set(parts.map((part) => part.getAttribute('data-showcase-part'))),
-      ]);
-    expect(named.length).toBe(11);
-    await expect(heroCaption).toContainText(`made from ${named.length} ZAO components`);
-    expect(await pageBox(drawing)).toEqual(before);
-    expect(await pageBox(page.locator('[data-landing-section="readers"]'))).toEqual(below);
-    await radios.getByRole('radio', { name: 'Parts' }).click();
-    await expect(drawing).toHaveAttribute('data-pose', 'parts');
-    await expect(liveWindow(page)).toBeHidden();
+    await page.waitForTimeout(2500);
+    expect(await pageBox(readers)).toEqual(before);
+    const spills = await page
+      .locator('[data-landing-section="room"] .gallery-plate')
+      .evaluateAll((plates) =>
+        plates.flatMap((plate) => {
+          const stage = plate.querySelector('.gallery-stage')!.getBoundingClientRect();
+          const part = plate.querySelector('.gallery-plate-body > *')!.getBoundingClientRect();
+          const out =
+            part.top < stage.top - 1 ||
+            part.bottom > stage.bottom + 1 ||
+            part.left < stage.left - 1 ||
+            part.right > stage.right + 1;
+          return out ? [plate.getAttribute('data-plate')] : [];
+        }),
+      );
+    expect(spills).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
   });
-
-  test('depth scales the window’s painted distances, never its layout', async ({ page }) => {
-    await open(page);
-    await build(page);
-    const window = liveWindow(page);
-    const before = await pageBox(window);
-    const slider = page.getByRole('slider', { name: 'Depth scale' });
-    await slider.fill('4');
-    await expect(window).toHaveAttribute('data-depth-scale', '4');
-    const lift = await window.evaluate((node) =>
-      getComputedStyle(node).getPropertyValue('--zao-depth-lift'),
-    );
-    expect(Number.parseFloat(lift)).toBeGreaterThan(4);
-    expect(await pageBox(window)).toEqual(before);
-  });
-});
-
-test('keyboard order follows the reading order', async ({ page }) => {
-  await open(page);
-  const main = page.locator('main');
-  const targets: Locator[] = [
-    main.getByRole('link', { name: 'Browse components' }),
-    main.getByRole('link', { name: 'View on GitHub' }),
-    main.getByRole('group', { name: 'Bracket set drawing' }),
-    main.getByRole('radio', { name: 'Parts' }),
-    main.getByRole('group', { name: 'North workspace, taken apart into six layers' }),
-    main.getByRole('slider', { name: 'Depth scale' }),
-    main.getByRole('link', { name: /^Foundations/ }),
-  ];
-  const positions: number[] = [];
-  for (const target of targets) {
-    positions.push(
-      await target.first().evaluate((node) => {
-        const all = [
-          ...document.querySelectorAll<HTMLElement>(
-            'main a[href], main button:not([disabled]), main input:not([disabled]), main [tabindex="0"]',
-          ),
-        ];
-        return all.indexOf(node as HTMLElement);
-      }),
-    );
-  }
-  expect(positions.every((position) => position >= 0)).toBe(true);
-  expect([...positions].sort((a, b) => a - b)).toEqual(positions);
-});
+}
 
 test('explore tiles are whole links and lift one drawn part', async ({ page }) => {
   await open(page);
@@ -581,8 +724,13 @@ test.describe('the sheet', () => {
 
   /** Each section's `::after` (its rule, + marks and rails) and the root's foot, in page px. */
   const sheet = (page: Page) =>
-    page.locator('[data-landing]').evaluate((root) => {
-      scrollTo(0, 0);
+    page.locator('[data-landing]').evaluate(async (root) => {
+      // The top of the docs: past the sequence, after a frame for its scroll timeline.
+      scrollTo(
+        0,
+        document.querySelector<HTMLElement>('.landing-sequence-spacer')?.offsetHeight ?? 0,
+      );
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const px = (value: string) => Number.parseFloat(value);
       const box = (node: Element) => {
         const rect = node.getBoundingClientRect();
@@ -710,10 +858,10 @@ test('the window tab strip never shows a scrollbar', async ({ page }) => {
   const narrow = await strip();
   expect(narrow.hidden).toBe('none');
   expect(narrow.scrollbar).toBe(0);
-  await page.getByRole('tab', { name: 'Overview' }).focus();
+  await liveWindow(page).getByRole('tab', { name: 'Overview' }).focus();
   await page.keyboard.press('End');
-  await expect(page.getByRole('tab', { name: 'Settings' })).toBeFocused();
-  await expect(page.getByRole('tab', { name: 'Settings' })).toBeInViewport();
+  await expect(liveWindow(page).getByRole('tab', { name: 'Settings' })).toBeFocused();
+  await expect(liveWindow(page).getByRole('tab', { name: 'Settings' })).toBeInViewport();
 });
 
 test('narrow layouts never scroll sideways', async ({ page }) => {

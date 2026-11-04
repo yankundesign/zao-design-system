@@ -1,0 +1,255 @@
+/*
+ * Gallery (docs-local, Oct 31). A wall of live plates after the bencho.dev study: one part per
+ * plate, centred on a recessed ground, composed at rest. Semantic tokens and fen steps only; the
+ * components keep their own construction and motion, and nothing here restates them.
+ */
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-10);
+}
+
+.gallery-head {
+  display: grid;
+  gap: var(--zao-space-3);
+  max-width: 42rem;
+}
+
+.gallery-wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 28rem), 1fr));
+  gap: var(--zao-space-8) var(--zao-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gallery-plate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-3);
+  min-width: 0;
+  margin: 0;
+}
+
+/*
+ * The stage is a plate on a drawing sheet: a recessed ground with a + registration mark a fen and
+ * a half inside each corner, in the landing sheet's mark ink. Paint only, behind the part.
+ */
+.gallery-stage {
+  --gallery-mark: var(--zao-color-border-default);
+  --gallery-arm: calc(var(--zao-space-1-5) / 2);
+  --gallery-cap: calc(var(--zao-space-1-5) + var(--zao-stroke-hairline));
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 4 / 3;
+  min-height: 18rem;
+  background-color: var(--zao-color-bg-sunken);
+}
+
+.gallery-stage::before {
+  content: '';
+  position: absolute;
+  inset: var(--zao-space-2);
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--gallery-mark), var(--gallery-mark)) 0 var(--gallery-arm) /
+      var(--gallery-cap) var(--zao-stroke-hairline) no-repeat,
+    linear-gradient(var(--gallery-mark), var(--gallery-mark)) var(--gallery-arm) 0 /
+      var(--zao-stroke-hairline) var(--gallery-cap) no-repeat,
+    linear-gradient(var(--gallery-mark), var(--gallery-mark)) 100% var(--gallery-arm) /
+      var(--gallery-cap) var(--zao-stroke-hairline) no-repeat,
+    linear-gradient(var(--gallery-mark), var(--gallery-mark)) calc(100% - var(--gallery-arm)) 0 /
+      var(--zao-stroke-hairline) var(--gallery-cap) no-repeat,
+    linear-gradient(var(--gallery-mark), var(--gallery-mark)) 0 calc(100% - var(--gallery-arm)) /
+      var(--gallery-cap) var(--zao-stroke-hairline) no-repeat,
+    linear-gradient(var(--gallery-mark), var(--gallery-mark)) var(--gallery-arm) 100% /
+      var(--zao-stroke-hairline) var(--gallery-cap) no-repeat,
+    linear-gradient(var(--gallery-mark), var(--gallery-mark)) 100% calc(100% - var(--gallery-arm)) /
+      var(--gallery-cap) var(--zao-stroke-hairline) no-repeat,
+    linear-gradient(var(--gallery-mark), var(--gallery-mark)) calc(100% - var(--gallery-arm)) 100% /
+      var(--zao-stroke-hairline) var(--gallery-cap) no-repeat;
+}
+
+.gallery-plate-head {
+  position: absolute;
+  inset-inline: var(--zao-space-6);
+  top: var(--zao-space-5);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--zao-space-4);
+  pointer-events: none;
+}
+
+.gallery-plate-body {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--zao-space-12) var(--zao-space-6) var(--zao-space-10);
+}
+
+.gallery-plate-body[data-align='start'] {
+  align-items: start;
+  padding-top: var(--zao-space-16);
+}
+
+/* Widths in fen stay readable at the plate's 4:3 and never exceed it. */
+.gallery-demo {
+  width: min(100%, calc(80 * var(--zao-space-1)));
+}
+
+[data-plate='composer'] .gallery-demo,
+[data-plate='plan'] .gallery-demo {
+  width: min(100%, calc(88 * var(--zao-space-1)));
+}
+
+/* Card's bevelled facet paints a shade sliver along the top edge of a Card more than twice as
+ * wide as it is tall (Chromium 153), so the gate stays under that proportion. */
+[data-plate='approval-gate'] .gallery-demo {
+  width: min(100%, calc(76 * var(--zao-space-1)));
+}
+
+[data-plate='ring'] .gallery-demo {
+  width: min(100%, calc(100 * var(--zao-space-1)));
+}
+
+.gallery-replay {
+  position: absolute;
+  right: var(--zao-space-3);
+  bottom: var(--zao-space-3);
+  opacity: 0;
+  transition: opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+}
+
+.gallery-plate:is(:hover, :focus-within) .gallery-replay {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .gallery-replay {
+    opacity: 1;
+  }
+}
+
+.gallery-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zao-space-1);
+  max-width: 34rem;
+}
+
+/* Recording frames one plate at the viewport's exact size, over the docs chrome. */
+.gallery-record {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--zao-color-bg-sunken);
+}
+
+.gallery-record .gallery-plate,
+.gallery-record .gallery-stage {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+body:has(.gallery-record) {
+  overflow: hidden;
+}
+
+/* The docs chrome leaves the focus order too, so Tab starts on the plate. */
+body:has(.gallery-record) > :is(header, footer),
+body:has(.gallery-record) .docs-nav-aside {
+  display: none;
+}
+
+.gallery-pointer-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+}
+
+/* The arrow's tip sits on the pointer's hot spot. */
+.gallery-arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+
+.gallery-arrow[data-visible] {
+  opacity: 1;
+}
+
+.gallery-arrow svg {
+  display: block;
+  margin: calc(-1 * var(--zao-stroke-hairline)) 0 0 calc(-1 * var(--zao-stroke-hairline));
+  fill: var(--zao-color-fg-default);
+  stroke: var(--zao-color-bg-canvas);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  transform-origin: 1px 1px;
+  transition: scale var(--zao-motion-duration-seat) var(--zao-motion-easing-seat);
+}
+
+.gallery-arrow[data-pressed] svg {
+  scale: 0.88;
+}
+
+/* Each press leaves a hairline ring that opens and fades on the reveal role. */
+.gallery-press {
+  position: absolute;
+  top: calc(-1 * var(--zao-space-3));
+  left: calc(-1 * var(--zao-space-3));
+  width: var(--zao-space-6);
+  height: var(--zao-space-6);
+  border: var(--zao-stroke-hairline) solid var(--zao-color-fg-default);
+  border-radius: var(--zao-radius-pill);
+  animation: gallery-press calc(3 * var(--zao-motion-duration-reveal))
+    var(--zao-motion-easing-reveal) forwards;
+}
+
+@keyframes gallery-press {
+  from {
+    scale: 0.4;
+    opacity: 0.7;
+  }
+  to {
+    scale: 1.4;
+    opacity: 0;
+  }
+}
+
+.gallery-key {
+  position: absolute;
+  left: var(--zao-space-6);
+  bottom: var(--zao-space-5);
+  min-width: var(--zao-space-10);
+  padding: var(--zao-space-1) var(--zao-space-2);
+  border: var(--zao-stroke-hairline) solid var(--zao-color-border-strong);
+  background-color: var(--zao-color-bg-surface);
+  color: var(--zao-color-fg-default);
+  text-align: center;
+  box-shadow: 0 var(--zao-stroke-hairline) 0 var(--zao-color-border-strong);
+}
+
+/*
+ * The chart wall (Oct 31): charts need more room than one part, so its plates are wider and
+ * record at 640 by 480, still 4:3. Each chart sits on a Card that fills the plate's width.
+ */
+.gallery[data-gallery='charts'] .gallery-wall {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 38rem), 1fr));
+}
+
+.gallery[data-gallery='charts'] .gallery-stage {
+  min-height: 24rem;
+}
+
+.gallery[data-gallery='charts'] .gallery-demo {
+  width: 100%;
+}

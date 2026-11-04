@@ -9,6 +9,7 @@ import type {
   ReactNode,
   TransitionEvent,
 } from 'react';
+import { holdToEnd, seating } from './landing/sequence-timing';
 import './exploded-stage.css';
 
 export interface ExplodedLayer {
@@ -27,6 +28,18 @@ export interface ExplodedLayer {
 }
 
 export type ExplodedPose = 'parts' | 'built';
+
+/**
+ * Landing sequence, WP 2.1: scrolling assembles the drawing. The drawing is in Parts at `start`
+ * and Built at `end`, as offsets (0–1) of `timeline`; the layers seat from the ground up (LS2).
+ */
+export interface ExplodedScrub {
+  timeline: AnimationTimeline;
+  start: number;
+  end: number;
+  /** The fold-enter curve, which shapes each gap's close and the drawing's turn. */
+  ease: (t: number) => number;
+}
 
 /** The fixed tilt of the drawing: how far the depth axis leans toward the reader. */
 const tilt = (54 * Math.PI) / 180;
@@ -162,6 +175,8 @@ export function ExplodedStage({
   label,
   extras,
   onPick,
+  scrub = null,
+  pickable = true,
   children,
 }: {
   layers: ExplodedLayer[];
@@ -170,6 +185,10 @@ export function ExplodedStage({
   /** Decorative layer content keyed by layer id, positioned over the live composition. */
   extras?: (live: HTMLElement) => Partial<Record<string, ReactNode>>;
   onPick?: (layer: ExplodedLayer | null) => void;
+  /** Drive the assembly from a scroll timeline; pose changes then swap at once. */
+  scrub?: ExplodedScrub | null;
+  /** Whether layers can be picked now; the sequence allows it only at Parts' rest. */
+  pickable?: boolean;
   children: ReactNode;
 }) {
   const live = useRef<HTMLDivElement>(null);
@@ -184,6 +203,11 @@ export function ExplodedStage({
   const timer = useRef<number | null>(null);
   const descriptionId = useId();
   const pointer = useRef<string>('mouse');
+  const assemblyRef = useRef<HTMLDivElement>(null);
+  const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const tagRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  /** Driven, the copies stay alive between swaps and are redrawn only after the window changed. */
+  const dirty = useRef(true);
 
   const pick = useCallback(
     (index: number) => {
@@ -226,6 +250,7 @@ export function ExplodedStage({
   // The first pose is applied without motion: nothing plays on its own.
   useLayoutEffect(() => {
     if (pose === 'parts' && build()) {
+      dirty.current = false;
       setShown('parts');
       setApart(true);
     }
@@ -237,6 +262,20 @@ export function ExplodedStage({
     if (!ready) return;
     if (timer.current !== null) window.clearTimeout(timer.current);
     timer.current = null;
+    if (scrub) {
+      // Driven by scroll: the drawing is already where the scroll put it, so swap in this frame.
+      if (pose === 'parts' && shown !== 'parts') {
+        if (dirty.current && !build()) return;
+        dirty.current = false;
+        setShown('parts');
+        setApart(true);
+      } else if (pose === 'built' && shown === 'parts') {
+        setApart(false);
+        pick(-1);
+        setShown('built');
+      }
+      return;
+    }
     if (pose === 'parts' && shown !== 'parts') {
       if (!build()) return;
       setShown('parts');
@@ -282,20 +321,86 @@ export function ExplodedStage({
     return () => observer.disconnect();
   }, [measure, extras]);
 
+  // Driven: any change to the working window marks the copies for redrawing at the next swap.
+  useEffect(() => {
+    const element = live.current;
+    if (!scrub || !element) return;
+    const observer = new MutationObserver(() => {
+      dirty.current = true;
+    });
+    observer.observe(element, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      characterData: true,
+    });
+    return () => observer.disconnect();
+  }, [scrub]);
+
+  // Driven: the assembly, each layer's depth and each tag follow the scroll timeline.
+  useEffect(() => {
+    const assembly = assemblyRef.current;
+    const stageElement = stage.current;
+    if (!scrub || !fit || !assembly || !stageElement) return;
+    const gap =
+      Number.parseFloat(getComputedStyle(stageElement).getPropertyValue('--exploded-gap')) || 0;
+    const steps = 32;
+    const assemblyFrames: Keyframe[] = [];
+    const layerFrames: Keyframe[][] = layers.map(() => []);
+    const tagFrames: Keyframe[][] = layers.map(() => []);
+    for (let i = 0; i <= steps; i++) {
+      const a = i / steps;
+      const offset = scrub.start + (scrub.end - scrub.start) * a;
+      const { depths, t, tags } = seating(a, layers.length, gap, scrub.ease);
+      const scale = 1 - t * (1 - fit.scale);
+      assemblyFrames.push({
+        offset,
+        transform: `translate(${t * fit.x}px, ${t * fit.y}px) rotateX(${t * 54}deg) rotateZ(${t * fit.turn}deg) scale3d(${scale}, ${scale}, ${scale})`,
+      });
+      depths.forEach((z, j) => layerFrames[j]!.push({ offset, translate: `0 0 ${z}px` }));
+      tags.forEach((visible, j) =>
+        tagFrames[j]!.push({ offset, visibility: visible ? 'visible' : 'hidden' }),
+      );
+    }
+    const options = { timeline: scrub.timeline, fill: 'both' as const };
+    const running = [assembly.animate(holdToEnd(assemblyFrames), options)];
+    layers.forEach((_, j) => {
+      const layer = layerRefs.current[j];
+      const tag = tagRefs.current[j];
+      if (layer) running.push(layer.animate(holdToEnd(layerFrames[j]!), options));
+      if (tag) running.push(tag.animate(holdToEnd(tagFrames[j]!), options));
+    });
+    return () => {
+      for (const animation of running) animation.cancel();
+    };
+  }, [scrub, fit, layers]);
+
+  // Picking stops the moment the sequence leaves Parts' rest.
+  useEffect(() => {
+    if (!pickable && picked >= 0) pick(-1);
+  }, [pickable, picked, pick]);
+
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
-    if (shown !== 'parts' || event.pointerType !== 'mouse') return;
+    if (shown !== 'parts' || !pickable || event.pointerType !== 'mouse') return;
     const box = event.currentTarget.getBoundingClientRect();
     const top = fit?.top ?? 0;
     const bottom = fit?.bottom ?? box.height;
     const share = (event.clientY - box.top - top) / (bottom - top);
+    const exact = share * layers.length;
     // Higher layers rise up the screen, so the top band picks the highest layer.
-    const band = Math.min(layers.length - 1, Math.max(0, Math.floor(share * layers.length)));
+    let band = Math.min(layers.length - 1, Math.max(0, Math.floor(exact)));
+    // Hold the picked layer until the pointer is a quarter band past its edge, so a pointer
+    // resting on a boundary never flickers between two layers.
+    if (picked >= 0) {
+      const current = layers.length - 1 - picked;
+      if (exact > current - 0.25 && exact < current + 1.25) band = current;
+    }
     const index = layers.length - 1 - band;
     if (index !== picked) pick(index);
   }
 
   function onClick(event: MouseEvent<HTMLDivElement>) {
-    if (shown !== 'parts' || pointer.current === 'mouse') return;
+    if (shown !== 'parts' || !pickable || pointer.current === 'mouse') return;
     const box = event.currentTarget.getBoundingClientRect();
     const top = fit?.top ?? 0;
     const bottom = fit?.bottom ?? box.height;
@@ -316,7 +421,7 @@ export function ExplodedStage({
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (shown !== 'parts') return;
+    if (shown !== 'parts' || !pickable) return;
     if (event.key === 'ArrowUp') {
       event.preventDefault();
       pick(picked < 0 ? 0 : Math.min(layers.length - 1, picked + 1));
@@ -349,6 +454,7 @@ export function ExplodedStage({
       data-apart={apart ? 'true' : 'false'}
       data-picking={picked >= 0 ? 'true' : 'false'}
       data-ready={ready ? 'true' : 'false'}
+      data-scrub={scrub ? '' : undefined}
       tabIndex={shown === 'parts' ? 0 : -1}
       role={shown === 'parts' ? 'group' : undefined}
       aria-label={shown === 'parts' ? label : undefined}
@@ -369,13 +475,16 @@ export function ExplodedStage({
       <p id={descriptionId} className="sr-only">
         Up and Down pick a layer; Escape clears the pick.
       </p>
-      <div className="exploded-assembly">
+      <div className="exploded-assembly" ref={assemblyRef}>
         <div className="exploded-live" ref={live} inert={shown === 'parts'}>
           {children}
         </div>
         {layers.map((layer, index) => (
           <div
             key={layer.id}
+            ref={(node) => {
+              layerRefs.current[index] = node;
+            }}
             className="exploded-layer"
             data-layer={layer.id}
             data-picked={picked === index ? 'true' : 'false'}
@@ -391,7 +500,12 @@ export function ExplodedStage({
             {extraNodes[layer.id] ? (
               <div className="exploded-extra">{extraNodes[layer.id]}</div>
             ) : null}
-            <span className="exploded-tag type-caption figures-id">
+            <span
+              className="exploded-tag type-caption figures-id"
+              ref={(node) => {
+                tagRefs.current[index] = node;
+              }}
+            >
               <span className="exploded-tag-name">{layer.name}</span>
             </span>
           </div>

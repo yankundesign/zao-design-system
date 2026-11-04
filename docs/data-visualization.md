@@ -65,6 +65,7 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 - A dashed line marks the average or target, with its value as a label.
 - Segmented bars, like a level meter, fit only when the data is a level or comes in steps. Otherwise they round away precision.
 - Live updates step the needles to new values.
+- **Prism form**, where a few categories are a screen's main figure. At rest every bar is a flat front face, with no planes and no plane outlines, and the lead bar is built in ink with the accent square beside its value. Hovering or focusing a bar previews it in full: an ink face and flat planes stepping toward the canvas, receding along the depth axis by one depth, a third of its face, shared by every bar in the plot. Selecting a bar keeps it in full, with the accent square, while other bars are previewed and until the selection is cleared. Depth appears and leaves at once; nothing grows, and the front faces never move. Needles stay the default.
 
 ### Line: change over time
 
@@ -72,7 +73,9 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 - The previous period is a dashed trace.
 - The accent square sits on the latest sample.
 - Inspection draws a vertical guide and a small square on the trace and writes the time, the value, and the previous value into the readout.
-- Live updates scroll the trace left one sample at a time, like a strip chart. The "now" end stays fixed.
+- An event, such as a deploy or a restart, is a tick through the ruler with a short label in its own lane. The readout, the sample's accessible name and the data view name it in full, and the summary says what followed the latest one, from the data.
+- A forecast is a drawing: one hollow square per forecast sample after "now", with no trace, and only from a stated method on real history, which the summary names. Never extend a line by eye.
+- Live updates scroll the trace left one sample at a time, like a strip chart. The "now" end stays fixed; with a forecast, it stays fixed that far from the right end.
 
 ### Heatmap: two cycles
 
@@ -87,9 +90,10 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 
 - A comb of hairlines, one per bin, on a solid baseline. This is the instrument's ring unrolled.
 - Keep at least 3px between strokes. Tighter combs shimmer at small sizes and while scrolling.
-- A dashed line marks the median, labeled with its value.
+- Dashed lines mark p50, p95 and p99, each labeled with its value. Labels share one row, step into a second only where they would touch, and never cross another reference.
 - The accent square marks the bin of the latest observation.
-- Live updates add observations; the comb grows and the median moves.
+- Live updates add observations; the comb grows and the percentiles move.
+- To compare two periods, mirror them on one ruler: the current period above in `fg-default`, the previous one below in `fg-muted`, with the same bins and the same scale, each with its own median. Only the current period updates.
 
 ### Other forms
 
@@ -103,7 +107,7 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 - State units, totals, time ranges, bin widths, and comparison periods. Distinguish observations, estimates, stale readings, missing data, and illustrative data. Every chart in the docs says its data is illustrative.
 - Do not invent breakdowns, capacities, thresholds, trends, or forecasts. A percentage alone cannot supply them.
 - Keep geometry steady during inspection. Hover never changes lengths, angles, ordering, or scale.
-- Use depth to clarify construction, never to tilt or extrude marks in a way that distorts magnitude.
+- A bar may recede along the depth axis by one depth shared by every bar in the plot. Its front face carries the reading at true scale on the ruler. Rulers and references stay in the front plane, never on a back wall. Never tilt or rotate a mark, or give it a projection of its own.
 - A loading chart is a drawing: structure only, no marks and no numbers. The frame, ruler, scale and any known grid are drawn; the summary and readout are drawn placeholders. When data arrives, the chart builds in place on Card and Table's timing, and nothing grows from zero.
 - Use semantic colors. Pair color with text, position, or shape; status colors are only for status.
 - Label the important values directly. The summary sentence and a data view must carry every essential value; nothing requires hover.
@@ -155,7 +159,7 @@ Each chart states its question and reading in the summary sentence. Every chart 
 
 ## Grow the library from evidence
 
-The section now holds a ring, bars, a line, a heatmap, and a histogram. They share one frame, one inspector, one ruler, and one simulation switch; extract those into a package only after the charts are used in a real screen. Before promoting a pattern, check whether readers can find the value, understand its denominator, explain a change, inspect it with any input, and keep their place. Compare the still and live versions for comprehension and repeated use. Record what was learned rather than claiming a measured benefit.
+The section now holds a ring, a share strip, a meter, bars, a line, a heatmap, and a histogram. They share one frame, one inspector, one ruler, and one simulation switch; extract those into a package only after the charts are used in a real screen. Before promoting a pattern, check whether readers can find the value, understand its denominator, explain a change, inspect it with any input, and keep their place. Compare the still and live versions for comprehension and repeated use. Record what was learned rather than claiming a measured benefit. The prism form is such a hypothesis: compare it with needles before it becomes a default anywhere.
 
 ## References
 
