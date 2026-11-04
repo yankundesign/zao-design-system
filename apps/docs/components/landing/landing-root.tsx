@@ -11,7 +11,7 @@ import { useCharacterField } from './character-field';
  * light snapshot, so this runs while the HTML is parsed and gives the island the page's resolved
  * mode before first paint. Client navigation renders the correct mode directly and skips it.
  */
-const islandModeScript = `(function(){var s=document.currentScript,e=s&&s.parentElement;if(!e)return;var m=document.documentElement.getAttribute('data-zao-mode');if(m!=='light'&&m!=='dark'){m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}e.setAttribute('data-zao-mode',m)})();`;
+export const islandModeScript = `(function(){var s=document.currentScript,e=s&&s.parentElement;if(!e)return;var m=document.documentElement.getAttribute('data-zao-mode');if(m!=='light'&&m!=='dark'){m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}e.setAttribute('data-zao-mode',m)})();`;
 
 const noop = () => () => {};
 
