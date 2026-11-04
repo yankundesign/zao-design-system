@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
+import { DocsGrid } from '@/components/docs-grid';
 import { Explore } from '@/components/landing/explore';
 import { LandingHero } from '@/components/landing/hero';
+import { LandingSequence } from '@/components/landing/landing-sequence';
+import { Room } from '@/components/landing/room';
 import { LandingRoot } from '@/components/landing/landing-root';
 import { TwoReaders } from '@/components/landing/two-readers';
 import { getQuietInstrumentStudy } from '@/lib/style-studies';
@@ -18,15 +21,21 @@ export default async function Home() {
   if (process.env.ZAO_DOCS_STATIC_EXPORT !== '1') await connection();
   const study = await getQuietInstrumentStudy();
 
+  // The landing renders the docs frame itself, so the sequence's spacer comes before it.
   return (
-    <LandingRoot>
-      {study ? <link rel="stylesheet" href={study.cssUrl} /> : null}
-      <LandingHero
-        contact={Number.parseFloat(String(allTokens['depth.contact']!.value))}
-        lift={Number.parseFloat(String(allTokens['depth.lift']!.value))}
-      />
-      <TwoReaders />
-      <Explore />
-    </LandingRoot>
+    <LandingSequence>
+      <DocsGrid>
+        <LandingRoot>
+          {study ? <link rel="stylesheet" href={study.cssUrl} /> : null}
+          <LandingHero
+            contact={Number.parseFloat(String(allTokens['depth.contact']!.value))}
+            lift={Number.parseFloat(String(allTokens['depth.lift']!.value))}
+          />
+          <Room />
+          <TwoReaders />
+          <Explore />
+        </LandingRoot>
+      </DocsGrid>
+    </LandingSequence>
   );
 }

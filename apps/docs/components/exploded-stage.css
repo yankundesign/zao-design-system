@@ -109,13 +109,30 @@
   transform: translateZ(
     calc(var(--exploded-x) * var(--exploded-index) * var(--exploded-gap) + var(--exploded-lift))
   );
+  /*
+   * Nov 3 (Yankun): smoother picking. The layers move on the drawing's own grade (grade 1, the
+   * assembly's), settle and ghost on the exit fold, and rise on the enter fold (below).
+   */
   transition:
-    --exploded-lift var(--zao-motion-duration-grade-7) var(--zao-motion-easing-fold-enter),
-    opacity var(--zao-motion-duration-grade-7) linear;
+    --exploded-lift var(--zao-motion-duration-grade-1) var(--zao-motion-easing-fold-exit),
+    opacity var(--zao-motion-duration-grade-1) var(--zao-motion-easing-fold-exit);
 }
 
 .exploded-stage[data-pose='parts'] .exploded-layer {
   display: block;
+}
+
+/*
+ * Driven by scroll (landing sequence, WP 2.1): the scroll timeline animates the assembly and
+ * each layer's depth (`translate`), so the pose no longer transitions, and a layer's own
+ * transform keeps only the pick's lift.
+ */
+.exploded-stage[data-scrub] {
+  transition: none;
+}
+
+.exploded-stage[data-scrub] .exploded-layer {
+  transform: translateZ(var(--exploded-lift));
 }
 
 .exploded-copy,
@@ -167,13 +184,17 @@
   color: var(--zao-color-fg-default);
 }
 
-/* Picking: the picked layer rises a little further; the others ghost. */
+/*
+ * Picking: the picked layer rises a little further; the others ghost. Nov 3 (Yankun): the others
+ * stay at half strength, so the drawing still reads as one workspace while a layer is picked.
+ */
 .exploded-layer[data-picked='true'] {
   --exploded-lift: var(--exploded-pick);
+  transition-timing-function: var(--zao-motion-easing-fold-enter);
 }
 
 .exploded-stage[data-picking='true'] .exploded-layer:not([data-picked='true']) {
-  opacity: 0.22;
+  opacity: 0.5;
 }
 
 .exploded-focus {

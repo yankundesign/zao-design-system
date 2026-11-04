@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Github } from 'iconoir-react';
-import { Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { FinishSwitcher } from '@/components/finish-switcher';
-import { Nav } from '@/components/nav';
 import { finishInitScript } from '@/lib/finish-script';
 import './globals.css';
 
@@ -42,14 +40,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <div className="docs-shell grid w-full gap-8 px-4 py-8 md:grid-cols-[180px_minmax(0,1fr)] md:px-8 md:py-12">
-          <aside className="docs-nav-aside min-w-0">
-            <Suspense fallback={null}>
-              <Nav />
-            </Suspense>
-          </aside>
-          <main className="min-w-0">{children}</main>
-        </div>
+        {/* The docs frame comes from app/(docs)/layout.tsx; the landing page renders its own. */}
+        {children}
         <footer className="docs-shell mt-auto w-full px-4 py-4 type-caption text-muted md:px-8">
           Built by{' '}
           <a
