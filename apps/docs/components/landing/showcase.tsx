@@ -272,7 +272,8 @@ export function ShowcaseWindow({
               <span className="font-mono type-caption figures-id text-muted whitespace-nowrap">
                 Workspace · 001
               </span>
-              <span className="type-label font-medium whitespace-nowrap">North</span>
+              {/* The window's heading: its cards' titles (h3) sit under it, after the page's h1. */}
+              <h2 className="type-label font-medium whitespace-nowrap">North</h2>
             </div>
           </div>
           <dl

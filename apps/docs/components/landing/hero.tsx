@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { ArrowDown } from 'iconoir-react';
 import { Button, Tabs } from '@zao/react';
 import { DepthScaleControl, useDepthScale } from '../depth-scale';
 import { ExplodedStage } from '../exploded-stage';
 import type { ExplodedLayer, ExplodedPose } from '../exploded-stage';
 import { BracketSetInstrument } from './bracket-instrument';
 import { ButtonLink } from './button-link';
+import { useSequenceStage } from './landing-sequence';
 import { ShowcaseWindow, showcaseParts } from './showcase';
 
 /** The workspace's layers, back to front. Selectors name the published parts on each layer. */
@@ -119,15 +121,22 @@ function extras(root: HTMLElement) {
 }
 
 /**
- * Section 1 (finish plan WP 3.2): the idea in one sentence, then the workspace taken apart. It
- * rests on Parts (V9); Built puts the working window back together. Nothing moves on its own.
+ * Section 1 (finish plan WP 3.2; landing sequence, Nov 2026). On desktop with motion allowed,
+ * the sequence opens on the workspace taken apart across the whole screen, builds it as the
+ * reader scrolls, and sets it into the page under this copy (LS1–LS7). Otherwise this is the
+ * Oct 11 hero: the copy, then the drawing at rest on Parts with its Parts/Built switch (LS10,
+ * LS12). Nothing moves on its own.
  */
 export function LandingHero({ contact, lift }: { contact: number; lift: number }) {
-  const [pose, setPose] = useState<ExplodedPose>('parts');
+  const sequence = useSequenceStage();
+  const { active, phase } = sequence;
+  const [switched, setSwitched] = useState<ExplodedPose>('parts');
   const [picked, setPicked] = useState<ExplodedLayer | null>(null);
   const { scale, setScale, style } = useDepthScale(contact, lift);
   const reset = useRef<(() => void) | null>(null);
   const onPick = useCallback((layer: ExplodedLayer | null) => setPicked(layer), []);
+  // Done, the workspace rests built in its slot, as the sequence left it.
+  const pose = active ? sequence.pose : phase === 'done' ? 'built' : switched;
 
   const caption =
     pose === 'built'
@@ -136,7 +145,13 @@ export function LandingHero({ contact, lift }: { contact: number; lift: number }
         'One workspace, built from shared parts: six layers along the depth axis. Point at a layer, or focus the drawing and use the arrow keys.');
 
   return (
-    <section aria-labelledby="landing-title" className="landing-hero" data-landing-section="hero">
+    <section
+      ref={sequence.section}
+      aria-labelledby="landing-title"
+      className="landing-hero"
+      data-landing-section="hero"
+      data-sequence={active ? '' : undefined}
+    >
       <div className="landing-hero-copy">
         <div className="landing-hero-head flex flex-col gap-4">
           <p className="type-caption text-muted">v0.1 · Su 素 · In progress</p>
@@ -149,8 +164,7 @@ export function LandingHero({ contact, lift }: { contact: number; lift: number }
             An experimental design system at the boundary of 2D clarity and 3D presence, built for
             people and agents.
           </p>
-          <div className="landing-hero-actions flex flex-wrap gap-3">
-            <ButtonLink href="/components/button">Browse components</ButtonLink>
+          <div className="landing-hero-actions flex flex-wrap items-center gap-3">
             <ButtonLink
               href="https://github.com/yankundesign/zao-design-system"
               variant="secondary"
@@ -158,6 +172,11 @@ export function LandingHero({ contact, lift }: { contact: number; lift: number }
             >
               View on GitHub
             </ButtonLink>
+            {/* LS7: a hint down the page to the room, not an action. */}
+            <a href="#components" className="landing-hint-link">
+              Browse components
+              <ArrowDown className="landing-hint-icon" aria-hidden="true" focusable="false" />
+            </a>
           </div>
         </div>
         {/* Oct 11 (A): the bracket set returns beside the headline. */}
@@ -166,62 +185,97 @@ export function LandingHero({ contact, lift }: { contact: number; lift: number }
         </div>
       </div>
 
-      <div className="landing-hero-controls">
-        <Tabs.Root
-          className="shrink-0 [&>.tabs-viewport]:max-w-none"
-          value={pose}
-          onValueChange={(value) => {
-            if (value === 'parts' || value === 'built') {
-              setPicked(null);
-              setPose(value);
-            }
-          }}
+      {phase === 'done' ? null : active ? (
+        // The whole screen's ground behind Parts; Built covers the screen by itself.
+        <div
+          className="landing-sequence-screen landing-sequence-ground"
+          hidden={pose !== 'parts'}
+          aria-hidden="true"
+        />
+      ) : (
+        <div className="landing-hero-controls">
+          <Tabs.Root
+            className="shrink-0 [&>.tabs-viewport]:max-w-none"
+            value={switched}
+            onValueChange={(value) => {
+              if (value === 'parts' || value === 'built') {
+                setPicked(null);
+                setSwitched(value);
+              }
+            }}
+          >
+            <Tabs.List variant="secondary" role="radiogroup" aria-label="Workspace view">
+              <Tabs.Tab
+                value="parts"
+                role="radio"
+                aria-checked={switched === 'parts'}
+                aria-selected={undefined}
+              >
+                Parts
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="built"
+                role="radio"
+                aria-checked={switched === 'built'}
+                aria-selected={undefined}
+              >
+                Built
+              </Tabs.Tab>
+            </Tabs.List>
+          </Tabs.Root>
+          <p className="landing-hero-caption type-caption text-muted" aria-live="polite">
+            {caption}
+          </p>
+        </div>
+      )}
+
+      <div ref={sequence.slot} className="landing-sequence-slot">
+        <div
+          ref={sequence.stage}
+          className="landing-sequence-stage"
+          data-ground={active && pose === 'parts' ? 'screen' : 'stage'}
         >
-          <Tabs.List variant="secondary" role="radiogroup" aria-label="Workspace view">
-            <Tabs.Tab
-              value="parts"
-              role="radio"
-              aria-checked={pose === 'parts'}
-              aria-selected={undefined}
-            >
-              Parts
-            </Tabs.Tab>
-            <Tabs.Tab
-              value="built"
-              role="radio"
-              aria-checked={pose === 'built'}
-              aria-selected={undefined}
-            >
-              Built
-            </Tabs.Tab>
-          </Tabs.List>
-        </Tabs.Root>
-        <p className="landing-hero-caption type-caption text-muted" aria-live="polite">
-          {caption}
-        </p>
+          <ExplodedStage
+            layers={layers}
+            pose={pose}
+            label="North workspace, taken apart into six layers"
+            extras={extras}
+            onPick={onPick}
+            scrub={active ? sequence.scrub : null}
+            pickable={active ? sequence.pickable : true}
+          >
+            <ShowcaseWindow style={style} scale={scale} resetRef={reset} />
+          </ExplodedStage>
+        </div>
       </div>
 
-      <ExplodedStage
-        layers={layers}
-        pose={pose}
-        label="North workspace, taken apart into six layers"
-        extras={extras}
-        onPick={onPick}
-      >
-        <ShowcaseWindow style={style} scale={scale} resetRef={reset} />
-      </ExplodedStage>
-
-      <div className="landing-hero-tools">
-        <DepthScaleControl scale={scale} onScaleChange={setScale} />
-        <Button
-          variant="quiet"
-          size="small"
-          disabled={pose !== 'built'}
-          onClick={() => reset.current?.()}
-        >
-          Reset example
-        </Button>
-      </div>
+      {phase === 'done' ? null : active ? (
+        // The first screen's foot: the picked layer, or the hint to scroll (Yankun, Nov 3).
+        <div className="landing-sequence-screen landing-sequence-foot">
+          <p className="landing-sequence-caption type-caption text-muted" aria-live="polite">
+            {picked ? (
+              picked.detail
+            ) : (
+              <>
+                <ArrowDown className="landing-hint-icon" aria-hidden="true" focusable="false" />
+                Scroll to build
+              </>
+            )}
+          </p>
+        </div>
+      ) : (
+        <div className="landing-hero-tools">
+          <DepthScaleControl scale={scale} onScaleChange={setScale} />
+          <Button
+            variant="quiet"
+            size="small"
+            disabled={pose !== 'built'}
+            onClick={() => reset.current?.()}
+          >
+            Reset example
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
