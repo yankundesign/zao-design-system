@@ -1051,31 +1051,17 @@
 
 /*
  * The room (landing sequence, LS8): parts and charts share one wall, two to a row, where a
- * chart has less room than on its own wall. A plate keeps the gallery's 4:3 and grows only when
- * its part needs more, so nothing spills; plates in a row share one height.
+ * chart has less room than on its own wall. Every plate keeps one fixed height, 128 fen, tall
+ * enough for the tallest part with the plate's padding (the built Line chart on its Card, 491px),
+ * so a part that grows as it arrives, like Plan, never moves the page; the plates in a row match.
  */
-[data-landing-section='room'] .gallery-wall > li {
-  display: flex;
-}
-
-[data-landing-section='room'] .gallery-plate {
-  flex: 1;
-}
-
 [data-landing-section='room'] .gallery-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  flex: 1 0 auto;
-  min-height: auto;
+  min-height: calc(var(--zao-space-1) * 128);
 }
 
+/* One track the plate's width: a chart sizes itself to its container. */
 [data-landing-section='room'] .gallery-plate-body {
-  position: relative;
-  inset: auto;
-  /* One track the plate's width: a chart sizes itself to its container, so a track sized by
-   * its content would keep whatever width the chart first measured. */
   grid-template-columns: minmax(0, 1fr);
-  min-inline-size: 0;
 }
 
 /* On phones the plate gives its part more of its width. */

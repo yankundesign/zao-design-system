@@ -662,6 +662,15 @@ for (const width of [1280, 390, 320]) {
   }) => {
     await page.setViewportSize({ width, height: 800 });
     await open(page);
+    // Every chart plate arrives as its drawing when it comes into view, then builds: measure the
+    // built parts, which are the tallest, and check the page below never moves.
+    const readers = page.locator('[data-landing-section="readers"]');
+    const before = await pageBox(readers);
+    for (const plate of await page.locator('[data-landing-section="room"] .gallery-plate').all()) {
+      await plate.scrollIntoViewIfNeeded();
+    }
+    await page.waitForTimeout(2500);
+    expect(await pageBox(readers)).toEqual(before);
     const spills = await page
       .locator('[data-landing-section="room"] .gallery-plate')
       .evaluateAll((plates) =>

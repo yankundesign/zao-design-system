@@ -112,10 +112,10 @@ test('scrolling builds the workspace, holds it full width, then sets it into the
   expect(await overflowX(page)).toBeLessThanOrEqual(0);
   const status = page.locator('[data-request-status="REQ-0137"]').first();
   await expect(status).toHaveText('Needs review');
+  // The window's bottom waits below the fold while Built fills the width (LS4), so only what
+  // is in view is used here; landing.spec.ts covers the rest of the workspace.
   await page.getByRole('button', { name: 'Approve 2 requests' }).click();
   await expect(status).toHaveText('Ready');
-  await page.getByRole('button', { name: 'Reopen 2 requests' }).click();
-  await expect(status).toHaveText('Needs review');
 
   // Stepping back: the docs are held still around the window, the header uncovered.
   const resting = await headlineTop(page);
