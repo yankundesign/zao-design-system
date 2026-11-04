@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
+import { drawnSummary } from './charts/chart-frame';
 import { ChartDataView } from './charts/chart-data-view';
 import { useChartDrawing } from './charts/use-chart-drawing';
 import './storage-ring-study.css';
@@ -50,11 +51,17 @@ function inspectionArc(start: number, end: number) {
 export function StorageRingStudy({
   drawing = false,
   dataView = false,
+  framed = false,
 }: {
   /** Scale only, no marks and no numbers, while storage use loads (charts wave 1, C3). */
   drawing?: boolean;
   /** Offer the reading in Table below the ring (C2). The Charts page shows it; Card doesn't. */
   dataView?: boolean;
+  /**
+   * Lay the ring out like every other chart's frame: a title and summary above a plain foot
+   * rule, as in `ChartFrame`. The chart gallery uses it beside the other charts; Card doesn't.
+   */
+  framed?: boolean;
 } = {}) {
   const detailId = useId();
   const root = useRef<HTMLDivElement>(null);
@@ -262,9 +269,27 @@ export function StorageRingStudy({
           </button>
         ))}
       </div>
+      {framed && (
+        <div className="flex flex-col gap-1">
+          <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <span className="type-label font-medium">Storage use</span>
+            <span className="type-caption text-muted">Illustrative data</span>
+          </span>
+          <span
+            data-zao-slot="chart-summary"
+            className={`type-body text-muted${drawing ? ' construction-drawing' : ''}`}
+          >
+            <span aria-hidden={drawing || undefined}>
+              {drawing
+                ? drawnSummary
+                : `${used}% of storage is in use, and ${available}% is available.`}
+            </span>
+          </span>
+        </div>
+      )}
       <div
         data-zao-slot="chart-foot"
-        className="docs-rule-capped flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2 font-mono type-caption figures-tabular"
+        className={`${framed ? 'border-t border-subtle' : 'docs-rule-capped'} flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2 font-mono type-caption figures-tabular`}
       >
         <p
           id={detailId}

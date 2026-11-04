@@ -9,7 +9,7 @@ import { crisp } from './use-chart-width';
 import './charts.css';
 
 /** Drawn in place of unknown text while a chart loads; it never holds a number. */
-const drawnSummary = 'Reading the latest values for this chart.';
+export const drawnSummary = 'Reading the latest values for this chart.';
 const drawnReadout = 'Reading values';
 
 /**
