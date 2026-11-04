@@ -177,8 +177,23 @@ test('once docked, it is done for the session; a new session plays it again', as
   const { total } = await openSequence(page);
   await at(page, total);
   await expect(page.locator('[data-landing-sequence]')).toHaveAttribute('data-phase', 'done');
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.reload();
   await page.locator('[data-landing-sequence][data-ready]').waitFor({ state: 'attached' });
+  // From the first visible frame the workspace is the live window, never the drawing's copies.
+  expect(
+    await page.evaluate(() => {
+      const drawing = document.querySelector<HTMLElement>(
+        '[data-landing-section="hero"] .exploded-stage',
+      )!;
+      return [
+        drawing.dataset.pose,
+        document.querySelectorAll('.exploded-layer[data-layer]').length
+          ? getComputedStyle(document.querySelector('.exploded-layer')!).display
+          : 'none',
+      ];
+    }),
+  ).toEqual(['built', 'none']);
   await expect(page.locator('[data-landing-sequence]')).toHaveAttribute('data-phase', 'done');
   await expect(page.locator('.landing-sequence-spacer')).toHaveCount(0);
   await expect(stage(page)).toHaveAttribute('data-pose', 'built');

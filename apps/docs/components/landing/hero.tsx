@@ -236,6 +236,9 @@ export function LandingHero({ contact, lift }: { contact: number; lift: number }
           data-ground={active && pose === 'parts' ? 'screen' : 'stage'}
         >
           <ExplodedStage
+            // A session that has already played the sequence starts the stage at Built: the
+            // server rendered the fallback's Parts, and switching would flash the copies.
+            key={sequence.restored ? 'restored' : 'stage'}
             layers={layers}
             pose={pose}
             label="North workspace, taken apart into six layers"
