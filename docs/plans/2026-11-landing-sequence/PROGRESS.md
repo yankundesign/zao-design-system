@@ -144,10 +144,11 @@ The screenshots are `v2-*.png` beside the first run's.
 - **WP 3.1.** `Plate` moved to `components/gallery/plate.tsx`, shared by `/gallery` and the landing. `components/landing/room.tsx` is section 2: `id="components"`, the h2 "Every part, live." with LS9's draft note, and one `.gallery-wall` of 13 plates in LS8's order. Each row pairs a part with a chart, and the components wall's Storage ring is left out. Chart plates arrive as their drawing when they come into view, as on `/gallery`. `/gallery`, `/gallery/charts` and the recorder are unchanged.
 - **WP 3.2.** The order is now hero, room, readers, explore, and the hint points at `#components`.
 - **Fitting the plates.** On its own wall a chart gets a 38rem-wide plate. In the room's two columns, Line and Histogram spilled out of their 4:3 plates, and at phone widths several charts did. **My layout choices, which Yankun may revise:**
-  - A plate keeps 4:3 and grows only when its part needs more, and the plates in a row share one height. Stage bottoms can differ by one caption line where the notes wrap differently.
+  - Every plate in the room has one fixed minimum height, 128 fen (512px): the built Line chart on its Card plus the plate's padding is 491px. The plates in a row match. (A first version let plates grow to fit their parts. CI caught that it moved the page as parts arrived: Plan grows as its steps arrive, and Two readers moved 152px. The fixed height replaces it.)
   - Under 30rem, the plate's side padding drops to 2 fen and parts fill its width.
   - Under 22.5rem (320px phones), the five charts on Cards draw at 0.85 zoom, because a chart on its Card needs a 320px card, as wide as the screen.
   - The plate body's grid track is pinned to the plate's width. Each chart sizes itself to its container, so a content-sized track kept whatever width the chart first measured (594px at 390).
+  - The tests also scroll every plate into view, so each chart builds, then check that no part spills and that Two readers hasn't moved.
 - **A gallery bug.** `/gallery/charts` itself scrolls 259px sideways at 375px. It is the committed gallery, not the room; it is not fixed here.
 - **Tests.** `landing.spec.ts` checks the new order, the room's 13 plates in order, the hint landing on the room, a live Switch toggling, and at 1280, 390 and 320px that every part stays on its plate with no sideways scroll. The workspace tests now query inside the window, because the room's Tabs and Composer plates repeat names such as "Members" and "Send". Both landing specs pass, 41 of 41.
 
@@ -171,3 +172,10 @@ The screenshots are `v2-*.png` beside the first run's.
   - In `landing.spec.ts`, docking waits for `done`, and the bracket set and workspace tests are back at 1440 × 900.
   - The character field test reads the copies at Parts in a fresh sequence for each mode.
   - Both specs pass, 42 of 42.
+
+## CI on PR #2, Nov 4
+
+The first CI run at `87a4a0b` failed 2 of 705 on Linux; both pass locally and were mine:
+
+- **The room moved the page** (`landing.spec.ts`, the fallback hero test): plates that grew to fit their parts pushed Two readers down 152px as Plan's steps arrived. Fixed by the room's fixed 128-fen plate height. It was 32rem at first, but this site's root font size makes that 448px, which was too short.
+- **A click below the fold** (`landing-sequence.spec.ts`): during the Built hold, the window's bottom waits below the fold (LS4). After approving, "Reopen 2 requests" was out of view on CI's text wrapping, and Playwright's scroll to reach it moved the sequence. The test now only approves; `landing.spec.ts` covers reopening.
