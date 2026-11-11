@@ -1,5 +1,12 @@
-# The exported study route has no extension; serve its body as a stylesheet.
+# Next.js names every build asset by its content hash, so a cached copy never goes stale.
+# Without this, Pages sends max-age=0 and every page view revalidates each script, stylesheet
+# and font before it can use it.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The exported study route has no extension; serve its body as a stylesheet. Pages link it with
+# its content hash as `?v=` (lib/style-studies.ts), so it can be cached like a build asset.
 /api/style-studies/quiet-instrument/css
   Content-Type: text/css; charset=utf-8
-  Cache-Control: no-store
+  Cache-Control: public, max-age=31536000, immutable
   X-Content-Type-Options: nosniff

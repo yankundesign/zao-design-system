@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { docsSections } from '@/lib/docs-sections';
 import { NavSectionFigure } from './nav-section-figure';
 
@@ -38,10 +38,27 @@ function NavItemLink({ href, label, current }: { href: string; label: string; cu
   );
 }
 
+/**
+ * The docs nav. Reading the search params makes a static page render its nearest Suspense
+ * fallback, so the fallback is the same nav without the style suffix: the export's first paint
+ * holds every link, and nothing moves when the client fills in the suffix.
+ */
 export function Nav() {
-  const pathname = usePathname();
+  return (
+    <Suspense fallback={<NavLinks suffix="" />}>
+      <NavWithStyle />
+    </Suspense>
+  );
+}
+
+function NavWithStyle() {
   const searchParams = useSearchParams();
   const suffix = searchParams.get('style') === 'quiet-instrument' ? '?style=quiet-instrument' : '';
+  return <NavLinks suffix={suffix} />;
+}
+
+function NavLinks({ suffix }: { suffix: string }) {
+  const pathname = usePathname();
   const currentSection = sections.find((section) =>
     section.links.some((link) => link.href === pathname),
   );

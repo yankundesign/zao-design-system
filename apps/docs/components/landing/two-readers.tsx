@@ -1,4 +1,4 @@
-import { componentUsage } from '../component-detail';
+import { componentUsage } from '../component-definitions';
 import { ReaderCard } from './reader-card';
 
 /** Section 4: the same Button for a person, and the rules an agent reads for it. */

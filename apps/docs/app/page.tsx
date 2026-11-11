@@ -6,6 +6,7 @@ import { LandingHero } from '@/components/landing/hero';
 import { LandingSequence } from '@/components/landing/landing-sequence';
 import { Room } from '@/components/landing/room';
 import { LandingRoot } from '@/components/landing/landing-root';
+import { LandingNav } from '@/components/landing/shared-client';
 import { TwoReaders } from '@/components/landing/two-readers';
 import { getQuietInstrumentStudy } from '@/lib/style-studies';
 import { allTokens } from '@/lib/tokens';
@@ -24,7 +25,7 @@ export default async function Home() {
   // The landing renders the docs frame itself, so the sequence's spacer comes before it.
   return (
     <LandingSequence>
-      <DocsGrid>
+      <DocsGrid nav={<LandingNav />}>
         <LandingRoot>
           {study ? <link rel="stylesheet" href={study.cssUrl} /> : null}
           <LandingHero

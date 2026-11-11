@@ -2,7 +2,7 @@
 
 import { Tabs } from '@zao/react';
 import Link from 'next/link';
-import { CardSpecimen } from './component-specimens';
+import { CardSpecimen } from './card-specimen';
 import {
   CompactCardSpecimen,
   MediaCardSpecimen,

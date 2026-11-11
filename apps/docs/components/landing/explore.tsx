@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { LandingLink } from './shared-client';
 import { docsSections } from '@/lib/docs-sections';
 import type { DocsSectionId } from '@/lib/docs-sections';
 import { SectionFigure } from '../figures/section-figures';
@@ -50,7 +50,7 @@ export function Explore() {
       <ul className="landing-explore grid min-w-0 gap-4">
         {tiles.map((tile) => (
           <li key={tile.id} className="min-w-0">
-            <Link
+            <LandingLink
               href={tile.href}
               className="landing-explore-tile flex h-full flex-col gap-4 border-t border-subtle pt-4 outline-focus"
             >
@@ -59,7 +59,7 @@ export function Explore() {
                 <span className="type-heading">{tile.title}</span>
                 <span className="type-body text-muted">{tile.detail}</span>
               </span>
-            </Link>
+            </LandingLink>
           </li>
         ))}
       </ul>
