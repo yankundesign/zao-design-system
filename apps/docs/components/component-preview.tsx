@@ -2,64 +2,30 @@
 
 import { finish } from '@zao/react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { CardLayoutPreview } from './card-layout-preview';
-import { FieldFamilySpecimen, FieldSizeSpecimen } from './field-family-specimen';
-import {
-  ButtonSpecimen,
-  CardSpecimen,
-  ComboboxSpecimen,
-  DialogSpecimen,
-  IconButtonSpecimen,
-  MenuSpecimen,
-  ProgressSpecimen,
-  SelectSpecimen,
-  SwitchSpecimen,
-  TabsSpecimen,
-  TabsNavigationSpecimen,
-  TextFieldSpecimen,
-} from './component-specimens';
+import { useEffect, type ReactNode } from 'react';
 import { useFinish } from './use-finish';
-import { TableSpecimen } from './table-specimen';
-import { ComposerSpecimen } from './composer-specimen';
-import { ConversationSpecimen } from './conversation-specimen';
-import { ApprovalGateSpecimen, PlanSpecimen } from './workflow-specimens';
-import type { ComponentId } from './component-detail';
-
-const specimens = {
-  button: ButtonSpecimen,
-  'icon-button': IconButtonSpecimen,
-  'text-field': TextFieldSpecimen,
-  composer: ComposerSpecimen,
-  conversation: ConversationSpecimen,
-  plan: PlanSpecimen,
-  'approval-gate': ApprovalGateSpecimen,
-  card: CardSpecimen,
-  combobox: ComboboxSpecimen,
-  dialog: DialogSpecimen,
-  menu: MenuSpecimen,
-  progress: ProgressSpecimen,
-  select: SelectSpecimen,
-  switch: SwitchSpecimen,
-  table: TableSpecimen,
-  tabs: TabsSpecimen,
-};
+import type { ComponentId } from './component-definitions';
 
 export function ComponentPreview({
   component,
   title,
   selectedStyle,
   quietStudy,
+  specimen,
+  supplement,
 }: {
   component: ComponentId;
   title: string;
   selectedStyle: 'baseline' | 'quiet-instrument';
   quietStudy: { title: string; cssUrl: string } | null;
+  /** The page's own specimen; the page imports it, so its bundle holds no other page's. */
+  specimen: ReactNode;
+  /** Vertical Tabs, or a field's sizes and family, below the specimen. */
+  supplement?: ReactNode;
 }) {
   const { theme, resolved } = useFinish();
   const pathname = usePathname();
   const router = useRouter();
-  const Specimen = specimens[component];
   const availableQuiet = quietStudy !== null;
   const activeQuiet = availableQuiet;
   const activeStyle = activeQuiet ? 'quiet-instrument' : 'baseline';
@@ -110,17 +76,16 @@ export function ComponentPreview({
                 : `study min-w-0 rounded-surface border border-subtle bg-canvas p-5 text-default${component === 'menu' ? ' docs-menu-preview' : ''}`
             }
           >
-            {component === 'card' ? <CardLayoutPreview /> : <Specimen />}
-            {component === 'tabs' && (
+            {specimen}
+            {component === 'tabs' && supplement && (
               <div className="mt-6 border-t border-subtle pt-6">
                 <h4 className="mb-4 type-label text-muted">Vertical tabs · manual activation</h4>
-                <TabsNavigationSpecimen />
+                {supplement}
               </div>
             )}
-            {isField && (
+            {isField && supplement && (
               <div className="mt-6 flex min-w-0 flex-col gap-6 border-t border-subtle pt-6">
-                <FieldSizeSpecimen component={component} />
-                <FieldFamilySpecimen />
+                {supplement}
               </div>
             )}
           </section>

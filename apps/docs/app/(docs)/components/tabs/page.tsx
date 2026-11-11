@@ -1,9 +1,17 @@
 import type { Metadata } from 'next';
 import { ComponentDetail } from '@/components/component-detail';
 import type { ComponentSearchParams } from '@/components/component-detail';
+import { TabsNavigationSpecimen, TabsSpecimen } from '@/components/tabs-specimen';
 
 export const metadata: Metadata = { title: 'Tabs' };
 
 export default function TabsPage({ searchParams }: { searchParams: ComponentSearchParams }) {
-  return <ComponentDetail component="tabs" searchParams={searchParams} />;
+  return (
+    <ComponentDetail
+      component="tabs"
+      searchParams={searchParams}
+      specimen={<TabsSpecimen />}
+      supplement={<TabsNavigationSpecimen />}
+    />
+  );
 }

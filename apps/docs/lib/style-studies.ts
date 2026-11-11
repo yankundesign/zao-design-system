@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { lstat, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
@@ -46,7 +47,7 @@ async function studyRoot(): Promise<string | null> {
 async function readStudy(
   root: string,
   id: string,
-): Promise<{ css: string; markdown: string; cssMtimeMs: number } | null> {
+): Promise<{ css: string; markdown: string } | null> {
   if (!isStudySlug(id)) return null;
 
   const directory = join(root, id);
@@ -69,7 +70,7 @@ async function readStudy(
       readFile(cssPath, 'utf8'),
       readFile(markdownPath, 'utf8'),
     ]);
-    return { css, markdown, cssMtimeMs: cssFile.mtimeMs };
+    return { css, markdown };
   } catch {
     return null;
   }
@@ -92,7 +93,9 @@ export async function getQuietInstrumentStudy(): Promise<StyleStudy | null> {
   return {
     id,
     title: titleFromMarkdown(files.markdown, id),
-    cssUrl: `/api/style-studies/${id}/css?v=${Math.trunc(files.cssMtimeMs)}`,
+    // The version is the stylesheet's content hash, so the exported copy can be cached for good
+    // (public/_headers) and stays cached across deploys that leave it unchanged.
+    cssUrl: `/api/style-studies/${id}/css?v=${createHash('sha256').update(files.css).digest('hex').slice(0, 12)}`,
     designMarkdown: files.markdown,
   };
 }
