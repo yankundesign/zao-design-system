@@ -68,15 +68,16 @@ Sources: [implementation and props](../../packages/react/src/components/progress
 
 ## States
 
-| Input or state        | Current contract                                                                                                                       |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `label`               | Required string, visible and associated with progressbar semantics. Runtime does not enforce nonempty text.                            |
-| `value`               | Required `number` or `null`; controlled by the host. A finite value produces a clamped fraction. Null/nonfinite completion is unknown. |
-| `min`, `max`          | Default 0 and 100. A usable range requires both finite and `max > min`.                                                                |
-| Zero / partial / full | No occupied fraction at minimum; accurate normalized fraction between endpoints; complete at the clamped maximum.                      |
-| Indeterminate         | No quantitative face or idle motion. Default visible reading is “In progress.”                                                         |
-| Invalid range         | ZAO passes null and a safe 0–100 semantic range to Base UI, rather than inventing zero or dividing by an unusable denominator.         |
-| `showValue`           | Defaults true; false removes the visible formatted reading, not the task label or progress semantics.                                  |
+| Input or state        | Current contract                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `label`               | Required string, visible and associated with progressbar semantics. Runtime does not enforce nonempty text.                                                                          |
+| `value`               | Required `number` or `null`; controlled by the host. A finite value produces a clamped fraction. Null/nonfinite completion is unknown.                                               |
+| `min`, `max`          | Default 0 and 100. A usable range requires both finite and `max > min`.                                                                                                              |
+| Complete              | At `value === max` (Nov 14, CR10 B) the track's frame and the walls of its well take the face's ink, so the face fills its frame. Once, on the Seat role, after the reading arrives. |
+| Zero / partial / full | No occupied fraction at minimum; accurate normalized fraction between endpoints; complete at the clamped maximum.                                                                    |
+| Indeterminate         | No quantitative face or idle motion. Default visible reading is “In progress.”                                                                                                       |
+| Invalid range         | ZAO passes null and a safe 0–100 semantic range to Base UI, rather than inventing zero or dividing by an unusable denominator.                                                       |
+| `showValue`           | Defaults true; false removes the visible formatted reading, not the task label or progress semantics.                                                                                |
 
 There are no variant, size, disabled, read-only, hover, focus, press, selected, error, or loading-lifecycle props. Progress itself is passive; the host owns task status and any completion/failure/empty-state content around it.
 
