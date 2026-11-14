@@ -446,6 +446,7 @@ export const definitions: Record<ComponentId, ComponentDefinition> = {
       'Keep records on one steady reading plane. Sorting, selection, and actions belong to explicit buttons, checkboxes, and menus; the table does not manage their state.',
       'For sorting, put a Button in the column heading and set aria-sort on the sorted Head. For selection, use labeled checkboxes and a visible selected count. Keep the main action visible outside the frame.',
       'Give the primary column the available width. Keep supporting columns compact, use monospace IDs, and match the type-label role across static and sortable headings. Reserve space for sort indicators so columns stay steady.',
+      'To keep the column header in view, set stickyHeader on Root and bound the frame’s height with className. Without a bound nothing sticks. Begin a Body with a row whose only cell is a Head with scope="rowgroup" and a colSpan to give that group a heading that stacks under the header.',
       'Pair each written status with a distinct decorative Iconoir glyph in the default foreground: a check for Ready, play for Running, warning triangle for Needs review, and prohibition for Blocked. Keep the text as the accessible reading; color and motion are unnecessary. The specimen retains neutral checkbox selection and a compact secondary action toolbar. Metadata gains default foreground on emphasized rows; the selected count stays concise, with a detailed live announcement for assistive technology.',
     ],
     accessibility:
@@ -459,6 +460,11 @@ export const definitions: Record<ComponentId, ComponentDefinition> = {
         name: 'Root drawing / drawingLabel',
         values: 'boolean / string',
         defaultValue: 'false / Loading',
+      },
+      {
+        name: 'Root stickyHeader',
+        values: 'boolean; bound the frame’s height with className',
+        defaultValue: 'false',
       },
       { name: 'Caption', values: 'native caption props', defaultValue: '—' },
       { name: 'Header / Body / Footer', values: 'native table section props', defaultValue: '—' },

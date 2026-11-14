@@ -48,6 +48,8 @@ Plan arrival draws each initial step on Reveal, staggered by one Fast duration. 
 
 Conversation requests reveal upward from the slip's lower edge without changing the native item box. Latest uses the same Reveal/Reveal exit roles while docked over the viewport. Composer's accepted Send seats on Seat and rises as Stop on Lift; added tiles rise on Lift, while tile and context-chip removal draw away on the exit curve for one Lift duration. The streaming Message reuses Button's existing loading role. Scroll eaves are driven by scroll position, with no duration or timed animation.
 
+Table's held header (`stickyHeader`) is an eave of the same kind. Over the first `space.4` of block scroll its bottom rule goes from `border-subtle` to `fg-default` and a bottom plane at `depth.rest.small` is drawn in the frame's shading, mapped evenly to the scroll position. Nothing is timed, so reduced motion keeps it; forced colors and browsers without scroll timelines keep the resting rule and no plane.
+
 Dialog stays instant (V8). Reduced motion keeps every end state and removes travel, as before.
 
 ### Construction distances

@@ -1,0 +1,1145 @@
+<title>Table Interaction Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+/* Layout: square plates on a gray ground, two per row when there is room. Each plate is a working study with its notes underneath. All gray, per ZAO's current finish; motion uses ZAO's grades and fold curve. */
+:root{
+  --ground:#f3f3f3;
+  --plate:#ffffff;
+  --sunk:#f8f8f8;
+  --ink:#161616;
+  --ink-2:#5c5c5c;
+  --ink-3:#8f8f8f;
+  --rule:#e8e8e8;
+  --rule-2:#d3d3d3;
+  --frame:#bcbcbc;
+  --wash:#f2f2f2;
+  --wash-2:#e5e5e5;
+  --flash:#d4d4d4;
+  --bar:#cdcdcd;
+  --shade:rgba(0,0,0,.13);
+  --hatch:rgba(0,0,0,.05);
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --serif:"Newsreader","Iowan Old Style",Georgia,serif;
+  --g1:270ms; --g3:225ms; --g6:180ms; --g8:135ms;
+  --fold-in:linear(0,.3 20%,.525 40%,.7083 60%,.8667 80%,1);
+  --fold-out:linear(0,.1333 20%,.2917 40%,.475 60%,.7 80%,1);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0c0c0c; --plate:#151515; --sunk:#111111;
+    --ink:#ececec; --ink-2:#a5a5a5; --ink-3:#6f6f6f;
+    --rule:#252525; --rule-2:#343434; --frame:#4a4a4a;
+    --wash:#1d1d1d; --wash-2:#282828; --flash:#3c3c3c; --bar:#3e3e3e;
+    --shade:rgba(0,0,0,.6); --hatch:rgba(255,255,255,.05);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0c0c0c; --plate:#151515; --sunk:#111111;
+  --ink:#ececec; --ink-2:#a5a5a5; --ink-3:#6f6f6f;
+  --rule:#252525; --rule-2:#343434; --frame:#4a4a4a;
+  --wash:#1d1d1d; --wash-2:#282828; --flash:#3c3c3c; --bar:#3e3e3e;
+  --shade:rgba(0,0,0,.6); --hatch:rgba(255,255,255,.05);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font:14px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+.page{max-width:1280px;margin:0 auto;padding-block:48px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:inherit;text-decoration:underline;text-decoration-color:var(--rule-2);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--ink)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+code{font:12px var(--mono);background:var(--sunk);border:1px solid var(--rule);padding:0 3px;white-space:nowrap}
+
+/* Header */
+.head{display:grid;gap:16px;padding-bottom:28px;border-bottom:1px solid var(--frame)}
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin:0}
+h1{font:400 clamp(40px,6.4vw,68px)/1.02 var(--serif);letter-spacing:-.012em;margin:0;text-wrap:balance}
+.lede{max-width:64ch;font-size:16px;line-height:1.55;color:var(--ink-2);margin:0}
+.head-row{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;margin-top:6px}
+.toc{display:flex;flex-wrap:wrap;gap:6px 18px;font:12px/1.4 var(--mono);color:var(--ink-2)}
+.toc a{text-decoration:none;border-bottom:1px solid var(--rule-2)}
+.toc a:hover{border-bottom-color:var(--ink);color:var(--ink)}
+.motion-ctl{display:flex;align-items:center;gap:10px;font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.seg{display:inline-flex;border:1px solid var(--rule-2);background:var(--plate);flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:5px 10px;font:500 12px/1.25 var(--sans);letter-spacing:0;text-transform:none;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--rule-2)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--plate)}
+.seg .n{font:11px var(--mono);opacity:.6;margin-left:4px}
+
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:1px;background:var(--rule-2);border:1px solid var(--rule-2);margin-top:28px}
+.rules>div{background:var(--plate);padding:16px 18px}
+.rules h2{font:500 11px/1.3 var(--mono);letter-spacing:.07em;text-transform:uppercase;margin:0 0 8px;color:var(--ink-2)}
+.rules p{margin:0;font-size:13.5px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:14px;font-size:12.5px;color:var(--ink-2)}
+
+/* Families and plates */
+.family{margin-top:60px;scroll-margin-top:16px}
+.fam-head{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline;padding-bottom:14px;border-bottom:1px solid var(--rule-2);margin-bottom:20px}
+.fam-no{font:500 12px/1 var(--mono);color:var(--ink-2);border:1px solid var(--frame);padding:4px 7px;background:var(--plate)}
+.fam-head h2{font:500 22px/1.2 var(--sans);letter-spacing:-.01em;margin:0}
+.fam-head p{grid-column:2;margin:0;color:var(--ink-2)}
+.plates{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,540px),1fr));gap:20px}
+.plate{background:var(--plate);border:1px solid var(--frame);display:flex;flex-direction:column;min-width:0;scroll-margin-top:16px}
+.plate-head{display:flex;align-items:baseline;gap:10px;padding:12px 16px;border-bottom:1px solid var(--rule)}
+.plate-no{font:500 12px/1 var(--mono);color:var(--ink-2)}
+.plate-head h3{font:500 15px/1.3 var(--sans);margin:0;flex:1;min-width:0}
+.fit{font:500 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);border:1px solid var(--rule-2);padding:4px 6px;white-space:nowrap}
+.fit[data-k="new"]{color:var(--ink);border-color:var(--ink-3)}
+.fit[data-k="decide"]{color:var(--ink);border:1px dashed var(--ink)}
+.fit[data-k="aside"]{border-style:dotted}
+.stage{position:relative;margin:16px 16px 0;border:1px solid var(--rule-2);background:var(--plate);height:var(--h,280px);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.try{margin:10px 16px 0;font:12px/1.5 var(--mono);color:var(--ink-2)}
+kbd{font:500 11px/1 var(--mono);border:1px solid var(--rule-2);border-bottom-width:2px;padding:1px 4px;background:var(--sunk);color:var(--ink)}
+.notes{margin:12px 16px 16px;border-top:1px solid var(--rule)}
+.notes>div{display:grid;grid-template-columns:76px 1fr;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule-2)}
+.notes>div:last-child{border-bottom:0}
+.notes dt{font:500 10.5px/1.75 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.notes dd{margin:0;font-size:13px;line-height:1.55}
+@media (max-width:460px){.notes>div{grid-template-columns:1fr;gap:2px}}
+@media (min-width:1000px){
+  .plate.wide{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);grid-template-rows:auto auto 1fr;align-items:start}
+  .plate.wide .plate-head{grid-column:1/-1}
+  .plate.wide .stage{grid-column:1;grid-row:2}
+  .plate.wide .try{grid-column:1;grid-row:3;margin-bottom:16px}
+  .plate.wide .notes{grid-column:2;grid-row:2/4;margin:16px 16px 16px 4px;border-top:0}
+}
+
+/* Shared demo parts */
+.scroller{overflow:auto;flex:1;min-height:0;position:relative}
+.scroller:focus-visible,.gridwrap:focus-visible,.lens:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.readout{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:6px 10px;border-top:1px solid var(--rule);font:11.5px/1.4 var(--mono);color:var(--ink-2);background:var(--sunk);flex:none;min-height:32px}
+.readout b{font-weight:500;color:var(--ink)}
+.readout>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--rule);background:var(--sunk);flex:none}
+.toolbar .count,.toolbar .hint{font:11.5px/1.25em var(--mono);color:var(--ink-2)}
+.mini{border:1px solid var(--rule-2);background:var(--plate);padding:3px 9px;font:500 11.5px/1.2 var(--sans);color:var(--ink);cursor:pointer;flex:none}
+.mini:hover{border-color:var(--ink-3)}
+.mini[aria-pressed="true"]{background:var(--ink);color:var(--plate);border-color:var(--ink)}
+.linkbtn{border:0;background:none;padding:0;font:inherit;color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule-2);text-underline-offset:3px;cursor:pointer;margin-left:6px}
+
+.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;font-variant-numeric:tabular-nums}
+.t th,.t td{padding:7px 12px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap;background:var(--plate);font-weight:400}
+.t thead th{position:sticky;top:0;z-index:3;font:500 10.5px/1.5 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2);border-bottom:1px solid var(--rule-2);padding-block:8px}
+.t .num{text-align:right}
+.t .id{font:12px var(--mono);color:var(--ink-2)}
+.t.hov tbody tr:hover td{background:var(--wash)}
+.st{display:inline-flex;align-items:center;gap:6px}
+svg.g{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+
+/* Rolling digits */
+.roll{display:inline-flex;height:1.25em;line-height:1.25em;overflow:hidden;vertical-align:top}
+.rd{display:block;height:1.25em;overflow:hidden}
+.rs{display:block;transition:transform var(--g3) var(--fold-in)}
+.rs>span{display:block;height:1.25em;text-align:center}
+.rc{display:block}
+
+/* 1.1 stuck header */
+#d11 .grp th{position:sticky;top:var(--hh,34px);z-index:2;background:var(--sunk);font:500 12px/1.4 var(--sans);color:var(--ink);padding-block:5px;border-bottom:1px solid var(--rule-2)}
+#d11 .grp th .c{font:11px var(--mono);color:var(--ink-3);margin-left:8px}
+#d11 .grp[data-current] th{box-shadow:inset 2px 0 0 var(--ink)}
+#d11 thead th{transition:border-color var(--g6) var(--fold-in),box-shadow var(--g6) var(--fold-in)}
+#d11[data-stuck] thead th{border-bottom-color:var(--ink);box-shadow:0 9px 9px -9px var(--shade)}
+
+/* 1.2 edges */
+.hwrap{position:relative;flex:1;min-height:0;display:flex}
+#d12 .t{min-width:1000px}
+#d12 th:first-child,#d12 td:first-child{position:sticky;left:0;z-index:2;border-right:1px solid var(--rule)}
+#d12 thead th:first-child{z-index:4}
+#d12 th:first-child::after,#d12 td:first-child::after{content:"";position:absolute;top:0;bottom:-1px;left:100%;width:14px;pointer-events:none;background:linear-gradient(to right,var(--shade),transparent);opacity:var(--l,0)}
+.edge{position:absolute;top:0;right:0;bottom:0;width:20px;pointer-events:none;opacity:var(--r,0);background:linear-gradient(to left,var(--shade),transparent)}
+.colmap{display:flex;gap:10px;align-items:center;padding:8px 10px;border-top:1px solid var(--rule);background:var(--sunk);flex:none}
+.colmap .lab{font:11.5px var(--mono);color:var(--ink-2);white-space:nowrap}
+.cm{display:flex;gap:2px;flex:1;min-width:0}
+.cm button{height:10px;border:0;padding:0;background:var(--rule-2);cursor:pointer;flex-basis:0;min-width:3px}
+.cm button[data-v="in"],.cm button[data-v="pin"]{background:var(--ink)}
+.cm button[data-v="part"]{background:var(--ink-3)}
+.cm button[data-v="pin"]{box-shadow:inset 0 -3px 0 var(--sunk)}
+
+/* 1.3 rail */
+.rowflex{display:flex;flex:1;min-height:0}
+#d13{scrollbar-width:none}
+#d13::-webkit-scrollbar{display:none}
+.rail{position:relative;width:36px;flex:none;border-left:1px solid var(--rule);background:var(--sunk);cursor:ns-resize;touch-action:none}
+.rail-in{position:absolute;inset:8px 0}
+.rail-track{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--rule-2)}
+.rail-thumb{position:absolute;left:6px;right:6px;border:1px solid var(--ink-2);background:var(--hatch);pointer-events:none}
+.mark{position:absolute;left:50%;width:24px;height:9px;margin-top:-4px;transform:translateX(-50%);padding:0;border:0;background:transparent;cursor:pointer;z-index:1}
+.mark::before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:var(--ink)}
+.mark[data-k="blocked"]{width:12px}
+.mark:hover::before,.mark:focus-visible::before{height:3px;top:3px}
+.mark:focus-visible{outline-offset:0}
+@keyframes ping{from{background:var(--flash)}to{background:var(--plate)}}
+tr.ping td{animation:ping 1.3s ease-out}
+
+/* 2.1 sort */
+.sortbtn{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;cursor:pointer}
+.sortbtn:hover{color:var(--ink)}
+.sortbtn svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.4;opacity:.28;transition:transform var(--g6) var(--fold-in)}
+th[aria-sort] .sortbtn{color:var(--ink)}
+th[aria-sort] .sortbtn svg{opacity:1}
+th[aria-sort="descending"] .sortbtn svg{transform:rotate(180deg)}
+
+/* 3.1 crosshair */
+#d31 tbody th{font:500 12.5px/1.5 var(--sans);color:var(--ink-2)}
+#d31 .x-row>*{background:var(--wash)}
+#d31 .x-col{background:var(--wash)}
+#d31 thead th.x-col,#d31 tr.x-row th{color:var(--ink)}
+#d31 thead th.x-col{box-shadow:inset 0 -2px 0 var(--ink)}
+#d31 td.x-hit{background:var(--wash-2);box-shadow:inset 0 0 0 1px var(--ink)}
+
+/* 3.2 select */
+.cb{appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1px solid var(--ink-2);background:var(--plate);margin:0;display:inline-grid;place-content:center;cursor:pointer;vertical-align:middle}
+.cb:checked,.cb:indeterminate{background:var(--ink);border-color:var(--ink)}
+.cb:checked::after{content:"";width:8px;height:4px;border-left:1.5px solid var(--plate);border-bottom:1.5px solid var(--plate);transform:translateY(-1px) rotate(-45deg)}
+.cb:indeterminate::after{content:"";width:8px;height:1.5px;background:var(--plate)}
+#d32 .sel{width:38px;padding-right:0;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+#d32 tr[data-on] td{background:var(--wash-2)}
+.selbar{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;background:var(--ink);color:var(--plate);transform:translateY(calc(100% + 14px));transition:transform var(--g3) var(--fold-out);font-size:13px;z-index:5;flex-wrap:wrap}
+.selbar[data-open]{transform:none;transition-timing-function:var(--fold-in)}
+.selcount{line-height:1.25em}
+.selbar .grow{flex:1}
+.selbar button{border:1px solid color-mix(in srgb,var(--plate) 35%,transparent);background:transparent;color:var(--plate);padding:4px 10px;cursor:pointer;font:500 12.5px/1.25 var(--sans);overflow:hidden}
+.selbar button.primary{background:var(--plate);color:var(--ink);border-color:var(--plate);min-width:112px}
+.lbl{display:inline-block}
+
+/* 3.3 cell cursor */
+.gridwrap{position:relative;flex:1;min-height:0;overflow:auto;outline-offset:-2px}
+#d33{border-collapse:separate;border-spacing:0;font-size:12.5px;font-variant-numeric:tabular-nums;user-select:none;-webkit-user-select:none}
+#d33 th,#d33 td{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:0 10px;height:29px;min-width:84px;text-align:right;white-space:nowrap;background:var(--plate);cursor:cell}
+#d33 td.txt{text-align:left;min-width:96px}
+#d33 thead th{position:sticky;top:0;z-index:4;background:var(--sunk);font:500 11px var(--mono);color:var(--ink-3);text-align:center;min-width:0;cursor:default}
+#d33 tbody th{position:sticky;left:0;z-index:3;background:var(--sunk);font:500 11px var(--mono);color:var(--ink-3);text-align:center;min-width:34px;padding:0 6px;cursor:default}
+#d33 thead th:first-child{left:0;z-index:5}
+.cursor{position:absolute;left:0;top:0;border:2px solid var(--ink);pointer-events:none;z-index:2;background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.gridwrap.ready[data-mode="glide"] .cursor{transition:transform var(--g6) var(--fold-in),width var(--g6) var(--fold-in),height var(--g6) var(--fold-in)}
+.ants{position:absolute;left:0;top:0;pointer-events:none;z-index:2;overflow:visible}
+.ants rect{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:5 4;animation:march .55s linear infinite}
+@keyframes march{to{stroke-dashoffset:-9}}
+
+/* 3.4 peek */
+#d34 tbody tr{cursor:default}
+#d34 tbody tr[data-focus] td{background:var(--wash)}
+#d34 tbody tr[data-focus] td:first-child{box-shadow:inset 2px 0 0 var(--ink)}
+.peek{position:absolute;top:8px;right:8px;bottom:40px;width:min(64%,300px);background:var(--plate);border:1px solid var(--frame);box-shadow:0 14px 30px -14px var(--shade),0 2px 6px -3px var(--shade);padding:14px 16px;display:flex;flex-direction:column;gap:9px;z-index:6;opacity:0;transform:translateX(10px);pointer-events:none;overflow:auto;transition:opacity var(--g8) var(--fold-out),transform var(--g8) var(--fold-out)}
+.peek[data-open]{opacity:1;transform:none;pointer-events:auto;transition-duration:var(--g6);transition-timing-function:var(--fold-in)}
+.peek .pid{font:11px var(--mono);color:var(--ink-3)}
+.peek h4{margin:0;font:500 15px/1.3 var(--sans)}
+.peek p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.peek dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:12.5px;padding-top:9px;border-top:1px solid var(--rule)}
+.peek dt{color:var(--ink-3);font:10.5px/1.7 var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.peek dd{margin:0}
+
+/* 4.1 live values */
+#d41 td.live{line-height:1.25em}
+.delta{font:11px/1.25em var(--mono);color:var(--ink-2);margin-right:10px;opacity:0;vertical-align:top}
+
+/* 4.2 live tail */
+#d42 td{font-size:12.5px}
+#d42 td.time{font:12px var(--mono);color:var(--ink-2)}
+.pill{position:absolute;left:50%;bottom:44px;transform:translate(-50%,8px);opacity:0;pointer-events:none;background:var(--ink);color:var(--plate);border:0;padding:6px 12px;font:500 12px/1.2 var(--sans);cursor:pointer;z-index:5;box-shadow:0 8px 18px -10px var(--shade);transition:opacity var(--g8) var(--fold-out),transform var(--g8) var(--fold-out)}
+.pill[data-show]{opacity:1;transform:translate(-50%,0);pointer-events:auto;transition-duration:var(--g6);transition-timing-function:var(--fold-in)}
+
+/* 5.1 agent column */
+#d51 thead th.aq{min-width:168px;vertical-align:bottom}
+.aq .qrow{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.aq .q{font:500 12px/1.3 var(--sans);text-transform:none;letter-spacing:0;color:var(--ink)}
+.aq .pn{font:11px var(--mono);color:var(--ink-3);letter-spacing:0}
+.aq .prog{display:block;margin-top:6px;height:1px;background:var(--rule-2);position:relative}
+.aq .prog i{position:absolute;left:0;top:-0.5px;height:2px;background:var(--ink);width:0;transition:width var(--g3) var(--fold-in)}
+#d51 td.doc{display:flex;align-items:center;gap:8px}
+#d51 td.cell{position:relative}
+.c-q{font:11px var(--mono);color:var(--ink-3)}
+.c-run{font:11px var(--mono);color:var(--ink-2)}
+td[data-state="run"]::after{content:"";position:absolute;left:12px;right:12px;bottom:5px;height:1px;background:linear-gradient(var(--ink),var(--ink)) no-repeat;background-size:28% 1px;animation:sweep 1.1s linear infinite}
+@keyframes sweep{from{background-position:-40% 0}to{background-position:140% 0}}
+.c-none{color:var(--ink-2)}
+.src{margin-left:8px;border:1px solid var(--rule-2);background:var(--sunk);font:10.5px/1 var(--mono);color:var(--ink-2);padding:2px 4px;cursor:help;vertical-align:1px}
+.src:hover,.src:focus-visible{border-color:var(--ink);color:var(--ink)}
+.src.none{border-style:dashed}
+.pop{position:absolute;left:0;top:0;z-index:8;width:min(290px,calc(100% - 16px));background:var(--plate);border:1px solid var(--frame);box-shadow:0 12px 26px -12px var(--shade);padding:10px 12px;font-size:12.5px;line-height:1.45;pointer-events:none;opacity:0;transition:opacity var(--g8) var(--fold-out)}
+.pop[data-show]{opacity:1}
+.pop .ref{display:block;font:10.5px/1.5 var(--mono);color:var(--ink-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+
+/* 6.1 table lens */
+.lens{flex:1;min-height:0;display:flex;flex-direction:column;--cols:minmax(96px,1.15fr) 1fr 1fr 1fr}
+.tl-head{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--rule-2);background:var(--plate);flex:none}
+.tl-head button{border:0;background:transparent;text-align:left;padding:8px 10px;font:500 10.5px/1.5 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2);cursor:pointer;display:flex;gap:6px;align-items:center;white-space:nowrap;overflow:hidden}
+.tl-head button+button{justify-content:flex-end}
+.tl-head button:hover{color:var(--ink)}
+.tl-head button[aria-pressed="true"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.tl-body{position:relative;flex:1;min-height:0;overflow:hidden;cursor:crosshair;touch-action:pan-y}
+.tl-row{position:absolute;left:0;right:0;top:0;display:grid;grid-template-columns:var(--cols);grid-template-rows:100%;overflow:hidden}
+.tl-body[data-sorting] .tl-row{transition:transform var(--g1) var(--fold-in),height var(--g1) var(--fold-in)}
+.tl-cell{position:relative;min-width:0;display:flex;align-items:center;justify-content:flex-end;padding:0 10px}
+.tl-name{justify-content:flex-start;font-size:12.5px;white-space:nowrap;overflow:hidden}
+.tl-name span,.tl-val{opacity:0}
+.tl-row[data-big] .tl-name span,.tl-row[data-big] .tl-val{opacity:1}
+.tl-bar{position:absolute;left:10px;top:50%;height:var(--bh,2px);transform:translateY(-50%);background:var(--bar)}
+.tl-row[data-big] .tl-bar{background:var(--rule-2)}
+.tl-row[data-focus]{background:var(--wash);box-shadow:inset 0 1px 0 var(--rule-2),inset 0 -1px 0 var(--rule-2)}
+.tl-row[data-focus] .tl-bar{background:var(--ink-3)}
+.tl-val{position:relative;font:11px/1.3 var(--mono);color:var(--ink);background:var(--plate);padding:0 3px}
+
+/* Reduced motion: keep information, drop travel */
+[data-motion="reduced"] .rs,[data-motion="reduced"] .gridwrap .cursor,[data-motion="reduced"] .selbar,[data-motion="reduced"] .peek,[data-motion="reduced"] .pill,[data-motion="reduced"] .sortbtn svg,[data-motion="reduced"] .tl-row,[data-motion="reduced"] .aq .prog i{transition:none!important}
+[data-motion="reduced"] .ants rect{animation:none}
+[data-motion="reduced"] td[data-state="run"]::after{animation:none;background:repeating-linear-gradient(90deg,var(--ink-3) 0 3px,transparent 3px 6px);background-size:auto}
+
+/* More patterns and sources */
+.more-wrap{overflow-x:auto;border:1px solid var(--frame);background:var(--plate)}
+.more .t{min-width:760px}
+.more .t thead th{position:static}
+.more .t td{white-space:normal;vertical-align:top;line-height:1.5;padding-block:10px}
+.more .t td:first-child{font-weight:500;width:22%}
+.more .t td:last-child{width:18%;color:var(--ink-2)}
+.more .t tbody tr:last-child td{border-bottom:0}
+.sources{columns:3 300px;column-gap:36px;font-size:13px}
+.sources section{break-inside:avoid;margin-bottom:18px}
+.sources h3{font:500 10.5px/1.5 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin:0 0 4px}
+.sources ul{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.foot{margin-top:56px;padding-top:16px;border-top:1px solid var(--rule-2);font:12px/1.6 var(--mono);color:var(--ink-2)}
+</style>
+
+<div class="page">
+<header class="head">
+  <p class="eyebrow">ZAO research · Tables · October 15, 2026</p>
+  <h1>Table Interaction Atlas</h1>
+  <p class="lede">Thirteen working studies of what a table can do when you scroll it, sort it, point at it, feed it live data, or hand a column to an agent. Each plate links to where the idea comes from and says how it sits with ZAO's Table. All data is sample data.</p>
+  <div class="head-row">
+    <nav class="toc" aria-label="Families">
+      <a href="#scroll">1 Scroll</a><a href="#reorder">2 Reorder</a><a href="#point">3 Point and select</a><a href="#live">4 Live values</a><a href="#agent">5 Agent work</a><a href="#lens">6 Focus and context</a><a href="#more">More patterns</a><a href="#sources">Sources</a>
+    </nav>
+    <div class="motion-ctl"><span>Motion</span><div class="seg" id="motion" role="group" aria-label="Motion"><button type="button" data-m="full">Full</button><button type="button" data-m="reduced">Reduced</button></div></div>
+  </div>
+</header>
+
+<section class="rules" aria-label="Three rules from the research">
+  <div><h2>Frequency sets the budget</h2><p>What people do hundreds of times a day, like arrow keys, J/K and keyboard sorts, lands instantly. Rare moments may move.</p></div>
+  <div><h2>Motion answers a question</h2><p>Where did that row go? What just changed? Which group am I in? If an effect answers none of these, cut it.</p></div>
+  <div><h2>Every effect has a still form</h2><p>Reduced motion keeps the information as marks, counts and tone, and drops the travel. Flip the Motion switch to compare.</p></div>
+</section>
+<div class="legend"><span>Tags:</span><span class="fit">Fits</span>works with the approved Table <span class="fit" data-k="new">New part</span>needs a spec <span class="fit" data-k="decide">Your call</span>conflicts with an approval <span class="fit" data-k="aside">Exploration</span>not for the default Table</div>
+
+<!-- 1 SCROLL -->
+<section class="family" id="scroll">
+  <div class="fam-head"><span class="fam-no">1</span><h2>Scroll</h2><p>What the table tells you while it moves under your hand.</p></div>
+  <div class="plates">
+
+  <article class="plate" id="p1-1">
+    <header class="plate-head"><span class="plate-no">1.1</span><h3>Stuck header</h3><span class="fit">Fits</span></header>
+    <div class="stage" style="--h:280px">
+      <div class="scroller" id="d11" tabindex="0" role="region" aria-label="Requests by day">
+        <table class="t" aria-label="Requests by day"><thead><tr><th scope="col">Request</th><th scope="col">ID</th><th scope="col">Owner</th><th scope="col" class="num">Items</th></tr></thead></table>
+      </div>
+      <div class="readout"><span>Header <b id="d11s">resting</b></span><span>Group <b id="d11g">Today</b></span></div>
+    </div>
+    <p class="try">Try: scroll the table.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>Once the column header sticks, its rule darkens to frame weight and a soft plane appears under it. Day headers stack beneath it; a mark shows the current group and the readout names it.</dd></div>
+      <div><dt>Seen in</dt><dd>Chrome's scroll-state demos (stuck headers, table shadows) · ics.media's scroll-state guide · MDN.</dd></div>
+      <div><dt>How</dt><dd><code>@container scroll-state(stuck: top)</code> on the sticky header styles its children (Chrome 133+); <code>scrolled</code> adds direction (Chrome 144+). Elsewhere, a scroll listener sets <code>data-stuck</code>, as here.</dd></div>
+      <div><dt>For ZAO</dt><dd>The frame stays still; only the header's rule changes weight. It follows the line hierarchy from the craft research: frame versus division.</dd></div>
+    </dl>
+  </article>
+
+  <article class="plate" id="p1-2">
+    <header class="plate-head"><span class="plate-no">1.2</span><h3>Edge cues and a frozen column</h3><span class="fit">Fits</span></header>
+    <div class="stage" style="--h:280px">
+      <div class="hwrap" id="d12w">
+        <div class="scroller" id="d12" tabindex="0" role="region" aria-label="Wide request table, scrolls sideways">
+          <table class="t" aria-label="Requests with nine columns"><thead><tr><th scope="col">Request</th><th scope="col">ID</th><th scope="col">Owner</th><th scope="col">Region</th><th scope="col" class="num">Items</th><th scope="col" class="num">Seats</th><th scope="col">Updated</th><th scope="col">Status</th><th scope="col">Approver</th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="edge" aria-hidden="true"></div>
+      </div>
+      <div class="colmap"><span class="lab">Columns</span><div class="cm" id="d12m"></div></div>
+    </div>
+    <p class="try">Try: scroll sideways, or click a block in the column map.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>The frozen first column casts a shadow only once content slides under it; a shade on the right says more columns wait. The column map shows which columns are in view.</dd></div>
+      <div><dt>Seen in</dt><dd>Lea Verou's scrolling shadows (2012) · Dave Rupert's animation-timeline version (2023) · Roman Komarov's scroll shadows · Bramus's scroll-driven animation demos.</dd></div>
+      <div><dt>How</dt><dd>CSS only with <code>background-attachment: local</code>, or a scroll-driven animation: <code>scroll(self inline)</code> on the scroller and <code>scroll(nearest inline)</code> for the sticky cell. Chrome 115+ and Safari 26 run these; Firefox still has them behind a flag. Here a scroll listener sets two CSS variables.</dd></div>
+      <div><dt>For ZAO</dt><dd>Fits the existing keyboard-scrollable region. The column map is a small new instrument, in the spirit of Oxide's readouts.</dd></div>
+    </dl>
+  </article>
+
+  <article class="plate wide" id="p1-3">
+    <header class="plate-head"><span class="plate-no">1.3</span><h3>Marked scroll rail</h3><span class="fit" data-k="new">New part</span></header>
+    <div class="stage" style="--h:290px">
+      <div class="rowflex">
+        <div class="scroller" id="d13" tabindex="0" role="region" aria-label="80 requests">
+          <table class="t" aria-label="80 requests"><thead><tr><th scope="col">Request</th><th scope="col">ID</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="rail" id="d13r" role="group" aria-label="Scroll map with marks for rows that need attention"><div class="rail-in"><div class="rail-track"></div><div class="rail-thumb"></div></div></div>
+      </div>
+      <div class="readout"><span id="d13a">Rows</span><span id="d13b"></span></div>
+    </div>
+    <p class="try">Try: click a tick to jump, or drag along the rail to scrub.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>A slim rail stands in for the scrollbar. Long ticks mark Needs review, short ticks mark Blocked, a bracket shows where you are, and the readout counts the rows in view.</dd></div>
+      <div><dt>Seen in</dt><dd>Google Photos' date scrubber · scrollbar annotations in DevExpress and ComponentOne grids · search-match marks in code editors · Devouring Details' tick ruler.</dd></div>
+      <div><dt>How</dt><dd>Each tick sits at its row's offset divided by the scroll height. The region stays keyboard-scrollable and the ticks are real buttons.</dd></div>
+      <div><dt>For ZAO</dt><dd>Close to ZAO's own marks (ticks, fishtails) and the storage ring's mark field. A new part; it would need its own spec.</dd></div>
+    </dl>
+  </article>
+
+  </div>
+</section>
+
+<!-- 2 REORDER -->
+<section class="family" id="reorder">
+  <div class="fam-head"><span class="fam-no">2</span><h2>Reorder</h2><p>Motion that answers where a row went.</p></div>
+  <div class="plates">
+
+  <article class="plate" id="p2-1">
+    <header class="plate-head"><span class="plate-no">2.1</span><h3>Sort glide</h3><span class="fit" data-k="decide">Your call</span></header>
+    <div class="stage" style="--h:300px">
+      <div class="scroller">
+        <table class="t hov" id="d21" aria-label="Requests, sortable"><thead><tr>
+          <th scope="col" data-k="name"><button class="sortbtn" type="button">Request<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 8.5V1.5M2.2 4.3 5 1.5l2.8 2.8"/></svg></button></th>
+          <th scope="col" data-k="owner"><button class="sortbtn" type="button">Owner<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 8.5V1.5M2.2 4.3 5 1.5l2.8 2.8"/></svg></button></th>
+          <th scope="col" data-k="count" class="num"><button class="sortbtn" type="button">Items<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 8.5V1.5M2.2 4.3 5 1.5l2.8 2.8"/></svg></button></th>
+          <th scope="col" data-k="mins"><button class="sortbtn" type="button">Updated<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 8.5V1.5M2.2 4.3 5 1.5l2.8 2.8"/></svg></button></th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="readout"><span id="d21a"></span><span id="d21b"></span></div>
+    </div>
+    <p class="try">Try: click headers, then Tab to one and press <kbd>Enter</kbd>.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>Rows glide to their new places when you sort with the pointer, so your eye can follow one row through the change. A keyboard sort lands instantly.</dd></div>
+      <div><dt>Seen in</dt><dd>Dave Bitter's View Transitions demos (sort, filter, add, remove) · Emil Kowalski, "You don't need animations": keyboard-initiated actions shouldn't animate.</dd></div>
+      <div><dt>How</dt><dd>FLIP: measure rows, reorder the DOM, play each row from its old offset to zero. Or wrap the update in <code>document.startViewTransition()</code> with a <code>view-transition-name</code> per row. Here: 270 ms (grade 1) on the fold curve; <code>event.detail === 0</code> marks a keyboard click.</dd></div>
+      <div><dt>For ZAO</dt><dd>Moves rows, and the approved Table keeps rows stationary. Could be opt-in on Table.Root.</dd></div>
+    </dl>
+  </article>
+
+  <article class="plate" id="p2-2">
+    <header class="plate-head"><span class="plate-no">2.2</span><h3>Filter fold</h3><span class="fit" data-k="decide">Your call</span></header>
+    <div class="stage" style="--h:300px">
+      <div class="toolbar">
+        <div class="seg" id="d22f" role="group" aria-label="Filter by status"><button type="button" data-f="All" aria-pressed="true">All</button><button type="button" data-f="Running" aria-pressed="false">Running</button><button type="button" data-f="Needs review" aria-pressed="false">Needs review</button><button type="button" data-f="Blocked" aria-pressed="false">Blocked</button></div>
+        <span class="count">Showing <span id="d22c"></span> of 20</span>
+      </div>
+      <div class="scroller">
+        <table class="t hov" id="d22" aria-label="Requests, filtered by status"><thead><tr><th scope="col">Request</th><th scope="col">ID</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+    <p class="try">Try: switch filters quickly; a new filter cancels the old one mid-way.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>A filter change plays in three beats: leaving rows fade (135 ms), the rest close the gap (225 ms), arriving rows fade in. The count rolls to its new value.</dd></div>
+      <div><dt>Seen in</dt><dd>Rauno Freiberg, "Designing Depth" (choreography: what's nearest the change moves first) · Dave Bitter's View Transitions demos.</dd></div>
+      <div><dt>How</dt><dd>Exit, move, enter, in that order, each on a ZAO grade. Cancel the previous run when a new filter arrives.</dd></div>
+      <div><dt>For ZAO</dt><dd>Moves rows; same decision as 2.1.</dd></div>
+    </dl>
+  </article>
+
+  </div>
+</section>
+
+<!-- 3 POINT AND SELECT -->
+<section class="family" id="point">
+  <div class="fam-head"><span class="fam-no">3</span><h2>Point and select</h2><p>Feedback for the hand: what you're on, what you've picked, what you can do next.</p></div>
+  <div class="plates">
+
+  <article class="plate" id="p3-1">
+    <header class="plate-head"><span class="plate-no">3.1</span><h3>Crosshair</h3><span class="fit">Fits</span></header>
+    <div class="stage" style="--h:310px">
+      <div class="scroller" id="d31w" tabindex="0" role="region" aria-label="Seats used by department and month. Arrow keys move the crosshair.">
+        <table class="t" id="d31" aria-label="Seats used by department and month"><thead><tr><th scope="col">Department</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="readout"><span id="d31a">Point at a cell</span><span>Seats used</span></div>
+    </div>
+    <p class="try">Try: move across the cells, or focus the table and use arrow keys.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>Pointing at a cell lights its row, its column and both headers, so a value reads against both axes.</dd></div>
+      <div><dt>Seen in</dt><dd>Jhey Tompkins' <code>:has()</code> table highlight · hyper-text.org's write-up (in Japanese) · CSS Script's crosshair table.</dd></div>
+      <div><dt>How</dt><dd><code>tr:hover</code> for rows; columns with <code>table:has(td:nth-child(3):hover) td:nth-child(3)</code>, one rule per column, or a few lines of script.</dd></div>
+      <div><dt>For ZAO</dt><dd>Neutral tone only, no change in geometry, as in the approved hover rules.</dd></div>
+    </dl>
+  </article>
+
+  <article class="plate" id="p3-2">
+    <header class="plate-head"><span class="plate-no">3.2</span><h3>Range select and action bar</h3><span class="fit">Fits</span></header>
+    <div class="stage" style="--h:330px">
+      <div class="scroller">
+        <table class="t" id="d32" aria-label="Requests to approve"><thead><tr><th scope="col" class="sel"><input type="checkbox" class="cb" id="d32all" aria-label="Select all requests"></th><th scope="col">Request</th><th scope="col">ID</th><th scope="col">Owner</th><th scope="col">Status</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="selbar" id="d32bar" aria-hidden="true">
+        <span class="selcount" aria-live="polite"><span id="d32n"></span> selected</span><span class="grow"></span>
+        <button type="button" id="d32clear">Clear</button><button type="button" class="primary" id="d32go"><span class="lbl">Approve 0</span></button>
+      </div>
+    </div>
+    <p class="try">Try: click a box, Shift-click another, or press and drag down the boxes.<button type="button" class="linkbtn" id="d32reset">Reset rows</button></p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>Click, Shift-click a range, or paint by dragging down the boxes. An action bar rises with a rolling count, and the action's label changes as it works: Approve 3, Approving, Approved 3.</dd></div>
+      <div><dt>Seen in</dt><dd>Shift-click ranges in Gmail and file managers · Benji Taylor's Family Values on morphing labels · the label-morph idea in ZAO's craft research.</dd></div>
+      <div><dt>How</dt><dd>Native labeled checkboxes underneath; range and paint sit on top. The count is a live region.</dd></div>
+      <div><dt>For ZAO</dt><dd>Selection stays on explicit checkboxes, as the approved Table requires.</dd></div>
+    </dl>
+  </article>
+
+  <article class="plate" id="p3-3">
+    <header class="plate-head"><span class="plate-no">3.3</span><h3>Cell cursor</h3><span class="fit" data-k="aside">Grid only</span></header>
+    <div class="stage" style="--h:310px">
+      <div class="toolbar">
+        <div class="seg" id="d33m" role="group" aria-label="Cursor motion"><button type="button" data-v="glide" aria-pressed="true">Glide</button><button type="button" data-v="instant" aria-pressed="false">Instant</button></div>
+        <span class="hint">Click a cell, then hold an arrow key</span>
+      </div>
+      <div class="gridwrap" id="d33w" tabindex="0" data-mode="glide" role="region" aria-label="Budget grid. Arrow keys move, Shift extends, Command or Control C copies.">
+        <table id="d33" aria-label="Budget grid"></table>
+        <div class="cursor" id="d33c"></div>
+        <svg class="ants" id="d33ants" hidden aria-hidden="true"><rect></rect></svg>
+      </div>
+      <div class="readout"><span id="d33a"></span><span id="d33b"></span></div>
+    </div>
+    <p class="try">Try: <kbd>Shift</kbd>+arrows to extend, <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>C</kbd> to copy, <kbd>Esc</kbd> to clear.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>A spreadsheet cell cursor. In Glide it travels between cells; in Instant it jumps. Hold an arrow key in each mode to feel why fast, repeated moves should not animate. The readout sums a range; copying draws marching ants.</dd></div>
+      <div><dt>Seen in</dt><dd>Excel's animated cell cursor (people ask how to turn it off) · Emil Kowalski on keyboard actions.</dd></div>
+      <div><dt>How</dt><dd>One absolutely placed cursor over the grid, moved with transforms. Ants: an SVG rectangle with an animated <code>stroke-dashoffset</code>.</dd></div>
+      <div><dt>For ZAO</dt><dd>Only for a future editable grid; the current Table has no cell focus.</dd></div>
+    </dl>
+  </article>
+
+  <article class="plate" id="p3-4">
+    <header class="plate-head"><span class="plate-no">3.4</span><h3>Peek</h3><span class="fit">Fits</span></header>
+    <div class="stage" style="--h:300px">
+      <div class="scroller" id="d34w" tabindex="0" role="region" aria-label="Requests. J and K move, Space shows a preview.">
+        <table class="t" id="d34" aria-label="Requests"><thead><tr><th scope="col">Request</th><th scope="col">ID</th><th scope="col">Status</th></tr></thead><tbody></tbody></table>
+      </div>
+      <aside class="peek" id="d34p" aria-hidden="true" aria-label="Preview"></aside>
+      <div class="readout"><span id="d34a">Click a row, then press Space</span><button type="button" class="mini" id="d34b" aria-pressed="false">Peek</button></div>
+    </div>
+    <p class="try">Try: tap <kbd>Space</kbd> to toggle, hold it to look, <kbd>J</kbd>/<kbd>K</kbd> to move.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>Tap Space to open a preview of the focused row; hold Space to look only while held. J/K or arrows move through rows and the preview follows instantly.</dd></div>
+      <div><dt>Seen in</dt><dd>Linear's Peek (tap or hold Space in any list) · macOS Quick Look.</dd></div>
+      <div><dt>How</dt><dd>A press longer than about 280 ms counts as a hold. The panel animates only when it opens or closes, never when its content changes.</dd></div>
+      <div><dt>For ZAO</dt><dd>A peek could open where the assistant panel sits in the workspace.</dd></div>
+    </dl>
+  </article>
+
+  </div>
+</section>
+
+<!-- 4 LIVE -->
+<section class="family" id="live">
+  <div class="fam-head"><span class="fam-no">4</span><h2>Live values</h2><p>Tables that change while you watch.</p></div>
+  <div class="plates">
+
+  <article class="plate" id="p4-1">
+    <header class="plate-head"><span class="plate-no">4.1</span><h3>Change flash and rolling digits</h3><span class="fit">Fits</span></header>
+    <div class="stage" style="--h:262px">
+      <div class="scroller">
+        <table class="t" id="d41" aria-label="Live calling by site"><thead><tr><th scope="col">Site</th><th scope="col" class="num">Active calls</th><th scope="col" class="num">Joins / min</th><th scope="col" class="num">Loss %</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="readout"><span id="d41a">Updating every 1.4 s</span><button type="button" class="mini" id="d41p">Pause</button></div>
+    </div>
+    <p class="try">Try: watch a few seconds, then switch Motion to Reduced.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>When a value changes, its cell flashes a tone and fades, the digits roll in the direction of change, and the size of the change shows briefly beside it.</dd></div>
+      <div><dt>Seen in</dt><dd>AG Grid's flashing cells and its show-change and slide cell renderers · NumberFlow by Maxwell Barvian.</dd></div>
+      <div><dt>How</dt><dd>AG Grid holds its flash class for 500 ms and fades over 1,000 ms by default. Here the flash is tone, not color; direction comes from the roll and the sign. Updates pause offscreen.</dd></div>
+      <div><dt>For ZAO</dt><dd>Matches "readings tick only when data changes" from the craft research.</dd></div>
+    </dl>
+  </article>
+
+  <article class="plate" id="p4-2">
+    <header class="plate-head"><span class="plate-no">4.2</span><h3>Live tail</h3><span class="fit">Fits</span></header>
+    <div class="stage" style="--h:290px">
+      <div class="scroller" id="d42w" tabindex="0" role="region" aria-label="Audit log">
+        <table class="t" id="d42" aria-label="Audit log"><thead><tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">Actor</th><th scope="col">Result</th></tr></thead><tbody></tbody></table>
+      </div>
+      <button type="button" class="pill" id="d42pill" tabindex="-1"></button>
+      <div class="readout"><span id="d42a">Following</span><button type="button" class="mini" id="d42p">Pause</button></div>
+    </div>
+    <p class="try">Try: scroll up while rows arrive, then use the pill to get back.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>New rows arrive at the bottom. While you're at the bottom the table follows; scroll up and it holds still and counts new rows in a pill that takes you back.</dd></div>
+      <div><dt>Seen in</dt><dd>Live tail in log tools · a write-up on "smart following" for log views.</dd></div>
+      <div><dt>How</dt><dd>One <code>following</code> flag that ignores the table's own scrolls; following resumes within a row of the bottom. New rows get a fading mark at the edge, not a slide.</dd></div>
+      <div><dt>For ZAO</dt><dd>Fits audit logs and an agent's activity feed.</dd></div>
+    </dl>
+  </article>
+
+  </div>
+</section>
+
+<!-- 5 AGENT -->
+<section class="family" id="agent">
+  <div class="fam-head"><span class="fam-no">5</span><h2>Agent work</h2><p>Cells an agent fills, shown so you can follow the work and check it.</p></div>
+  <div class="plates">
+
+  <article class="plate wide" id="p5-1">
+    <header class="plate-head"><span class="plate-no">5.1</span><h3>Agent fills the columns</h3><span class="fit">Fits</span></header>
+    <div class="stage" style="--h:350px">
+      <div class="scroller">
+        <table class="t" id="d51" aria-label="Contract questions answered by an agent"><thead><tr>
+          <th scope="col">Document</th>
+          <th scope="col" class="aq"><span class="qrow"><span class="q">Renewal date</span><span class="pn"></span></span><span class="prog"><i></i></span></th>
+          <th scope="col" class="aq"><span class="qrow"><span class="q">Seat cap</span><span class="pn"></span></span><span class="prog"><i></i></span></th>
+          <th scope="col" class="aq"><span class="qrow"><span class="q">Auto-renews</span><span class="pn"></span></span><span class="prog"><i></i></span></th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="pop" id="d51pop" role="tooltip"></div>
+      <div class="readout"><span id="d51a">Waiting to run</span><button type="button" class="mini" id="d51r">Run again</button></div>
+    </div>
+    <p class="try">Try: point at a page mark (p.4) to read the passage; a dashed ? explains a gap.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>An agent answers one question per column for each document. Cells go from queued to reading (with the page it's on) to answered, and each answer carries a page mark that shows the quoted source. When a document doesn't say, the cell says so.</dd></div>
+      <div><dt>Seen in</dt><dd>Hebbia Matrix (rows are documents, columns are questions, answers link to passages) · Clay's run progress (column and table progress bars) · Paradigm (an agent in every cell).</dd></div>
+      <div><dt>How</dt><dd>A work queue with four concurrent runs, in reading order. The header shows progress per column. Answers type in; Reduced shows them whole.</dd></div>
+      <div><dt>For ZAO</dt><dd>The plate closest to ZAO's agent-friendly aim: autonomous work you can follow and verify. Sample documents.</dd></div>
+    </dl>
+  </article>
+
+  </div>
+</section>
+
+<!-- 6 LENS -->
+<section class="family" id="lens">
+  <div class="fam-head"><span class="fam-no">6</span><h2>Focus and context</h2><p>An idea from 1994 that still feels new.</p></div>
+  <div class="plates">
+
+  <article class="plate wide" id="p6-1">
+    <header class="plate-head"><span class="plate-no">6.1</span><h3>Table Lens</h3><span class="fit" data-k="aside">Exploration</span></header>
+    <div class="stage" style="--h:330px">
+      <div class="lens" id="d61" tabindex="0" role="region" aria-label="60 sites as a Table Lens. Up and down arrows move the focus.">
+        <div class="tl-head" role="group" aria-label="Sort by"><button type="button" data-k="name" aria-pressed="false">Site</button><button type="button" data-k="seats" aria-pressed="true">Seats used</button><button type="button" data-k="calls" aria-pressed="false">Calls / day</button><button type="button" data-k="loss" aria-pressed="false">Loss %</button></div>
+        <div class="tl-body" id="d61b"></div>
+      </div>
+      <div class="readout"><span id="d61a">Point at the bars</span><span>60 sites</span></div>
+    </div>
+    <p class="try">Try: move down the bars, then sort by another column to see its shape.</p>
+    <dl class="notes">
+      <div><dt>What</dt><dd>Every row compresses to a bar, so the whole table fits; pointing opens a lens where nearby rows grow back to readable size.</dd></div>
+      <div><dt>Seen in</dt><dd>Table Lens (Rao and Card, CHI 1994) · LineUp's ranking tables · Bertifier, after Bertin's reorderable matrices.</dd></div>
+      <div><dt>How</dt><dd>Each row's height depends on its distance from the focus; the focus is the row whose center lands nearest the pointer.</dd></div>
+      <div><dt>For ZAO</dt><dd>Not for the default Table. Useful for long scans, like license use across sites.</dd></div>
+    </dl>
+  </article>
+
+  </div>
+</section>
+
+<!-- MORE -->
+<section class="family more" id="more">
+  <div class="fam-head"><span class="fam-no">+</span><h2>More patterns</h2><p>Found in the research, not built here.</p></div>
+  <div class="more-wrap">
+    <table class="t" aria-label="More table patterns">
+      <thead><tr><th scope="col">Pattern</th><th scope="col">What it does</th><th scope="col">Seen in</th><th scope="col">For ZAO</th></tr></thead>
+      <tbody>
+        <tr><td>Drag to reorder</td><td>The lifted row or column follows the pointer while a drop line marks where it will land.</td><td><a href="https://atlassian.design/components/pragmatic-drag-and-drop/examples">Atlassian Pragmatic drag and drop</a> · <a href="https://tanstack.com/table/v8/docs/guide/column-ordering">TanStack Table column ordering</a></td><td>Your call: moves rows</td></tr>
+        <tr><td>Column resize guide</td><td>Dragging a column edge draws a guide through the whole table; a double-click fits the column to its content.</td><td>Spreadsheets and database tables · <a href="https://tanstack.com/table/latest/docs/guide/column-sizing">TanStack Table column sizing</a></td><td>New part; ruled guide fits the line hierarchy</td></tr>
+        <tr><td>Row opens into its page</td><td>The row grows into the detail view with a shared-element transition, so the page clearly came from that row.</td><td><a href="https://techhub.iodigital.com/articles/view-transitions-api-animated-interactions">View Transitions API (Dave Bitter)</a></td><td>Fits as a page transition, not a Table feature</td></tr>
+        <tr><td>Edge reveal on scroll</td><td>Rows fade and scale as they enter and leave the scroller's edges.</td><td><a href="https://scroll-driven-animations.style/demos/contact-list/css/">Fly-in, fly-out contact list</a></td><td>Skip in working views; too much motion for dense data</td></tr>
+        <tr><td>Direction-aware header</td><td>A sticky bar hides while you scroll down and returns when you scroll up.</td><td><a href="https://ics.media/en/entry/250602/"><code>scroll-state(scrolled)</code>, Chrome 144+</a></td><td>Page chrome, not table headers</td></tr>
+        <tr><td>Bars and heat in cells</td><td>Numeric columns carry inline bars or tone so the column's shape reads before any number.</td><td><a href="https://lineup.js.org/">LineUp</a> · <a href="https://www.aviz.fr/bertifier">Bertifier</a></td><td>Fits as a numeric cell variant</td></tr>
+        <tr><td>Reorderable matrix</td><td>Drag rows and columns until similar ones group and patterns appear.</td><td><a href="https://www.aviz.fr/bertifier">Bertifier (Perin, Dragicevic, Fekete, 2014)</a></td><td>Exploration</td></tr>
+        <tr><td>Presence on cells</td><td>Each collaborator's selection shows as a named outline; the same could show where an agent is working.</td><td>Google Sheets, Figma</td><td>Fits ZAO's agent focus; pairs with 5.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SOURCES -->
+<section class="family" id="sources">
+  <div class="fam-head"><span class="fam-no">§</span><h2>Sources</h2><p>Grouped by plate.</p></div>
+  <div class="sources">
+    <section><h3>1.1 Stuck header</h3><ul>
+      <li><a href="https://developer.chrome.com/blog/css-scroll-state-queries">Chrome: CSS scroll-state queries</a></li>
+      <li><a href="https://ics.media/en/entry/250602/">ics.media: scroll-state() for sticky headers</a></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_conditional_rules/Container_scroll-state_queries">MDN: container scroll-state queries</a></li>
+    </ul></section>
+    <section><h3>1.2 Edge cues</h3><ul>
+      <li><a href="https://lea.verou.me/2012/04/background-attachment-local/">Lea Verou: pure CSS scrolling shadows</a></li>
+      <li><a href="https://daverupert.com/2023/08/animation-timeline-scroll-shadows/">Dave Rupert: animation-timeline scroll shadows</a></li>
+      <li><a href="https://kizu.dev/shadowscroll/">Roman Komarov: scrolling shadows</a></li>
+      <li><a href="https://scroll-driven-animations.style">Bramus: scroll-driven animation demos</a></li>
+      <li><a href="https://www.buildmvpfast.com/blog/css-scroll-driven-animations-replace-js-2026">Browser support, July 2026</a></li>
+    </ul></section>
+    <section><h3>1.3 Marked rail</h3><ul>
+      <li><a href="https://www.iphoneincanada.ca/2017/01/13/google-photos-ios-date-scrubber/">Google Photos date scrubber</a></li>
+      <li><a href="https://community.devexpress.com/blogs/thinking/archive/2016/05/18/wpf-data-grid-scrollbar-annotations-coming-soon-in-v16-1.aspx">DevExpress: scrollbar annotations</a></li>
+      <li><a href="https://developer.mescius.com/componentone/docs/win/online-flexgrid/scroll-bar/scroll-bar-annotation">ComponentOne FlexGrid: scroll bar annotation</a></li>
+      <li><a href="https://devouringdetails.com">Devouring Details</a></li>
+    </ul></section>
+    <section><h3>2.1–2.2 Reorder</h3><ul>
+      <li><a href="https://techhub.iodigital.com/articles/view-transitions-api-animated-interactions">Dave Bitter: View Transitions interactions</a> · <a href="https://codepen.io/davebitter/full/JjwgdRZ">demo</a></li>
+      <li><a href="https://emilkowal.ski/ui/you-dont-need-animations">Emil Kowalski: You don't need animations</a></li>
+      <li><a href="https://rauno.me/craft/depth">Rauno Freiberg: Designing Depth</a></li>
+    </ul></section>
+    <section><h3>3.1–3.4 Point and select</h3><ul>
+      <li><a href="https://bsky.app/profile/jhey.dev/post/3lhhi3x4qnk2k">Jhey Tompkins: :has() table highlight</a></li>
+      <li><a href="https://hyper-text.org/archives/2025/02/table-hover-highlighting-css/">hyper-text.org: :has() cell highlight</a></li>
+      <li><a href="https://www.cssscript.com/crosshair-table-mousehover-highlighting-pure-css/">CSS Script: crosshair table</a></li>
+      <li><a href="https://benji.org/family-values">Benji Taylor: Family Values</a></li>
+      <li><a href="https://learn.microsoft.com/en-us/answers/questions/4884599/disable-cell-animation-in-excel-2016">Microsoft Q&amp;A: Excel cell animation</a></li>
+      <li><a href="https://linear.app/docs/peek">Linear: Peek preview</a></li>
+    </ul></section>
+    <section><h3>4.1–4.2 Live values</h3><ul>
+      <li><a href="https://www.ag-grid.com/react-grid/flashing-cells/">AG Grid: flashing cells</a></li>
+      <li><a href="https://www.ag-grid.com/react-grid/change-cell-renderers/">AG Grid: change cell renderers</a></li>
+      <li><a href="https://number-flow.barvian.me">NumberFlow</a></li>
+      <li><a href="https://vp0.com/blogs/terminal-log-auto-scroll-ui-swiftui">Smart following for log views</a></li>
+    </ul></section>
+    <section><h3>5.1 Agent work</h3><ul>
+      <li><a href="https://www.datastudios.org/post/hebbia-ai-document-research-for-finance-matrix-workflows-and-pricing">Hebbia Matrix overview</a></li>
+      <li><a href="https://university.clay.com/docs/run-progress-ui">Clay: run progress UI</a></li>
+      <li><a href="https://techcrunch.com/2025/08/18/why-paradigm-built-a-spreadsheet-with-an-ai-agent-in-every-cell">TechCrunch: Paradigm</a></li>
+    </ul></section>
+    <section><h3>6.1 Table Lens</h3><ul>
+      <li><a href="https://www.cs.middlebury.edu/~candrews/showcase/infovis_techniques_s16/tablelens">Table Lens explained (Middlebury)</a></li>
+      <li><a href="https://lineup.js.org/">LineUp</a></li>
+      <li><a href="https://www.aviz.fr/bertifier">Bertifier</a></li>
+    </ul></section>
+  </div>
+  <p class="foot">Built for ZAO. Motion uses ZAO's grade durations (270, 225, 180 and 135 ms) and the 举折 fold curve. All gray, per the current finish.</p>
+</section>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const root=document.documentElement;
+const mq=matchMedia('(prefers-reduced-motion: reduce)');
+let pref=null;
+try{pref=localStorage.getItem('tia-motion')}catch(e){}
+const reduced=()=>pref?pref==='reduced':mq.matches;
+function applyMotion(){root.dataset.motion=reduced()?'reduced':'full';$$('#motion button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===root.dataset.motion)));}
+$$('#motion button').forEach(b=>b.addEventListener('click',()=>{pref=b.dataset.m;try{localStorage.setItem('tia-motion',pref)}catch(e){}applyMotion();}));
+if(mq.addEventListener)mq.addEventListener('change',applyMotion);
+applyMotion();
+
+const FOLD_IN='linear(0, 0.3 20%, 0.525 40%, 0.7083 60%, 0.8667 80%, 1)';
+const FOLD_OUT='linear(0, 0.1333 20%, 0.2917 40%, 0.475 60%, 0.7 80%, 1)';
+const okLinear=window.CSS&&CSS.supports&&CSS.supports('transition-timing-function',FOLD_IN);
+const EIN=okLinear?FOLD_IN:'ease-out', EOUT=okLinear?FOLD_OUT:'ease-in';
+const css=n=>getComputedStyle(root).getPropertyValue(n).trim();
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const fmt=n=>n.toLocaleString('en-US');
+const ago=m=>m<60?`${m}m ago`:m<1440?`${Math.floor(m/60)}h ago`:`${Math.floor(m/1440)}d ago`;
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const pick=(r,a)=>a[Math.floor(r()*a.length)];
+
+const OWNERS=['Lin Chen','Mara Wu','Noah Park','Iris Hale','Theo Grant','Ana Silva','Kenji Mori','Ruth Okafor','Sam Patel','Eli Novak','June Alvarez','Omar Haddad'];
+const DESC={
+ 'Access review':'Quarterly check of admin and guest access across all sites.',
+ 'Usage summary':'Monthly meeting and calling usage, split by department.',
+ 'Policy update':'Changes the external sharing policy for two org units.',
+ 'Archive export':'Exports archived spaces older than 24 months for legal hold.',
+ 'License reclaim':'Frees licenses held by people inactive for 90 days.',
+ 'Device audit':'Lists room devices more than two firmware versions behind.',
+ 'SSO certificate renewal':'Replaces the identity provider signing certificate before it expires.',
+ 'Guest cleanup':'Removes guest accounts with no activity this quarter.',
+ 'Retention change':'Shortens message retention from 3 years to 18 months.',
+ 'Room sync':'Syncs room calendars with the new building directory.',
+ 'Call quality report':'Weekly packet loss and jitter by site.',
+ 'Admin role grant':'Grants the compliance officer role to a new admin.',
+ 'Domain verification':'Verifies a newly acquired company domain.',
+ 'Seat forecast':'Projects seat needs for the next two quarters.',
+ 'Webhook rotation':'Rotates secrets for three integration webhooks.',
+ 'Calling plan move':'Moves 40 people to the new regional calling plan.',
+ 'Recording purge':'Deletes recordings past the retention window.',
+ 'Directory sync':'Reconciles user records with the HR directory.'
+};
+const TASKS=Object.keys(DESC);
+const G={
+ 'Ready':'<path d="M3.2 7.4l2.4 2.4 5.2-5.4"/>',
+ 'OK':'<path d="M3.2 7.4l2.4 2.4 5.2-5.4"/>',
+ 'Running':'<path d="M4.6 3.4v7.2l5.8-3.6z"/>',
+ 'Needs review':'<path d="M7 2.4l5 8.8H2z"/><path d="M7 6v2.3"/><path d="M7 9.9v.05"/>',
+ 'Blocked':'<circle cx="7" cy="7" r="4.6"/><path d="M3.8 10.2l6.4-6.4"/>',
+ 'Failed':'<circle cx="7" cy="7" r="4.6"/><path d="M3.8 10.2l6.4-6.4"/>',
+ 'File':'<path d="M3.5 1.5h4.6l2.9 2.9v8.1h-7.5z"/><path d="M8 1.6v2.9h2.9"/>'
+};
+const glyph=k=>`<svg class="g" viewBox="0 0 14 14" aria-hidden="true">${G[k]}</svg>`;
+const st=s=>`<span class="st">${glyph(s)}${s}</span>`;
+function makeRows(n,seed){const r=rng(seed),used=new Set(),out=[];for(let i=0;i<n;i++){let id;do{id='REQ-'+(1000+Math.floor(r()*9000))}while(used.has(id));used.add(id);const x=r();const status=x<.4?'Ready':x<.62?'Running':x<.86?'Needs review':'Blocked';out.push({id,name:pick(r,TASKS),owner:pick(r,OWNERS),count:2+Math.floor(r()*r()*1400),status,mins:1+Math.floor(r()*r()*2880)});}return out;}
+function flashEl(el,dur=1400){const a=css('--flash'),b=getComputedStyle(el).backgroundColor;el.animate([{backgroundColor:a},{backgroundColor:a,offset:.3},{backgroundColor:b}],{duration:dur,easing:'ease-out'});}
+function ensureRow(sc,el){const hh=(sc.querySelector('thead')||{}).offsetHeight||0;const T=el.offsetTop,H=el.offsetHeight;if(T-hh<sc.scrollTop)sc.scrollTop=T-hh;else if(T+H>sc.scrollTop+sc.clientHeight)sc.scrollTop=T+H-sc.clientHeight;}
+function flip(els,mutate,{instant=false,duration=270}={}){
+  const first=new Map(els.map(el=>[el,el.getBoundingClientRect().top]));
+  els.forEach(el=>el.getAnimations().forEach(a=>a.cancel()));
+  mutate();
+  if(instant||reduced())return;
+  els.forEach(el=>{if(el.hidden)return;const dy=first.get(el)-el.getBoundingClientRect().top;if(Math.abs(dy)<.5)return;el.animate([{transform:`translateY(${dy}px)`},{transform:'translateY(0)'}],{duration,easing:EIN});});
+}
+function roller(host,init){
+  host.innerHTML='<span class="sr"></span><span class="roll" aria-hidden="true"></span>';
+  const sr=host.firstChild,vis=host.lastChild;let cur='';
+  const isD=c=>c>='0'&&c<='9';
+  const build=str=>{vis.innerHTML=[...str].map(ch=>isD(ch)?`<span class="rd"><span class="rs" style="transform:translateY(${-Number(ch)*1.25}em)">${'0123456789'.split('').map(d=>`<span>${d}</span>`).join('')}</span></span>`:`<span class="rc">${ch}</span>`).join('');};
+  const set=v=>{const str=String(v);sr.textContent=str;if(str===cur)return;
+    const same=cur.length===str.length&&[...str].every((ch,i)=>isD(ch)===isD(cur[i]));
+    if(!same||reduced()){build(str);cur=str;return;}
+    const kids=vis.children;[...str].forEach((ch,i)=>{if(isD(ch))kids[i].firstChild.style.transform=`translateY(${-Number(ch)*1.25}em)`;else kids[i].textContent=ch;});cur=str;};
+  set(init);return{set};
+}
+
+/* 1.1 Stuck header */
+(()=>{
+  const s=$('#d11'),table=$('table',s),thead=$('thead',s),outS=$('#d11s'),outG=$('#d11g');
+  const groups=[['Today',5],['Yesterday',6],['Tue, Oct 13',5],['Mon, Oct 12',6],['Fri, Oct 9',4]];
+  let seed=110;const bodies=[];
+  groups.forEach(([label,n])=>{const tb=document.createElement('tbody');const rows=makeRows(n,seed++);
+    tb.innerHTML=`<tr class="grp"><th colspan="4" scope="colgroup"><span>${label}</span><span class="c">${n} requests</span></th></tr>`+rows.map(r=>`<tr><td>${r.name}</td><td class="id">${r.id}</td><td>${r.owner}</td><td class="num">${fmt(r.count)}</td></tr>`).join('');
+    table.appendChild(tb);bodies.push([tb,label]);});
+  const measure=()=>s.style.setProperty('--hh',thead.getBoundingClientRect().height+'px');
+  const update=()=>{const stuck=s.scrollTop>0;s.toggleAttribute('data-stuck',stuck);outS.textContent=stuck?'stuck':'resting';
+    const hh=thead.offsetHeight;let cur=bodies[0];for(const b of bodies){if(b[0].offsetTop<=s.scrollTop+hh+1)cur=b;}
+    bodies.forEach(b=>b[0].firstElementChild.toggleAttribute('data-current',b===cur&&stuck));outG.textContent=cur[1];};
+  s.addEventListener('scroll',update,{passive:true});
+  new ResizeObserver(()=>{measure();update();}).observe(s);measure();update();
+})();
+
+/* 1.2 Edge cues */
+(()=>{
+  const w=$('#d12w'),s=$('#d12'),tb=$('tbody',s),edge=$('.edge',w),map=$('#d12m');
+  const regions=['US West','US East','EU Central','UK','India','Japan','Brazil','Australia'];
+  const rows=makeRows(8,120),r=rng(121);
+  tb.innerHTML=rows.map(x=>`<tr><td>${x.name}</td><td class="id">${x.id}</td><td>${x.owner}</td><td>${pick(r,regions)}</td><td class="num">${fmt(x.count)}</td><td class="num">${fmt(20+Math.floor(r()*900))}</td><td>${ago(x.mins)}</td><td>${st(x.status)}</td><td>${pick(r,OWNERS)}</td></tr>`).join('');
+  const ths=$$('thead th',s);
+  map.innerHTML=ths.map((th,i)=>`<button type="button" tabindex="-1" title="${th.textContent}" aria-label="Show ${th.textContent} column"></button>`).join('');
+  const segs=$$('button',map);
+  const sizeMap=()=>segs.forEach((b,i)=>b.style.flexGrow=ths[i].offsetWidth);
+  const update=()=>{const max=s.scrollWidth-s.clientWidth;const l=Math.min(1,s.scrollLeft/24),rr=Math.max(0,Math.min(1,(max-s.scrollLeft)/24));
+    w.style.setProperty('--l',l.toFixed(3));w.style.setProperty('--r',rr.toFixed(3));
+    edge.style.right=(s.offsetWidth-s.clientWidth)+'px';edge.style.bottom=(s.offsetHeight-s.clientHeight)+'px';
+    const pin=ths[0].offsetWidth,vL=s.scrollLeft+pin,vR=s.scrollLeft+s.clientWidth;
+    segs.forEach((b,i)=>{if(i===0){b.dataset.v='pin';return;}const a=ths[i].offsetLeft,z=a+ths[i].offsetWidth;b.dataset.v=(a>=vL-1&&z<=vR+1)?'in':(z>vL&&a<vR)?'part':'out';});};
+  segs.forEach((b,i)=>b.addEventListener('click',()=>{if(i===0)return;const th=ths[i],pin=ths[0].offsetWidth;const target=th.offsetLeft-pin-(s.clientWidth-pin-th.offsetWidth)/2;s.scrollTo({left:Math.max(0,target),behavior:reduced()?'auto':'smooth'});}));
+  s.addEventListener('scroll',update,{passive:true});
+  new ResizeObserver(()=>{sizeMap();update();}).observe(s);sizeMap();update();
+})();
+
+/* 1.3 Marked rail */
+(()=>{
+  const s=$('#d13'),tb=$('tbody',s),rail=$('#d13r'),inner=$('.rail-in',rail),thumb=$('.rail-thumb',rail),oa=$('#d13a'),ob=$('#d13b');
+  const rows=makeRows(80,130);
+  tb.innerHTML=rows.map(x=>`<tr><td>${x.name}</td><td class="id">${x.id}</td><td>${x.owner}</td><td>${st(x.status)}</td></tr>`).join('');
+  const trs=$$('tr',tb);
+  const flagged=rows.map((x,i)=>({x,i})).filter(o=>o.x.status==='Needs review'||o.x.status==='Blocked');
+  const nR=flagged.filter(o=>o.x.status==='Needs review').length,nB=flagged.length-nR;
+  const summary=`${nR} need review · ${nB} blocked`;ob.textContent=summary;
+  const jump=i=>{const tr=trs[i];s.scrollTo({top:tr.offsetTop-s.clientHeight/2+tr.offsetHeight/2,behavior:reduced()?'auto':'smooth'});tr.classList.remove('ping');void tr.offsetWidth;tr.classList.add('ping');};
+  const marks=flagged.map(o=>{const b=document.createElement('button');b.type='button';b.className='mark';b.dataset.k=o.x.status==='Blocked'?'blocked':'review';b.setAttribute('aria-label',`Jump to ${o.x.id}, ${o.x.status}`);
+    b.addEventListener('click',()=>jump(o.i));b.addEventListener('pointerdown',e=>e.stopPropagation());
+    const show=()=>{ob.textContent=`${o.x.id} · ${o.x.status}`;},hide=()=>{ob.textContent=summary;};
+    b.addEventListener('mouseenter',show);b.addEventListener('mouseleave',hide);b.addEventListener('focus',show);b.addEventListener('blur',hide);
+    inner.appendChild(b);return[b,o.i];});
+  const sync=()=>{const H=inner.clientHeight,sh=s.scrollHeight,ch=s.clientHeight;thumb.style.top=(s.scrollTop/sh*H)+'px';thumb.style.height=Math.max(12,ch/sh*H)+'px';
+    const hh=$('thead',s).offsetHeight;let a=-1,z=-1;for(let i=0;i<trs.length;i++){const t=trs[i].offsetTop,bt=t+trs[i].offsetHeight;if(a<0&&bt>s.scrollTop+hh+2)a=i;if(t<s.scrollTop+ch-2)z=i;}
+    oa.innerHTML=`Rows <b>${a+1}–${z+1}</b> of ${rows.length}`;};
+  const place=()=>{const sh=s.scrollHeight;marks.forEach(([b,i])=>{const tr=trs[i];b.style.top=((tr.offsetTop+tr.offsetHeight/2)/sh*100)+'%';});sync();};
+  let drag=false;const scrub=e=>{const r=inner.getBoundingClientRect();const y=Math.min(Math.max(e.clientY-r.top,0),r.height);s.scrollTop=y/r.height*s.scrollHeight-s.clientHeight/2;};
+  rail.addEventListener('pointerdown',e=>{drag=true;rail.setPointerCapture(e.pointerId);scrub(e);e.preventDefault();});
+  rail.addEventListener('pointermove',e=>{if(drag)scrub(e);});
+  rail.addEventListener('pointerup',()=>{drag=false;});rail.addEventListener('pointercancel',()=>{drag=false;});
+  s.addEventListener('scroll',sync,{passive:true});
+  new ResizeObserver(place).observe(s);place();
+})();
+
+/* 2.1 Sort glide */
+(()=>{
+  const t=$('#d21'),tb=$('tbody',t),oa=$('#d21a'),ob=$('#d21b');
+  const rows=makeRows(7,210);
+  tb.innerHTML=rows.map((x,i)=>`<tr data-i="${i}"><td>${x.name}</td><td>${x.owner}</td><td class="num">${fmt(x.count)}</td><td>${ago(x.mins)}</td></tr>`).join('');
+  const trs=$$('tr',tb);let key='mins',dir=1;
+  const labels={name:'Request',owner:'Owner',count:'Items',mins:'Updated'},defDir={name:1,owner:1,count:-1,mins:1};
+  const dirText=(k,d)=>k==='count'?(d<0?'high to low':'low to high'):k==='mins'?(d>0?'newest first':'oldest first'):(d>0?'A to Z':'Z to A');
+  const apply=instant=>{const order=[...trs].sort((a,b)=>{const x=rows[a.dataset.i][key],y=rows[b.dataset.i][key];return((typeof x==='string'?x.localeCompare(y):x-y)*dir)||(a.dataset.i-b.dataset.i);});
+    flip(trs,()=>order.forEach(tr=>tb.appendChild(tr)),{instant,duration:270});
+    $$('thead th',t).forEach(th=>{if(th.dataset.k===key)th.setAttribute('aria-sort',dir>0?'ascending':'descending');else th.removeAttribute('aria-sort');});
+    oa.innerHTML=`Sorted by <b>${labels[key]}</b>, ${dirText(key,dir)}`;};
+  $$('thead button',t).forEach(btn=>btn.addEventListener('click',e=>{const k=btn.closest('th').dataset.k;if(k===key)dir=-dir;else{key=k;dir=defDir[k];}
+    const kb=e.detail===0;apply(kb);ob.textContent=kb?'Keyboard: landed instantly':reduced()?'Reduced: landed instantly':'Pointer: glided 270 ms';}));
+  apply(true);ob.textContent='Click a header';
+})();
+
+/* 2.2 Filter fold */
+(()=>{
+  const t=$('#d22'),tb=$('tbody',t),seg=$('#d22f');const rows=makeRows(20,220);
+  tb.innerHTML=rows.map(x=>`<tr data-s="${x.status}"><td>${x.name}</td><td class="id">${x.id}</td><td>${x.owner}</td><td>${st(x.status)}</td></tr>`).join('');
+  const trs=$$('tr',tb);const count=roller($('#d22c'),String(rows.length));let gen=0;
+  $$('button',seg).forEach(b=>{const f=b.dataset.f;const n=f==='All'?rows.length:rows.filter(x=>x.status===f).length;b.innerHTML=`${f}<span class="n">${n}</span>`;});
+  async function setFilter(f){
+    const my=++gen;trs.forEach(tr=>tr.getAnimations().forEach(a=>a.cancel()));
+    const show=tr=>f==='All'||tr.dataset.s===f;
+    const leaving=trs.filter(tr=>!tr.hidden&&!show(tr)),entering=trs.filter(tr=>tr.hidden&&show(tr)),staying=trs.filter(tr=>!tr.hidden&&show(tr));
+    const n=trs.filter(show).length;
+    if(reduced()){trs.forEach(tr=>{tr.hidden=!show(tr);});count.set(n);return;}
+    if(leaving.length){await Promise.all(leaving.map(tr=>tr.animate([{opacity:1},{opacity:0}],{duration:135,easing:EOUT,fill:'forwards'}).finished.catch(()=>{})));if(my!==gen)return;}
+    const first=new Map(staying.map(tr=>[tr,tr.getBoundingClientRect().top]));
+    leaving.forEach(tr=>{tr.hidden=true;tr.getAnimations().forEach(a=>a.cancel());});
+    entering.forEach(tr=>{tr.hidden=false;});
+    count.set(n);
+    staying.forEach(tr=>{const dy=first.get(tr)-tr.getBoundingClientRect().top;if(Math.abs(dy)>.5)tr.animate([{transform:`translateY(${dy}px)`},{transform:'translateY(0)'}],{duration:225,easing:EIN});});
+    entering.forEach((tr,i)=>tr.animate([{opacity:0},{opacity:1}],{duration:180,delay:(staying.length?170:0)+Math.min(i,8)*24,easing:EIN,fill:'backwards'}));
+  }
+  $$('button',seg).forEach(b=>b.addEventListener('click',()=>{$$('button',seg).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));setFilter(b.dataset.f);}));
+})();
+
+/* 3.1 Crosshair */
+(()=>{
+  const w=$('#d31w'),t=$('#d31'),tb=$('tbody',t),out=$('#d31a');
+  const depts=['Engineering','Sales','Support','Finance','Legal','Design','Operations'],months=['May','Jun','Jul','Aug','Sep','Oct'];
+  const r=rng(310);const vals=depts.map(()=>{let v=40+Math.floor(r()*300);return months.map(()=>(v=Math.max(8,v+Math.floor((r()-.4)*40))));});
+  $('thead tr',t).insertAdjacentHTML('beforeend',months.map(m=>`<th scope="col" class="num">${m}</th>`).join(''));
+  tb.innerHTML=depts.map((d,i)=>`<tr><th scope="row">${d}</th>${vals[i].map(v=>`<td class="num">${v}</td>`).join('')}</tr>`).join('');
+  const grid=[$$('thead th',t),...$$('tr',tb).map(tr=>[...tr.children])];
+  let cur=null;
+  const clear=()=>{$$('.x-row',t).forEach(e=>e.classList.remove('x-row'));$$('.x-col,.x-hit',t).forEach(e=>e.classList.remove('x-col','x-hit'));};
+  const set=(ri,ci)=>{clear();cur=[ri,ci];grid[ri][0].parentElement.classList.add('x-row');grid.forEach(row=>row[ci].classList.add('x-col'));grid[ri][ci].classList.add('x-hit');
+    out.innerHTML=`<b>${depts[ri-1]}</b> · ${months[ci-1]} · <b>${vals[ri-1][ci-1]}</b> seats`;};
+  const reset=()=>{clear();cur=null;out.textContent='Point at a cell';};
+  tb.addEventListener('pointerover',e=>{const td=e.target.closest('td');if(!td)return;const tr=td.parentElement;set([...tb.children].indexOf(tr)+1,[...tr.children].indexOf(td));});
+  t.addEventListener('pointerleave',()=>{if(document.activeElement!==w)reset();});
+  w.addEventListener('focus',()=>{if(!cur)set(1,1);});
+  w.addEventListener('blur',reset);
+  w.addEventListener('keydown',e=>{const m={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[e.key];if(!m)return;e.preventDefault();const[ri,ci]=cur||[1,1];
+    set(Math.min(depts.length,Math.max(1,ri+m[0])),Math.min(months.length,Math.max(1,ci+m[1])));ensureRow(w,grid[cur[0]][0].parentElement);});
+})();
+
+/* 3.2 Range select */
+(()=>{
+  const t=$('#d32'),tb=$('tbody',t),all=$('#d32all'),bar=$('#d32bar'),go=$('#d32go'),clr=$('#d32clear'),lbl=$('.lbl',go);
+  const rows=makeRows(9,320);const base=rows.map(r=>r.status);
+  tb.innerHTML=rows.map((x,i)=>`<tr data-i="${i}"><td class="sel"><input type="checkbox" class="cb" aria-label="Select ${x.name}, ${x.id}"></td><td>${x.name}</td><td class="id">${x.id}</td><td>${x.owner}</td><td class="stc">${st(x.status)}</td></tr>`).join('');
+  const trs=$$('tr',tb),cbs=trs.map(tr=>$('input',tr));const on=new Array(rows.length).fill(false);
+  const n=roller($('#d32n'),'0');let anchor=null,painting=null,last=null,busy=false;
+  const set=(i,v)=>{on[i]=v;cbs[i].checked=v;trs[i].toggleAttribute('data-on',v);};
+  const range=(a,b,v)=>{for(let i=Math.min(a,b);i<=Math.max(a,b);i++)set(i,v);};
+  const refresh=()=>{const k=on.filter(Boolean).length;all.checked=k===rows.length;all.indeterminate=k>0&&k<rows.length;n.set(k);if(!busy)lbl.textContent=`Approve ${k}`;
+    const open=k>0||busy;bar.toggleAttribute('data-open',open);bar.setAttribute('aria-hidden',String(!open));bar.inert=!open;};
+  tb.addEventListener('pointerdown',e=>{const td=e.target.closest('td.sel');if(!td||e.button!==0||busy)return;e.preventDefault();const i=+td.parentElement.dataset.i;
+    if(e.shiftKey&&anchor!==null){range(anchor,i,on[anchor]);}else{painting=!on[i];set(i,painting);anchor=i;last=i;}refresh();});
+  tb.addEventListener('pointermove',e=>{if(painting===null)return;const el=document.elementFromPoint(e.clientX,e.clientY);const tr=el&&el.closest('#d32 tbody tr');if(!tr)return;const i=+tr.dataset.i;if(i!==last){range(last,i,painting);last=i;refresh();}});
+  addEventListener('pointerup',()=>{painting=null;});addEventListener('pointercancel',()=>{painting=null;});
+  cbs.forEach((cb,i)=>{cb.addEventListener('click',e=>{if(e.detail>0)e.preventDefault();});cb.addEventListener('change',()=>{if(busy){cb.checked=on[i];return;}set(i,cb.checked);anchor=i;refresh();});});
+  all.addEventListener('change',()=>{if(busy){refresh();return;}const v=all.checked;on.forEach((_,i)=>set(i,v));refresh();});
+  const morph=async text=>{if(reduced()){lbl.textContent=text;return;}
+    await lbl.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-70%)',opacity:0}],{duration:120,easing:EOUT,fill:'forwards'}).finished.catch(()=>{});
+    lbl.textContent=text;lbl.getAnimations().forEach(a=>a.cancel());
+    await lbl.animate([{transform:'translateY(70%)',opacity:0},{transform:'translateY(0)',opacity:1}],{duration:180,easing:EIN}).finished.catch(()=>{});};
+  go.addEventListener('click',async()=>{if(busy)return;const idx=on.map((v,i)=>v?i:-1).filter(i=>i>=0);if(!idx.length)return;busy=true;refresh();
+    await morph('Approving…');await wait(420);
+    idx.forEach(i=>{rows[i].status='Ready';const c=$('.stc',trs[i]);c.innerHTML=st('Ready');flashEl(c);});
+    await morph(`Approved ${idx.length}`);await wait(950);busy=false;idx.forEach(i=>set(i,false));refresh();});
+  clr.addEventListener('click',()=>{if(busy)return;on.forEach((_,i)=>set(i,false));refresh();});
+  $('#d32reset').addEventListener('click',()=>{if(busy)return;rows.forEach((x,i)=>{x.status=base[i];$('.stc',trs[i]).innerHTML=st(base[i]);set(i,false);});anchor=null;refresh();});
+  refresh();
+})();
+
+/* 3.3 Cell cursor */
+(()=>{
+  const w=$('#d33w'),t=$('#d33'),cur=$('#d33c'),ants=$('#d33ants'),oa=$('#d33a'),ob=$('#d33b'),seg=$('#d33m');
+  const cols=['A','B','C','D','E','F'],labels=['Licenses','Devices','Rooms','Calling','Storage','Support','Training','Travel'];
+  const r=rng(330);const data=labels.map(l=>[l,...[0,0,0,0,0].map(()=>Math.round((200+r()*4800)/10)*10)]);
+  t.innerHTML=`<thead><tr><th></th>${cols.map(c=>`<th scope="col">${c}</th>`).join('')}</tr></thead><tbody>${data.map((row,i)=>`<tr><th scope="row">${i+1}</th>${row.map((v,j)=>`<td${j===0?' class="txt"':''}>${j===0?v:fmt(v)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  const trows=$$('tbody tr',t),cells=trows.map(tr=>$$('td',tr));
+  const R=data.length,C=cols.length;let a={r:0,c:1},f={r:0,c:1};
+  const nm=(r,c)=>cols[c]+(r+1);
+  const rect=()=>{const r0=Math.min(a.r,f.r),r1=Math.max(a.r,f.r),c0=Math.min(a.c,f.c),c1=Math.max(a.c,f.c);const tl=cells[r0][c0],br=cells[r1][c1];
+    return{x:tl.offsetLeft,y:tl.offsetTop,w:br.offsetLeft+br.offsetWidth-tl.offsetLeft,h:br.offsetTop+br.offsetHeight-tl.offsetTop,r0,r1,c0,c1};};
+  const ensure=el=>{const hh=t.tHead.offsetHeight,rw=trows[0].firstElementChild.offsetWidth;const L=el.offsetLeft,T=el.offsetTop,W=el.offsetWidth,H=el.offsetHeight;
+    if(T-hh<w.scrollTop)w.scrollTop=T-hh;else if(T+H>w.scrollTop+w.clientHeight)w.scrollTop=T+H-w.clientHeight;
+    if(L-rw<w.scrollLeft)w.scrollLeft=L-rw;else if(L+W>w.scrollLeft+w.clientWidth)w.scrollLeft=L+W-w.clientWidth;};
+  const draw=()=>{const q=rect();cur.style.transform=`translate(${q.x-1}px,${q.y-1}px)`;cur.style.width=(q.w+1)+'px';cur.style.height=(q.h+1)+'px';
+    if(q.r0===q.r1&&q.c0===q.c1){const v=data[q.r0][q.c0];oa.innerHTML=`<b>${nm(f.r,f.c)}</b> · ${typeof v==='number'?fmt(v):v}`;}
+    else{let sum=0,cnt=0;for(let i=q.r0;i<=q.r1;i++)for(let j=q.c0;j<=q.c1;j++){const v=data[i][j];if(typeof v==='number'){sum+=v;cnt++;}}
+      oa.innerHTML=`<b>${nm(q.r0,q.c0)}:${nm(q.r1,q.c1)}</b> · ${cnt?`Sum ${fmt(sum)}`:'Text'}`;}
+    ensure(cells[f.r][f.c]);};
+  const copy=()=>{const q=rect();const tsv=[];for(let i=q.r0;i<=q.r1;i++)tsv.push(data[i].slice(q.c0,q.c1+1).join('\t'));
+    try{const p=navigator.clipboard&&navigator.clipboard.writeText(tsv.join('\n'));if(p&&p.catch)p.catch(()=>{});}catch(err){}
+    ants.removeAttribute('hidden');ants.style.transform=`translate(${q.x}px,${q.y}px)`;ants.setAttribute('width',q.w);ants.setAttribute('height',q.h);
+    const rc=$('rect',ants);rc.setAttribute('x',1.5);rc.setAttribute('y',1.5);rc.setAttribute('width',Math.max(0,q.w-3));rc.setAttribute('height',Math.max(0,q.h-3));
+    ob.textContent=`Copied ${q.r0===q.r1&&q.c0===q.c1?nm(q.r0,q.c0):nm(q.r0,q.c0)+':'+nm(q.r1,q.c1)} · Esc clears`;};
+  w.addEventListener('keydown',e=>{const m={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[e.key];
+    if(m){e.preventDefault();f={r:Math.min(R-1,Math.max(0,f.r+m[0])),c:Math.min(C-1,Math.max(0,f.c+m[1]))};if(!e.shiftKey)a={...f};draw();return;}
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='c'){e.preventDefault();copy();return;}
+    if(e.key==='Escape'){ants.setAttribute('hidden','');ob.textContent='';}});
+  t.addEventListener('pointerdown',e=>{const td=e.target.closest('td');if(!td)return;e.preventDefault();w.focus({preventScroll:true});const tr=td.parentElement;const ri=trows.indexOf(tr);f={r:ri,c:cells[ri].indexOf(td)};if(!e.shiftKey)a={...f};draw();});
+  $$('button',seg).forEach(b=>b.addEventListener('click',()=>{w.dataset.mode=b.dataset.v;$$('button',seg).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
+  new ResizeObserver(draw).observe(w);draw();requestAnimationFrame(()=>requestAnimationFrame(()=>w.classList.add('ready')));
+})();
+
+/* 3.4 Peek */
+(()=>{
+  const w=$('#d34w'),t=$('#d34'),tb=$('tbody',t),p=$('#d34p'),oa=$('#d34a'),btn=$('#d34b');
+  const rows=makeRows(8,340);
+  tb.innerHTML=rows.map((x,i)=>`<tr data-i="${i}"><td>${x.name}</td><td class="id">${x.id}</td><td>${st(x.status)}</td></tr>`).join('');
+  const trs=$$('tr',tb);let fi=0,open=false,downAt=0,openedNow=false,holding=false;
+  const fill=()=>{const x=rows[fi];p.innerHTML=`<span class="pid">${x.id}</span><h4>${x.name}</h4><div>${st(x.status)}</div><p>${DESC[x.name]}</p><dl><dt>Owner</dt><dd>${x.owner}</dd><dt>Items</dt><dd>${fmt(x.count)}</dd><dt>Updated</dt><dd>${ago(x.mins)}</dd></dl>`;};
+  const focusRow=i=>{fi=Math.max(0,Math.min(rows.length-1,i));trs.forEach((tr,k)=>tr.toggleAttribute('data-focus',k===fi));ensureRow(w,trs[fi]);oa.innerHTML=`Focused <b>${rows[fi].id}</b>${open?' · peeking':''}`;if(open)fill();};
+  const setOpen=v=>{open=v;if(v)fill();p.toggleAttribute('data-open',v);p.setAttribute('aria-hidden',String(!v));btn.setAttribute('aria-pressed',String(v));oa.innerHTML=`Focused <b>${rows[fi].id}</b>${open?' · peeking':''}`;};
+  const press=()=>{downAt=performance.now();holding=true;if(!open){setOpen(true);openedNow=true;}else openedNow=false;};
+  const release=()=>{if(!holding)return;holding=false;const held=performance.now()-downAt>280;if(openedNow?held:true)setOpen(false);};
+  w.addEventListener('keydown',e=>{const k=e.key;
+    if(k===' '){e.preventDefault();if(!e.repeat)press();return;}
+    if(k==='j'||k==='ArrowDown'){e.preventDefault();focusRow(fi+1);}else if(k==='k'||k==='ArrowUp'){e.preventDefault();focusRow(fi-1);}else if(k==='Escape'&&open){setOpen(false);}});
+  w.addEventListener('keyup',e=>{if(e.key===' '){e.preventDefault();release();}});
+  w.addEventListener('blur',()=>{holding=false;});
+  tb.addEventListener('click',e=>{const tr=e.target.closest('tr');if(!tr)return;w.focus({preventScroll:true});focusRow(+tr.dataset.i);});
+  btn.addEventListener('pointerdown',e=>{e.preventDefault();press();});
+  btn.addEventListener('pointerup',release);btn.addEventListener('pointerleave',()=>{if(holding)release();});
+  btn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!e.repeat)setOpen(!open);}});
+  focusRow(0);oa.textContent='Click a row, then press Space';
+})();
+
+/* 4.1 Change flash */
+(()=>{
+  const t=$('#d41'),tb=$('tbody',t),btn=$('#d41p'),oa=$('#d41a');
+  const sites=['Oslo','Austin','Pune','Toronto','Singapore','Dublin'];
+  const r=rng(410);const data=sites.map(()=>[120+Math.floor(r()*900),4+Math.floor(r()*40),+(r()*1.6).toFixed(1)]);
+  const fv=(c,v)=>c===2?v.toFixed(1):fmt(v);
+  tb.innerHTML=sites.map((s,i)=>`<tr><td>${s}</td>${data[i].map(()=>`<td class="num live"><span class="delta"></span><span class="rv"></span></td>`).join('')}</tr>`).join('');
+  const cells=$$('tr',tb).map(tr=>$$('td.live',tr));
+  const rolls=cells.map((row,i)=>row.map((td,j)=>roller($('.rv',td),fv(j,data[i][j]))));
+  let running=true,visible=false,timer=null;
+  const tick=()=>{const k=1+Math.floor(Math.random()*2);for(let q=0;q<k;q++){const i=Math.floor(Math.random()*sites.length),j=Math.floor(Math.random()*3);const old=data[i][j];let nv;
+      if(j===0)nv=Math.max(0,old+Math.round((Math.random()-.45)*60));else if(j===1)nv=Math.max(0,old+Math.round((Math.random()-.45)*8));else nv=Math.max(0,+(old+(Math.random()-.5)*.6).toFixed(1));
+      if(nv===old)continue;data[i][j]=nv;rolls[i][j].set(fv(j,nv));const td=cells[i][j];flashEl(td,1500);
+      const d=$('.delta',td);const diff=nv-old;d.textContent=(diff>0?'+':'−')+(j===2?Math.abs(diff).toFixed(1):fmt(Math.abs(diff)));
+      d.getAnimations().forEach(a=>a.cancel());d.animate([{opacity:1},{opacity:1,offset:.55},{opacity:0}],{duration:1700,fill:'forwards'});}};
+  const sched=()=>{clearInterval(timer);timer=null;if(running&&visible&&!document.hidden)timer=setInterval(tick,1400);};
+  new IntersectionObserver(es=>{visible=es[0].isIntersecting;sched();}).observe(t);
+  document.addEventListener('visibilitychange',sched);
+  btn.addEventListener('click',()=>{running=!running;btn.textContent=running?'Pause':'Resume';oa.textContent=running?'Updating every 1.4 s':'Paused';sched();});
+})();
+
+/* 4.2 Live tail */
+(()=>{
+  const w=$('#d42w'),tb=$('#d42 tbody'),pill=$('#d42pill'),oa=$('#d42a'),btn=$('#d42p');
+  const EV=[['Signed in','OK'],['Role changed','OK'],['Device registered','OK'],['License assigned','OK'],['Policy updated','OK'],['Export finished','OK'],['Directory sync','Failed'],['Guest invited','OK'],['Recording deleted','OK'],['Room linked','OK'],['SSO assertion','Failed'],['Report generated','OK']];
+  const actors=[...OWNERS.slice(0,8),'Assistant','Assistant','System'];
+  const r=rng(420);let tsec=9*3600+41*60,following=true,prog=false,unseen=0,running=true,visible=false,timer=null;
+  const clock=()=>{tsec+=1+Math.floor(r()*4);const h=Math.floor(tsec/3600)%24,m=Math.floor(tsec/60)%60,s=tsec%60;return[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');};
+  const row=fresh=>{const[e,res]=pick(r,EV);const tr=document.createElement('tr');tr.innerHTML=`<td class="time">${clock()}</td><td>${e}</td><td>${pick(r,actors)}</td><td>${st(res)}</td>`;tb.appendChild(tr);
+    if(fresh){const c=css('--ink');tr.firstElementChild.animate([{boxShadow:`inset 2px 0 0 0 ${c}`},{boxShadow:`inset 2px 0 0 0 ${c}`,offset:.4},{boxShadow:'inset 2px 0 0 0 transparent'}],{duration:1600});}};
+  for(let i=0;i<16;i++)row(false);
+  const setTop=v=>{if(Math.abs(w.scrollTop-v)>1){prog=true;w.scrollTop=v;}};
+  const toBottom=()=>setTop(w.scrollHeight-w.clientHeight);
+  const status=()=>{oa.innerHTML=following?'<b>Following</b> newest rows':`<b>Holding</b> · ${unseen} new below`;pill.textContent=`${unseen} new ${unseen===1?'row':'rows'} ↓`;const show=!following&&unseen>0;pill.toggleAttribute('data-show',show);pill.tabIndex=show?0:-1;};
+  const add=()=>{row(true);while(tb.rows.length>120){const h=tb.rows[0].offsetHeight;tb.rows[0].remove();if(!following)setTop(w.scrollTop-h);}
+    if(following)toBottom();else unseen++;status();};
+  w.addEventListener('scroll',()=>{if(prog){prog=false;return;}const atEnd=w.scrollHeight-w.clientHeight-w.scrollTop<12;
+    if(atEnd&&!following){following=true;unseen=0;}else if(!atEnd&&following){following=false;}status();},{passive:true});
+  pill.addEventListener('click',()=>{following=true;unseen=0;toBottom();status();w.focus({preventScroll:true});});
+  const loop=()=>{clearTimeout(timer);timer=null;if(running&&visible&&!document.hidden)timer=setTimeout(()=>{add();loop();},650+Math.random()*800);};
+  new IntersectionObserver(es=>{visible=es[0].isIntersecting;loop();}).observe(w);
+  document.addEventListener('visibilitychange',loop);
+  btn.addEventListener('click',()=>{running=!running;btn.textContent=running?'Pause':'Resume';loop();});
+  toBottom();status();
+})();
+
+/* 5.1 Agent fills the columns */
+(()=>{
+  const t=$('#d51'),tb=$('tbody',t),pop=$('#d51pop'),oa=$('#d51a'),btn=$('#d51r'),stage=t.closest('.stage');
+  const D=[
+   {doc:'Halden order form.pdf',pages:6,a:[
+     {v:'Mar 1, 2027',p:2,s:'§3.1',q:'The Subscription Term starts on March 1, 2026 and runs for twelve (12) months.'},
+     {v:'500',p:1,s:'Order table',q:'Named host licenses: 500.'},
+     {v:'Yes, 12 mo',p:4,s:'§9.2',q:'This Order renews automatically for successive twelve-month terms unless either party gives thirty (30) days’ written notice.'}]},
+   {doc:'Brightline MSA.pdf',pages:14,a:[
+     {v:'Jan 15, 2028',p:3,s:'§4.1',q:'The initial term is thirty-six (36) months from the Effective Date of January 15, 2025.'},
+     {v:null,note:'No seat or license limit appears in the agreement. Quantities are set in each order form.'},
+     {v:'No',p:3,s:'§4.2',q:'Any renewal requires a written amendment signed by both parties.'}]},
+   {doc:'Okafor & Co renewal.pdf',pages:4,a:[
+     {v:'Sep 30, 2027',p:1,s:'Term',q:'Renewal term: October 1, 2026 through September 30, 2027.'},
+     {v:'1,200',p:2,s:'Line 1',q:'Quantity: 1,200 Enterprise knowledge-worker licenses.'},
+     {v:'Yes, 12 mo',p:2,s:'§2',q:'The subscription renews annually at the then-current list price.'}]},
+   {doc:'Pine Street amendment.pdf',pages:3,a:[
+     {v:null,note:'The amendment changes seat count and pricing only. It refers to the original agreement for the term.'},
+     {v:'250',p:1,s:'§1',q:'The licensed quantity increases from 150 to 250 seats.'},
+     {v:'Per original',p:2,s:'§4',q:'All other terms of the Agreement remain in full force and effect.'}]},
+   {doc:'Northgate SOW 3.pdf',pages:7,a:[
+     {v:'Jun 30, 2027',p:5,s:'§6',q:'This SOW ends on June 30, 2027 unless extended by change order.'},
+     {v:'80',p:2,s:'Scope',q:'Pilot scope: up to 80 users in the Calling pilot.'},
+     {v:'No',p:5,s:'§6',q:'This SOW ends on June 30, 2027 unless extended by change order.'}]},
+   {doc:'Kestrel DPA.pdf',pages:11,a:[
+     {v:'Follows MSA',p:7,s:'§12',q:'This DPA stays in force for as long as the Provider processes Customer Personal Data under the Agreement.'},
+     {v:null,note:'A data processing agreement sets no license quantities.'},
+     {v:'Follows MSA',p:7,s:'§12',q:'This DPA stays in force for as long as the Provider processes Customer Personal Data under the Agreement.'}]},
+   {doc:'Marlow pricing addendum.pdf',pages:3,a:[
+     {v:'Apr 1, 2027',p:1,s:'§1',q:'Prices in this addendum apply through March 31, 2027.'},
+     {v:'2,000',p:2,s:'Tier C',q:'Tier C: 1,001 to 2,000 seats.'},
+     {v:'Yes, 12 mo',p:2,s:'§3',q:'Subscriptions renew automatically for 12 months; unit prices rise by no more than 5% at renewal.'}]},
+   {doc:'Vale reseller terms.pdf',pages:9,a:[
+     {v:'Dec 31, 2026',p:4,s:'§8.1',q:'The Reseller Term ends on December 31, 2026.'},
+     {v:'10,000',p:3,s:'§5',q:'Reseller may resell up to 10,000 seats per calendar year.'},
+     {v:'Yes, 12 mo',p:4,s:'§8.2',q:'The Reseller Term renews for one-year periods unless either party terminates with ninety (90) days’ notice.'}]}
+  ];
+  tb.innerHTML=D.map((d,i)=>`<tr><td class="doc">${glyph('File')}${d.doc}</td>${d.a.map((_,j)=>`<td class="cell" data-r="${i}" data-c="${j}"></td>`).join('')}</tr>`).join('');
+  const cells=D.map((d,i)=>d.a.map((_,j)=>$(`td[data-r="${i}"][data-c="${j}"]`,tb)));
+  const heads=$$('th.aq',t);let gen=0;const done=[0,0,0];
+  const setHead=()=>heads.forEach((h,j)=>{$('.pn',h).textContent=`${done[j]}/${D.length}`;$('.prog i',h).style.width=(done[j]/D.length*100)+'%';});
+  const queued=()=>D.forEach((d,i)=>d.a.forEach((_,j)=>{const c=cells[i][j];c.innerHTML='<span class="c-q">Queued</span>';c.dataset.state='q';}));
+  const typeIn=async(el,text,my)=>{if(reduced()){el.textContent=text;return;}for(let k=1;k<=text.length;k++){if(my!==gen)return;el.textContent=text.slice(0,k);await wait(22);}};
+  async function work(i,j,my){const d=D[i],a=d.a[j],td=cells[i][j];
+    td.innerHTML='<span class="c-run">Reading p. 1</span>';td.dataset.state='run';
+    const target=a.v===null?d.pages:a.p;const total=700+Math.random()*1000;const step=Math.max(120,total/target);
+    for(let pg=1;pg<=target;pg++){if(my!==gen)return;const s=td.firstChild;if(s)s.textContent=`Reading p. ${pg}`;await wait(step);}
+    if(my!==gen)return;td.dataset.state='done';
+    if(a.v===null){td.innerHTML=`<span class="c-none">Not stated</span><button type="button" class="src none" data-r="${i}" data-c="${j}" aria-label="Why not stated: checked ${d.pages} pages">?</button>`;}
+    else{td.innerHTML=`<span class="c-val"></span><button type="button" class="src" data-r="${i}" data-c="${j}" aria-label="Source: page ${a.p}, ${a.s}">p.${a.p}</button>`;const b=$('.src',td);b.style.visibility='hidden';await typeIn($('.c-val',td),a.v,my);if(my!==gen)return;b.style.visibility='';}
+    done[j]++;setHead();}
+  async function run(){const my=++gen;done.fill(0);setHead();hidePop();queued();
+    const q=[];D.forEach((d,i)=>d.a.forEach((_,j)=>q.push([i,j])));
+    oa.innerHTML='<b>Agent</b> reading 8 documents';
+    await Promise.all(Array.from({length:4},async()=>{while(q.length){if(my!==gen)return;const[i,j]=q.shift();await work(i,j,my);}}));
+    if(my!==gen)return;const ns=D.reduce((n,d)=>n+d.a.filter(a=>a.v===null).length,0);oa.innerHTML=`<b>Done</b> · ${D.length*3} cells · ${ns} not stated`;}
+  const showPop=b=>{const i=+b.dataset.r,j=+b.dataset.c,d=D[i],a=d.a[j];
+    pop.innerHTML=a.v===null?`<span class="ref">${d.doc} · checked ${d.pages} pages</span>${a.note}`:`<span class="ref">${d.doc} · p. ${a.p} · ${a.s}</span>“${a.q}”`;
+    pop.setAttribute('data-show','');const sr=stage.getBoundingClientRect(),br=b.getBoundingClientRect();const pw=pop.offsetWidth,ph=pop.offsetHeight;
+    let x=br.left-sr.left+br.width/2-pw/2;x=Math.max(8,Math.min(sr.width-pw-8,x));let y=br.bottom-sr.top+6;if(y+ph>sr.height-36)y=br.top-sr.top-ph-6;
+    pop.style.left=x+'px';pop.style.top=Math.max(4,y)+'px';};
+  const hidePop=()=>pop.removeAttribute('data-show');
+  tb.addEventListener('mouseover',e=>{const b=e.target.closest('.src');if(b)showPop(b);});
+  tb.addEventListener('mouseout',e=>{const b=e.target.closest('.src');if(b&&!b.contains(e.relatedTarget))hidePop();});
+  tb.addEventListener('focusin',e=>{const b=e.target.closest('.src');if(b)showPop(b);});
+  tb.addEventListener('focusout',hidePop);
+  t.closest('.scroller').addEventListener('scroll',hidePop,{passive:true});
+  btn.addEventListener('click',run);
+  queued();setHead();
+  let started=false;new IntersectionObserver(es=>{if(es[0].isIntersecting&&!started){started=true;run();}},{threshold:.4}).observe(t);
+})();
+
+/* 6.1 Table Lens */
+(()=>{
+  const L=$('#d61'),body=$('#d61b'),out=$('#d61a');
+  const names=['Oslo','Austin','Pune','São Paulo','Toronto','Singapore','Lagos','Dublin','Kraków','Osaka','Denver','Lisbon','Nairobi','Seoul','Melbourne','Bogotá','Cairo','Helsinki','Raleigh','Manila','Zürich','Accra','Hanoi','Monterrey','Tallinn','Chennai','Vienna','Cape Town','Leeds','Taipei','Calgary','Porto','Kyiv','Madrid','Jakarta','Boston','Lyon','Riga','Auckland','Santiago','Bengaluru','Prague','Montréal','Dubai','Atlanta','Gdańsk','Kobe','Seattle','Lima','Hamburg','Perth','Valencia','Istanbul','Vilnius','Recife','Quito','Glasgow','Busan','Phoenix','Tbilisi'];
+  const r=rng(610);const S=names.map(n=>({name:n,seats:Math.round(25+r()*74),calls:Math.round(60+Math.pow(r(),1.8)*5100),loss:+(Math.pow(r(),2.2)*2.8).toFixed(1)}));
+  const max={seats:100,calls:Math.max(...S.map(s=>s.calls)),loss:3};const N=S.length;
+  const val=(k,v)=>k==='seats'?v+'%':k==='calls'?fmt(v):v.toFixed(1);
+  const els=S.map(s=>{const d=document.createElement('div');d.className='tl-row';
+    d.innerHTML=`<div class="tl-cell tl-name"><span>${s.name}</span></div>`+['seats','calls','loss'].map(k=>`<div class="tl-cell"><i class="tl-bar" style="width:calc((100% - 20px) * ${(s[k]/max[k]).toFixed(3)})"></i><span class="tl-val">${val(k,s[k])}</span></div>`).join('');
+    body.appendChild(d);return d;});
+  let order=[...Array(N).keys()],focus=-1,sortT=0;
+  const hs=f=>{const h=new Array(N),Ht=body.clientHeight;if(f<0){h.fill(Ht/N);return h;}const sp=[26,15,9];let used=0,cnt=0;
+    for(let p=0;p<N;p++){const d=Math.abs(p-f);if(d<3){h[p]=sp[d];used+=h[p];cnt++;}}const rest=Math.max(1,(Ht-used)/(N-cnt));for(let p=0;p<N;p++)if(h[p]===undefined)h[p]=rest;return h;};
+  const layout=()=>{const h=hs(focus);let y=0;for(let p=0;p<N;p++){const el=els[order[p]];el.style.transform=`translateY(${y}px)`;el.style.height=h[p]+'px';
+      el.style.setProperty('--bh',Math.max(1,Math.min(h[p]-1,10))+'px');el.toggleAttribute('data-big',h[p]>=13);el.toggleAttribute('data-focus',p===focus);y+=h[p];}
+    if(focus>=0){const s=S[order[focus]];out.innerHTML=`<b>${s.name}</b> · ${s.seats}% seats · ${fmt(s.calls)} calls/day · ${s.loss.toFixed(1)}% loss`;}else out.textContent='Point at the bars';};
+  const pickFocus=y=>{let best=0,bd=Infinity;for(let f=0;f<N;f++){const h=hs(f);let top=0;for(let p=0;p<f;p++)top+=h[p];const d=Math.abs(top+h[f]/2-y);if(d<bd){bd=d;best=f;}}return best;};
+  let raf=0,py=0;
+  const track=e=>{py=e.clientY-body.getBoundingClientRect().top;if(!raf)raf=requestAnimationFrame(()=>{raf=0;const f=pickFocus(py);if(f!==focus){focus=f;layout();}});};
+  body.addEventListener('pointermove',track);body.addEventListener('pointerdown',track);
+  body.addEventListener('pointerleave',()=>{if(document.activeElement!==L){focus=-1;layout();}});
+  L.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();focus=focus<0?0:Math.max(0,Math.min(N-1,focus+(e.key==='ArrowDown'?1:-1)));layout();}else if(e.key==='Escape'){focus=-1;layout();}});
+  L.addEventListener('focusout',e=>{if(!L.contains(e.relatedTarget)){focus=-1;layout();}});
+  const sortBy=(k,instant)=>{const fid=focus>=0?order[focus]:-1;order.sort((a,b)=>k==='name'?S[a].name.localeCompare(S[b].name):(S[b][k]-S[a][k])||(a-b));if(fid>=0)focus=order.indexOf(fid);
+    if(!instant&&!reduced()){body.setAttribute('data-sorting','');clearTimeout(sortT);sortT=setTimeout(()=>body.removeAttribute('data-sorting'),320);}
+    layout();$$('.tl-head button',L).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.k===k)));};
+  $$('.tl-head button',L).forEach(b=>b.addEventListener('click',()=>sortBy(b.dataset.k)));
+  new ResizeObserver(()=>layout()).observe(body);sortBy('seats',true);
+})();
+})();
+</script>

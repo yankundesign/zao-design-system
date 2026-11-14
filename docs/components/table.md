@@ -30,15 +30,19 @@ tokens:
   - font.family.text
   - font.weight.regular
   - font.weight.medium
+  - space.0-5
   - space.2
   - space.3
   - space.4
   - radius.none
+  - stroke.hairline
   - depth.rest.surface
+  - depth.rest.small
   - depth.lift
   - depth.axis.x
   - depth.axis.y
   - color.bg.canvas
+  - color.bg.sunken
   - color.bg.hover
   - color.bg.active
   - color.fg.default
@@ -140,6 +144,30 @@ Reduced motion swaps drawing and built treatment immediately. Forced colors keep
 
 Existing [Table construction coverage](../../apps/docs/e2e/table-construction.spec.ts) and [rule/status coverage](../../apps/docs/e2e/table-rule-status.spec.ts) address native reading, sorting, selection, Menu keyboard dismissal, stationary rows, desktop/narrow frame rules, RTL, scrolling, status words/glyphs and forced colors. Most interaction cases exercise the host specimen. These links describe existing scope, not a fresh verification result; no tests were run for this reference.
 
+## Upgrades
+
+Upgrades are opt-in ([table upgrades plan](../plans/2026-10-table-upgrades/README.md)). Without their props and parts, Table renders the DOM, slots and paint described above. One is built so far.
+
+### `stickyHeader` (WP 1.1, Nov 13)
+
+`stickyHeader` on `Table.Root` holds the column header at the top of the scroll area while rows pass beneath it.
+
+| Part                 | With `stickyHeader`                                                                                                                                                                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frame                | Carries `data-zao-sticky-header` and becomes a flex column. The host bounds its height with `className` (for example `max-h-96`); without a bound nothing sticks.                                                                                                |
+| `scroll-area`        | Fills the frame and scrolls on both axes. It carries the measured `--zao-table-header-size` and `--zao-table-group-size`, and sets its block-start scroll padding to their sum, so keyboard scrolling and focus land clear of the header and a stuck group head. |
+| `table`              | Uses separated borders with no spacing and draws the same hairline rules on its cells, because sticky cells lose collapsed rules. At rest it matches the basic Table.                                                                                            |
+| Header cells         | `position: sticky` at the block start, on the frame's face. Hold one header row; a second row would stick at the same offset.                                                                                                                                    |
+| Stuck                | Over the first `space.4` of block scroll, the header's rule goes from `border-subtle` to `fg-default` and a bottom plane at `depth.rest.small` appears: two zero-blur bands in the frame's plane shading. A scroll timeline drives it; there is no duration.     |
+| Group head           | A `Table.Head` with `scope="rowgroup"` and a `colSpan`, as the only cell of a body's first row. It carries `data-zao-group-head`, paints `bg-sunken` with `type-label font-medium`, and sticks under the header. A later group head slides over the earlier one. |
+| Current group's mark | A stuck group head shows a `space.0-5` mark in `fg-default` at its inline-start edge, through a `scroll-state(stuck: top)` container query. No script sets it.                                                                                                   |
+
+A later group head sticks one hairline higher than the first, so its own top rule tucks under the header's rule and the two never double. A group head keeps the rule under it while rows pass beneath.
+
+Without scroll timelines the header still sticks with its resting rule and no plane; without scroll-state queries there is no mark. Forced colors keep the rule and the mark in CanvasText and drop the plane and the fills. While `drawing`, the held cells are transparent and nothing follows the scroll. The host still owns the rows, the groups and any readout of the current group.
+
+[Upgrade coverage](../../apps/docs/e2e/table-upgrades.spec.ts) addresses the unchanged basic Table, the resting paint comparison, the stuck rule and plane, group heads and their mark, keyboard scrolling with reduced motion, forced colors, missing support, the drawing state and 390px, in Su light and dark, LTR and RTL.
+
 ## Decisions
 
 ### Oct 6: exact BRIEF request
@@ -160,3 +188,5 @@ From [BRIEF.md](../../BRIEF.md#current-design-direction-quiet-construction), unc
 Spec scope note: D10 resolves only the status choice. The Table request, host-owned sorting/selection, and measured-usability claims retain their actual status; the finish authorization does not approve a new table interaction system. Source text remains in place for the separate approval migration.
 
 Oct 13 L1–L2, [components plan](../plans/2026-10-components/README.md): Table.Root adds published `drawing` and `drawingLabel` behavior. The host keeps data ownership; dimensions remain docs-local.
+
+Nov 13, [table upgrades plan](../plans/2026-10-table-upgrades/README.md) WP 1.1: Table.Root adds published `stickyHeader`. Yankun picked the stuck header on Oct 15 (U1); no gate applied. The basic Table is unchanged.

@@ -1081,6 +1081,119 @@
   }
 }
 
+/*
+ * A held header (table upgrades plan WP 1.1, `stickyHeader`). The frame becomes a column the
+ * host bounds; its scroll area scrolls both ways and the header cells stay at its top edge on
+ * the frame's face while rows pass beneath. Sticky cells lose collapsed rules, so the table
+ * separates its borders and draws the same rules on the cells: at rest it matches the basic
+ * table.
+ */
+@utility table-sticky-scroll {
+  /* Keyboard scrolling and focus land clear of the held header and a stuck group head. */
+  scroll-padding-block-start: calc(
+    var(--zao-table-header-size, 0px) + var(--zao-table-group-size, 0px)
+  );
+}
+
+@utility table-sticky-header {
+  border-collapse: separate;
+  border-spacing: 0;
+
+  & > thead > tr > * {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 2;
+    background-color: var(--zao-construction-face);
+  }
+
+  & > thead > tr:last-child > * {
+    border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  }
+
+  & > tbody + tbody > tr:first-child > *,
+  & > tbody > tr + tr > * {
+    border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  }
+
+  & > tfoot > tr:first-child > * {
+    border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-default);
+  }
+
+  /* A group head sticks under the header; a later one slides over the earlier one. */
+  & > tbody > tr > [data-zao-group-head] {
+    position: sticky;
+    inset-block-start: var(--zao-table-header-size, 0px);
+    z-index: 1;
+    background-color: var(--zao-color-bg-sunken);
+
+    /* The rule under it stays with it while rows pass beneath. At rest it covers the next
+     * row's own rule. */
+    &::after {
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: calc(-1 * var(--zao-stroke-hairline));
+      border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+      pointer-events: none;
+      content: '';
+    }
+  }
+
+  /* A later group's own top rule tucks under the header's rule, so the two never double. */
+  & > tbody + tbody > tr > [data-zao-group-head] {
+    inset-block-start: calc(var(--zao-table-header-size, 0px) - var(--zao-stroke-hairline));
+  }
+
+  :where([data-zao-drawing]) & > tbody > tr > [data-zao-group-head] {
+    background-color: transparent;
+  }
+
+  /* Stuck (an eave): once rows scroll under the header, its rule takes the ink and a bottom
+   * plane appears, drawn in the frame's shading. Scroll position drives it evenly; nothing is
+   * timed. */
+  @supports (animation-timeline: scroll()) {
+    & > thead > tr:last-child > * {
+      animation: zao-table-header-stuck linear both;
+      animation-timeline: scroll(nearest block);
+      animation-range: 0px var(--zao-space-4);
+    }
+  }
+
+  /* The current group's mark, where a sticky cell can report that it is stuck. */
+  @supports (container-type: scroll-state) {
+    & > tbody > tr > [data-zao-group-head] {
+      container-type: scroll-state;
+    }
+
+    @container scroll-state(stuck: top) {
+      & > tbody > tr > [data-zao-group-head]::before {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        border-inline-start: var(--zao-space-0-5) solid var(--zao-color-fg-default);
+        pointer-events: none;
+        content: '';
+      }
+    }
+  }
+
+  @media (forced-colors: active) {
+    & > thead > tr:last-child > * {
+      border-block-end-color: CanvasText;
+      animation: none;
+    }
+  }
+}
+
+@keyframes zao-table-header-stuck {
+  to {
+    border-block-end-color: var(--zao-color-fg-default);
+    box-shadow:
+      0 calc(-0.5 * var(--zao-depth-axis-y) * var(--zao-depth-rest-small)) 0 0
+        var(--zao-plane-y-near),
+      0 calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-rest-small)) 0 0 var(--zao-plane-y-far);
+  }
+}
+
 /* Native state and focus, with an explicitly square monochrome face. */
 @utility table-checkbox {
   appearance: none;
