@@ -53,22 +53,33 @@ test('a static docs page paints its nav before hydration', async ({ request }) =
 /**
  * The most elements one style recalculation visits when an empty div is appended to `host`.
  * Chromium's trace reports the count; durations vary with the machine, and counts do not.
+ * Two marks bound the appends, so a restyle the page owes to its own loading is left out.
  */
 async function restyledByAppend(browser: Browser, page: Page, host: 'body' | 'main') {
-  await page.evaluate(() => void document.body.offsetHeight);
-  await browser.startTracing(page, { categories: ['devtools.timeline'] });
+  await browser.startTracing(page, { categories: ['devtools.timeline', 'blink.user_timing'] });
   await page.evaluate((selector) => {
-    const node = document.createElement('div');
-    document.querySelector(selector)!.append(node);
+    const parent = document.querySelector(selector)!;
     void document.body.offsetHeight;
-    node.remove();
-    void document.body.offsetHeight;
+    performance.mark('zao-append-start');
+    for (let index = 0; index < 3; index += 1) {
+      const node = document.createElement('div');
+      parent.append(node);
+      void document.body.offsetHeight;
+      node.remove();
+      void document.body.offsetHeight;
+    }
+    performance.mark('zao-append-end');
   }, host);
   const trace = JSON.parse((await browser.stopTracing()).toString()) as {
-    traceEvents: { name: string; args?: { elementCount?: number } }[];
+    traceEvents: { name: string; ts: number; args?: { elementCount?: number } }[];
   };
+  const at = (name: string) => trace.traceEvents.find((event) => event.name === name)?.ts;
+  const from = at('zao-append-start');
+  const to = at('zao-append-end');
+  expect(from).toBeDefined();
+  expect(to).toBeDefined();
   const counts = trace.traceEvents
-    .filter((event) => event.name === 'UpdateLayoutTree')
+    .filter((event) => event.name === 'UpdateLayoutTree' && event.ts >= from! && event.ts <= to!)
     .map((event) => event.args?.elementCount)
     .filter((count): count is number => typeof count === 'number');
   expect(counts.length).toBeGreaterThan(0);
