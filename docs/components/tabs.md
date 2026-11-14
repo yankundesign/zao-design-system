@@ -71,18 +71,18 @@ tokens:
 
 `Tabs.Root` is the Base UI group and carries `data-zao-component="tabs"`. Its native tab buttons and labels stay stationary; Base UI associates each selected tab with its panel. `Tabs.List` adds a bounded scrolling viewport and owns the decorative drawing. Nested roots keep their own state and measured indicators.
 
-| Authored `data-zao-slot` | Role and presence                                                                    |
-| ------------------------ | ------------------------------------------------------------------------------------ |
-| `root`                   | Base UI root for a supplied Tabs group.                                              |
-| `viewport`               | Wrapper around every list, with fen-sized clearance and scrolling.                   |
-| `list`                   | Base UI tablist and variant owner.                                                   |
-| `rail`                   | Decorative primary guide, horizontal or vertical; absent in secondary.               |
-| `graduation`             | Decorative primary marks at actual visible adjacent-tab gap midpoints.               |
-| `indicator`              | Base UI-measured selection decoration; primary paints its fishtails on it.           |
-| `selection-line`         | Primary selection stroke, with a painted registration tick; absent in secondary.     |
-| `tab`                    | Native Base UI tab button and its stationary visible children.                       |
-| `tick`                   | Decorative per-tab registration mark; mounted in both variants, hidden in secondary. |
-| `panel`                  | Base UI panel supplied by the host, with associated selected value.                  |
+| Authored `data-zao-slot` | Role and presence                                                                                                                                                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`                   | Base UI root for a supplied Tabs group.                                                                                                                                                                                             |
+| `viewport`               | Wrapper around every list, with fen-sized clearance and scrolling.                                                                                                                                                                  |
+| `list`                   | Base UI tablist and variant owner.                                                                                                                                                                                                  |
+| `rail`                   | Decorative primary guide, horizontal or vertical; absent in secondary.                                                                                                                                                              |
+| `graduation`             | Decorative primary marks at actual visible adjacent-tab gap midpoints.                                                                                                                                                              |
+| `indicator`              | Base UI-measured selection decoration; primary paints its fishtails on it. Since Nov 14 (CR8) the primary indicator's leading end travels on Slide and its trailing end on Reveal, through four registered lengths (`--tabs-start-x | y`, `--tabs-end-x | y`); Base UI's `data-activation-direction` picks the end. |
+| `selection-line`         | Primary selection stroke, with a painted registration tick; absent in secondary.                                                                                                                                                    |
+| `tab`                    | Native Base UI tab button and its stationary visible children.                                                                                                                                                                      |
+| `tick`                   | Decorative per-tab registration mark; mounted in both variants, hidden in secondary.                                                                                                                                                |
+| `panel`                  | Base UI panel supplied by the host, with associated selected value.                                                                                                                                                                 |
 
 Primary draws one hairline guide, end stops, fine graduations, and a stronger selection line on one centerline. Each actual visible adjacent gap has one graduation, `n − 1`: a full-height boundary mark on a horizontal rail (Oct 15) and a half-fen mark on a vertical one. The selection line ends in two seal fishtails (鱼尾, Oct 15), notches facing the tab, painted on the indicator's `::before` and `::after`; no slot is added. A ResizeObserver/MutationObserver measures native gaps, rather than inventing a repeated pitch. Vertical labels align toward the rail: right in LTR, left in RTL.
 

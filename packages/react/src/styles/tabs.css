@@ -1,4 +1,30 @@
 /* Ruler and recessed selector share stationary labels, targets, and keyboard focus. */
+/* The two ends of the primary Tabs indicator, along each axis (CR8). Registered so that each
+ * end can transition on its own role. */
+@property --tabs-start-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --tabs-end-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --tabs-start-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --tabs-end-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
 @layer components {
   .tabs-viewport {
     min-inline-size: 0;
@@ -116,6 +142,61 @@
       --zao-plane-rest var(--zao-motion-duration-seat) var(--zao-motion-easing-seat),
       background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard),
       box-shadow var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
+  }
+
+  /* The primary selection line leads (Nov 14, CR8). Each end of the indicator is a registered
+   * length, so each can travel on its own role: the leading end on Slide and the trailing end
+   * on Reveal. Slide is the shorter of the two, so the line stretches toward the new tab and
+   * closes behind it; nothing overshoots. The box is still a translation and a size written
+   * from the same left, top, width and height, so the line rests exactly where it did. */
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator {
+    --tabs-lead: var(--zao-motion-duration-slide) var(--zao-motion-easing-slide);
+    --tabs-trail: var(--zao-motion-duration-reveal) var(--zao-motion-easing-reveal);
+    --tabs-start-x: var(--active-tab-left);
+    --tabs-start-y: var(--active-tab-top);
+    --tabs-end-x: calc(var(--active-tab-left) + var(--active-tab-width));
+    --tabs-end-y: calc(var(--active-tab-top) + var(--active-tab-height));
+    inline-size: calc(var(--tabs-end-x) - var(--tabs-start-x));
+    block-size: calc(var(--tabs-end-y) - var(--tabs-start-y));
+    transform: translate(var(--tabs-start-x), var(--tabs-start-y));
+    transition:
+      --tabs-start-x var(--tabs-lead),
+      --tabs-end-x var(--tabs-lead),
+      --tabs-start-y var(--tabs-lead),
+      --tabs-end-y var(--tabs-lead);
+  }
+
+  /* Base UI reports which way the selection moved; that end leads. */
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator[data-activation-direction='right'] {
+    transition:
+      --tabs-start-x var(--tabs-trail),
+      --tabs-end-x var(--tabs-lead),
+      --tabs-start-y var(--tabs-lead),
+      --tabs-end-y var(--tabs-lead);
+  }
+
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator[data-activation-direction='left'] {
+    transition:
+      --tabs-start-x var(--tabs-lead),
+      --tabs-end-x var(--tabs-trail),
+      --tabs-start-y var(--tabs-lead),
+      --tabs-end-y var(--tabs-lead);
+  }
+
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator[data-activation-direction='down'] {
+    transition:
+      --tabs-start-x var(--tabs-lead),
+      --tabs-end-x var(--tabs-lead),
+      --tabs-start-y var(--tabs-trail),
+      --tabs-end-y var(--tabs-lead);
+  }
+
+  .tabs-list[data-zao-variant='primary'] > .tabs-indicator[data-activation-direction='up'] {
+    transition:
+      --tabs-start-x var(--tabs-lead),
+      --tabs-end-x var(--tabs-lead),
+      --tabs-start-y var(--tabs-lead),
+      --tabs-end-y var(--tabs-trail);
   }
 
   .tabs-indicator > [data-zao-slot='selection-line'] {
