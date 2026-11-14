@@ -128,6 +128,8 @@ Shared Button hooks also appear through IconButton, Menu.Trigger, Dialog.Trigger
 
 `Message.Actions` accepts `placement="header"` to place response utilities in the author row; the default `end` placement preserves the action row after content. `Conversation.Item` exposes `data-zao-entering` when it mounts after Root's first commit; `entering={false}` suppresses that marker for restored history. Composer attachment tiles expose `data-zao-entering` and `data-zao-removing`; ComposerContextChip exposes `data-zao-removing` during its one-beat drawing. These are component-owned lifecycle hooks, not new slots. The down-arrow in Conversation.Latest is local decorative SVG geometry and has no authored slot.
 
+`Table.Root` exposes `data-zao-sticky-header` on its frame while `stickyHeader` is set. Under it, a `Table.Head` with `scope="rowgroup"` that spans columns exposes `data-zao-group-head`, and the `scroll-area` carries the measured `--zao-table-header-size` and `--zao-table-group-size`. A basic Table has none of these.
+
 ## Construction concepts and DOM paint
 
 | Concept      | Actual current implementation                                                                                                                                                                                                                                                                                                                                                | Audit conclusion                                                                                                                                   |
