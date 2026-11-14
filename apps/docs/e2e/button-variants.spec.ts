@@ -280,10 +280,11 @@ for (const context of contexts) {
   }) => {
     const specimen = await openSpecimen(page, context);
     for (const [label, slot, iconCount] of [
-      ['Save report', null, 1],
-      ['Sync workspace', 'leading-icon', 3],
-      ['Open summary', 'trailing-icon', 2],
-      ['Delete draft', 'trailing-action', 1],
+      // The count is of icons; the pending mark is drawn with ticks, not an svg.
+      ['Save report', null, 0],
+      ['Sync workspace', 'leading-icon', 2],
+      ['Open summary', 'trailing-icon', 1],
+      ['Delete draft', 'trailing-action', 0],
     ] as const) {
       const button = specimen.getByRole('button', { name: label, exact: true });
       await expect(button).toHaveAccessibleName(label);
@@ -291,11 +292,27 @@ for (const context of contexts) {
       const spinner = button.locator('[data-zao-slot="spinner"]');
       await expect(spinner).toHaveCount(1);
       await expect(spinner).toHaveAttribute('aria-hidden', 'true');
-      await expect(spinner).toHaveAttribute('focusable', 'false');
       await expect(button.locator('svg')).toHaveCount(iconCount);
-      await expect(spinner).toHaveCSS('animation-duration', '1s');
-      await expect(spinner).toHaveCSS('animation-timing-function', 'linear');
-      await expect(spinner).toHaveCSS('animation-iteration-count', 'infinite');
+      // Eight ticks, two pixels apart, centered in the mark; they fill a tick per step.
+      const ticks = spinner.locator('.button-loading-ticks');
+      expect(
+        await ticks.evaluate((node) => {
+          const box = node.getBoundingClientRect();
+          const mark = node.parentElement!.getBoundingClientRect();
+          return {
+            size: [box.width, box.height],
+            centered:
+              Math.abs(box.left + box.width / 2 - (mark.left + mark.width / 2)) < 0.01 &&
+              Math.abs(box.top + box.height / 2 - (mark.top + mark.height / 2)) < 0.01,
+          };
+        }),
+      ).toEqual({ size: [16, 8], centered: true });
+      for (const part of ['.button-loading-window', '.button-loading-lit']) {
+        const moving = spinner.locator(part);
+        await expect(moving).toHaveCSS('animation-duration', '1s');
+        await expect(moving).toHaveCSS('animation-timing-function', 'steps(8, start)');
+        await expect(moving).toHaveCSS('animation-iteration-count', 'infinite');
+      }
       if (slot) {
         await expect(
           button.locator(`[data-zao-slot="${slot}"] > [data-zao-slot="spinner"]`),
@@ -326,8 +343,14 @@ for (const context of contexts) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     for (const spinner of await specimen.locator('[data-zao-slot="spinner"]').all()) {
       await expect(spinner).toBeVisible();
-      await expect(spinner).toHaveCSS('animation-name', 'none');
-      await expect.poll(() => spinner.evaluate((node) => node.getAnimations().length)).toBe(0);
+      // The still mark: nothing moves, and every tick is lit.
+      await expect
+        .poll(() => spinner.evaluate((node) => node.getAnimations({ subtree: true }).length))
+        .toBe(0);
+      for (const part of ['.button-loading-window', '.button-loading-lit']) {
+        await expect(spinner.locator(part)).toHaveCSS('animation-name', 'none');
+        await expect(spinner.locator(part)).toHaveCSS('transform', 'none');
+      }
     }
   });
 }

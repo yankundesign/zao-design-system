@@ -674,7 +674,7 @@
     color: var(--zao-color-fg-muted);
   }
   & .zao-plan-status .button-loading-indicator {
-    width: var(--zao-space-3);
+    width: var(--zao-space-4);
     height: var(--zao-space-3);
   }
   & .zao-plan-body {
@@ -1276,28 +1276,87 @@
   width: var(--button-icon-size);
   height: var(--button-icon-size);
 
-  & > svg {
+  & > svg,
+  & > .button-loading-indicator {
     width: 100%;
     height: 100%;
   }
 }
 
+/* The pending mark (Nov 14, S1 A): eight hairline ticks, one per motion grade. They fill one
+ * more per step, eight steps per loading duration, and start again. Stepped, never spun. A
+ * window slides over the lit ticks while they slide back under it, so only transforms move and
+ * the mark keeps stepping while the page is busy. At rest, and with reduced motion, every tick
+ * is lit: the still mark. */
 @keyframes zao-button-loading {
-  to {
-    transform: rotate(360deg);
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes zao-button-loading-lit {
+  from {
+    transform: translateX(100%);
   }
 }
 
 @utility button-loading-indicator {
-  animation: zao-button-loading var(--zao-motion-duration-loading) linear infinite;
-  stroke-width: var(--zao-stroke-hairline);
+  --loading-tick-rule:
+    0 var(--zao-stroke-hairline), transparent var(--zao-stroke-hairline) var(--zao-space-0-5);
+  --loading-ink: currentColor;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
 
-  & > path {
-    vector-effect: non-scaling-stroke;
+  /* Eight ticks at two pixels apart, centered in the mark's box whatever its size. */
+  & > .button-loading-ticks {
+    position: absolute;
+    inset-block-start: calc(50% - var(--zao-space-1));
+    inset-inline-start: calc(50% - var(--zao-space-2));
+    inline-size: var(--zao-space-4);
+    block-size: var(--zao-space-2);
+    overflow: hidden;
+    /* Every tick at rest, in a tint of the ink. */
+    background: repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--loading-ink) 35%, transparent) var(--loading-tick-rule)
+    );
+  }
+  &:dir(rtl) > .button-loading-ticks {
+    transform: scaleX(-1);
+  }
+
+  & .button-loading-window,
+  & .button-loading-lit {
+    position: absolute;
+    inset: 0;
+    animation-duration: var(--zao-motion-duration-loading);
+    animation-timing-function: steps(8, start);
+    animation-iteration-count: infinite;
+  }
+  & .button-loading-window {
+    overflow: hidden;
+    animation-name: zao-button-loading;
+  }
+  & .button-loading-lit {
+    background: repeating-linear-gradient(90deg, var(--loading-ink) var(--loading-tick-rule));
+    animation-name: zao-button-loading-lit;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    animation: none;
+    & .button-loading-window,
+    & .button-loading-lit {
+      animation: none;
+    }
+  }
+
+  /* Forced colors drop backgrounds; the ticks are the whole mark, so they keep a system ink. */
+  @media (forced-colors: active) {
+    --loading-ink: CanvasText;
+    & .button-loading-ticks,
+    & .button-loading-lit {
+      forced-color-adjust: none;
+    }
   }
 }
 

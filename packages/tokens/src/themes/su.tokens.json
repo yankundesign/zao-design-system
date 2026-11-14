@@ -265,7 +265,7 @@
           "value": 1000,
           "unit": "ms"
         },
-        "$description": "One complete linear rotation of a loading indicator during pending work. Reduced motion shows a static indicator."
+        "$description": "One complete fill of a loading indicator during pending work: its eight ticks light one per step, then start again. Reduced motion shows a static indicator."
       }
     },
     "easing": {
