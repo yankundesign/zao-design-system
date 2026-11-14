@@ -52,6 +52,16 @@
   outline: none;
 }
 
+/* Files held over the tray (Nov 13, CR15): the tray is drawn, not built. Its perimeter is a
+ * dashed construction line and it rests on its base until the files land or leave, as a
+ * removing context tag is drawn. Instant: a drag is input, not a result. */
+[data-zao-component='composer'].composer-construction[data-zao-dragging] {
+  --zao-plane-rest: 0px;
+  border-style: dashed;
+  border-color: var(--zao-color-border-default);
+  transition: none;
+}
+
 [data-zao-component='composer'][data-zao-invalid] {
   border-color: var(--zao-color-border-field-invalid);
 }

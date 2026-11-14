@@ -1044,3 +1044,66 @@ test.describe('touch', () => {
     await expectReady(form);
   });
 });
+
+test('files dropped on the tray or pasted into the draft attach as the Attach control does', async ({
+  page,
+}) => {
+  await page.goto('/components/composer');
+  await page.evaluate(() => document.fonts.ready);
+  const form = page.locator('.study form[data-zao-component="composer"]').first();
+  await form.scrollIntoViewIfNeeded();
+  const tiles = form.locator('[data-zao-slot="attachments"] li');
+  const input = form.locator('[data-zao-slot="input"]');
+  const draft = await input.inputValue();
+  const before = await tiles.count();
+  const box = await form.boundingBox();
+
+  const dragged = await page.evaluateHandle(() => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(['a,b'], 'storage-forecast.csv', { type: 'text/csv' }));
+    return transfer;
+  });
+  await form.dispatchEvent('dragenter', { dataTransfer: dragged });
+  await form.dispatchEvent('dragover', { dataTransfer: dragged });
+  // Held over the tray, it is drawn: a dashed perimeter resting on its base, in the same box.
+  await expect(form).toHaveAttribute('data-zao-dragging', '');
+  await expect(form).toHaveCSS('border-top-style', 'dashed');
+  expect(
+    await form.evaluate((node) => getComputedStyle(node).getPropertyValue('--zao-plane-rest')),
+  ).toBe('0px');
+  expect(await form.boundingBox()).toEqual(box);
+
+  // Leaving puts the tray back without attaching anything.
+  await form.dispatchEvent('dragleave', { dataTransfer: dragged });
+  await expect(form).not.toHaveAttribute('data-zao-dragging', '');
+  await expect(form).toHaveCSS('border-top-style', 'solid');
+  await expect(tiles).toHaveCount(before);
+
+  await form.dispatchEvent('dragenter', { dataTransfer: dragged });
+  await form.dispatchEvent('drop', { dataTransfer: dragged });
+  await expect(form).not.toHaveAttribute('data-zao-dragging', '');
+  await expect(tiles).toHaveCount(before + 1);
+  await expect(tiles.last()).toContainText('storage-forecast.csv');
+
+  // A pasted file attaches and leaves the draft alone; pasted text is an ordinary paste.
+  await input.focus();
+  await input.evaluate((node) => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(['x'], 'notes.txt', { type: 'text/plain' }));
+    node.dispatchEvent(
+      new ClipboardEvent('paste', { clipboardData: transfer, bubbles: true, cancelable: true }),
+    );
+  });
+  await expect(tiles).toHaveCount(before + 2);
+  await expect(tiles.last()).toContainText('notes.txt');
+  await expect(input).toHaveValue(draft);
+
+  // Dragged text is not files: the tray stays built.
+  const text = await page.evaluateHandle(() => {
+    const transfer = new DataTransfer();
+    transfer.setData('text/plain', 'hello');
+    return transfer;
+  });
+  await form.dispatchEvent('dragenter', { dataTransfer: text });
+  await expect(form).not.toHaveAttribute('data-zao-dragging', '');
+});
