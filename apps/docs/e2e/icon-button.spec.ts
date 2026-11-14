@@ -87,6 +87,21 @@ for (const finish of [
         getComputedStyle(node).getPropertyValue('--zao-color-bg-canvas').trim(),
       ),
     );
+    // CR2: the label is a floating face a small rest depth above its base, as popups are, with
+    // drawn planes in place of the material's shadow.
+    expect(
+      await tooltip.evaluate((node) => {
+        const style = getComputedStyle(node);
+        return {
+          rest: style.getPropertyValue('--zao-plane-rest').trim(),
+          small: style.getPropertyValue('--zao-depth-rest-small').trim(),
+          shadow: style.boxShadow,
+          planes: ['::before', '::after'].every(
+            (pseudo) => getComputedStyle(node, pseudo).content !== 'none',
+          ),
+        };
+      }),
+    ).toEqual({ rest: '2px', small: '2px', shadow: 'none', planes: true });
     const accessibility = await new AxeBuilder({ page }).include('.study').analyze();
     expect(accessibility.violations).toEqual([]);
   });

@@ -68,7 +68,7 @@ export const IconButton = forwardRef<HTMLElement, IconButtonProps>(function Icon
           <BaseTooltip.Positioner side="bottom" sideOffset={4} className="z-30">
             <BaseTooltip.Popup
               data-zao-slot="tooltip"
-              className="material-overlay max-w-xs px-2 py-1.5 type-caption text-default"
+              className="construction-shading material-overlay tooltip-construction construction-planes max-w-xs px-2 py-1.5 type-caption text-default"
             >
               {label}
             </BaseTooltip.Popup>
