@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Table } from '@zao/react';
-import { useId, useState } from 'react';
+import { memo, useId, useState } from 'react';
 
 export interface ChartTable {
   columns: readonly { label: string; numeric?: boolean }[];
@@ -9,11 +9,35 @@ export interface ChartTable {
   rows: readonly (readonly string[])[];
 }
 
+function sameProps(
+  a: { title: string; table: ChartTable; disabled?: boolean },
+  b: { title: string; table: ChartTable; disabled?: boolean },
+) {
+  return a.title === b.title && a.disabled === b.disabled && sameTable(a.table, b.table);
+}
+
+/** Charts rebuild their table on every render; the same cells are the same table. */
+function sameTable(a: ChartTable, b: ChartTable) {
+  return (
+    a.columns.length === b.columns.length &&
+    a.rows.length === b.rows.length &&
+    a.columns.every(
+      (column, index) =>
+        column.label === b.columns[index]!.label && column.numeric === b.columns[index]!.numeric,
+    ) &&
+    a.rows.every((row, index) => {
+      const other = b.rows[index]!;
+      return row.length === other.length && row.every((cell, column) => cell === other[column]);
+    })
+  );
+}
+
 /**
  * Every chart's numbers in Table, opened inline below the frame and closed by default (C2).
- * The table adds height below the readout; the plot never moves.
+ * The table adds height below the readout; the plot never moves. Inspecting the plot changes
+ * no number, so an open table does not re-render while the pointer crosses the chart.
  */
-export function ChartDataView({
+export const ChartDataView = memo(function ChartDataView({
   title,
   table,
   disabled = false,
@@ -71,4 +95,4 @@ export function ChartDataView({
       </div>
     </div>
   );
-}
+}, sameProps);
