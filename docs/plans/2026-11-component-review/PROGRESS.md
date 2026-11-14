@@ -90,6 +90,44 @@ On Nov 13 Yankun said to continue with waves 1–4. Each built row takes its gat
 - Frame measurements (`measure-frames.mjs`) were not repeated for the built rows.
 - Nothing on `claude/component-review-wave-1` is pushed.
 
+## Page switching (Nov 13)
+
+Yankun asked for faster switching between docs pages. Measured on the static export, served as Cloudflare Pages serves it (clean URLs, compressed text, long cache only for hashed assets), in headless Chromium at 1440 × 900. Eleven switches through the nav, each pressed 0.8s after its link came into view. The figure is the time from the press to the new page's heading.
+
+| Network profile                 | Before, median | After, median | Before, worst | After, worst |
+| ------------------------------- | -------------- | ------------- | ------------- | ------------ |
+| 4G: 80ms latency, 9 Mbit/s      | 299ms          | 46ms          | 326ms         | 111ms        |
+| Slow: 300ms latency, 1.6 Mbit/s | 805ms          | 60ms          | 1,316ms       | 113ms        |
+
+- **Cause.** Every component link carried the study's `?style=quiet-instrument` suffix once the nav had read the address. A link with a query cannot use the page Next has prefetched, so each press fetched the page first. On arrival the preview then called `router.replace` to restore the suffix, which fetched and rendered the page again. Pages reached from a suffixed address paid as well.
+- **Fix, docs-local.** Nav links are plain paths (`components/nav.tsx`). The preview still adds the suffix to the address, with `history.replaceState` a task after its effect, so Next's router hears of it and Back and Forward keep working (`components/component-preview.tsx`). A first attempt that rewrote the address inside the effect ran before Next had taken over `history.replaceState` on first load, and Back to that page then did nothing; the test caught it.
+- **Tests.** `performance.spec.ts`: nav links have no query, a switch makes no request that carries the style, the address still gains the suffix, and Back and Forward work. `nav-construction.spec.ts` was rewritten for plain links.
+- **Still slow.** An anatomy drawing settles about 0.5s after its page on 4G and 1.4s on the slow profile, down from 0.6s and 2.0s. Its source document is not cacheable, so every visit fetches it and boots its own bundle.
+- **Not measured.** The first load of a page (153 requests, 932kB on a component page, most of it prefetching the other pages), and the deployed site itself.
+
+## Frames after waves 1, 3 and 4 (Nov 13)
+
+`measure-frames.mjs` on a production build, every page, at full speed and at 4× CPU slowdown. Each cell is late frames / frames, then the longest frame, for the pages whose parts changed.
+
+| Page         | Hover       | Press       | Tab         | Chart sweep | Press at 4×  |
+| ------------ | ----------- | ----------- | ----------- | ----------- | ------------ |
+| IconButton   | 0/116, 17ms | 1/211, 33ms | 0/115, 17ms | —           | 1/219, 33ms  |
+| Menu         | 1/49, 33ms  | 0/80, 17ms  | 0/117, 17ms | —           | 2/84, 50ms   |
+| Select       | 0/387, 17ms | 1/378, 33ms | 1/117, 33ms | —           | 4/385, 117ms |
+| Combobox     | 1/609, 33ms | 0/509, 17ms | 0/118, 17ms | —           | 4/527, 50ms  |
+| TextField    | 0/271, 17ms | 0/148, 17ms | 0/120, 17ms | —           | 2/150, 50ms  |
+| Dialog       | 0/84, 17ms  | 1/147, 33ms | 0/119, 17ms | —           | 2/155, 83ms  |
+| Conversation | 1/203, 33ms | 0/311, 17ms | 0/121, 17ms | —           | 2/335, 33ms  |
+| Composer     | 0/184, 17ms | 0/213, 17ms | 0/118, 17ms | —           | 1/220, 50ms  |
+| Plan         | 0/83, 17ms  | 1/79, 33ms  | 0/121, 17ms | —           | 1/82, 50ms   |
+| Ring         | 1/113, 33ms | 0/146, 17ms | 0/119, 17ms | —           | 0/154, 17ms  |
+| Bar          | 0/218, 17ms | 0/146, 17ms | 0/119, 17ms | 0/384, 17ms | 0/153, 17ms  |
+| Histogram    | 1/219, 33ms | 0/146, 17ms | 1/116, 33ms | 0/384, 17ms | 0/154, 17ms  |
+
+- At full speed no phase has more than one late frame, and none is longer than 33ms. That matches the Nov 13 baseline; no built row added a long frame.
+- At 4× slowdown a list or dialog opening costs one or two long frames (Select 117ms at worst). There is no per-row 4× baseline from before these waves to compare with.
+- Across all 92 measured rows the one frame over 40ms at full speed was a single 67ms frame on the Button page, which the baseline also showed as warm-up.
+
 ## Wave 0 (approved and built Nov 13)
 
 Yankun approved wave 0 on Nov 13. It is on `claude/component-review-wave-0`, cut from `main` at `fbd867d`, in its own worktree so the uncommitted landing work in the main checkout stays untouched.
@@ -170,3 +208,19 @@ Gaps in this baseline to close when a part's row starts:
 ## Review sheets
 
 Add one block per part when its row starts: the date, what was looked at (modes, seals, widths, inputs), and one line for each of the seven lenses.
+
+### Built rows, Nov 13 (second pass)
+
+Every built row was captured at 3× in four more settings: RTL, forced colors, 360px wide, and dark. What was looked at: the open tooltip (CR2), a field's correction (CR3), an open Select (CR4), a filtered Combobox (CR5), the open shortcuts Menu (CR6), a Dialog's action row (CR7), a Composer with files held over it (CR15), a Plan header (CR17), the large ring (CR19) and an inspected Bar (CR21). No page gained horizontal overflow in any setting.
+
+| Lens        | Result                                                                                                                                                                                                                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| UI          | Every new state reads in light, dark and forced colors. The correction glyph, the gauge's tick lengths and the dashed tray all survive forced colors.                                                                                                                                                        |
+| Visual      | Each row is drawn with existing parts: planes and facet (CR2), the Table warning glyph (CR3), Menu's caret turn (CR4), the mono caption (CR6), ApprovalGate's row (CR7), the dashed drawing (CR15), hairline ticks (CR17, CR21).                                                                             |
+| Motion      | No built row adds motion. The caret turn, the dragging tray and the ruler tick are instant, so reduced motion changes nothing.                                                                                                                                                                               |
+| Interaction | Pointer and keyboard were exercised by the new browser cases. **Touch was not exercised.** Drop and paste were driven with synthetic events, not a real drag from the desktop.                                                                                                                               |
+| Creativity  | The run gauge and the ruler tick are the two rows that could only be ZAO's; the rest bring parts into agreement.                                                                                                                                                                                             |
+| Craft       | **Found and fixed:** in RTL a Menu shortcut's keys were reordered by bidi ("⌘Z" drew as "Z⌘"); the shortcut is now isolated left to right. A wrapped correction hangs beside its glyph. At 360px the Dialog actions stack, the ring wraps its reading below, and the shortcuts Menu stays inside the window. |
+| Performance | See "Frames after waves 1, 3 and 4" below.                                                                                                                                                                                                                                                                   |
+
+**Seen in passing, not changed.** In forced colors a Button has no visible boundary: its edge is paint that forced colors remove, so a secondary or quiet action reads as plain text until it is focused. This is how Button behaved before the review. It is a published change and needs Yankun's go-ahead.

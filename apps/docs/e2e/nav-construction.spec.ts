@@ -300,31 +300,22 @@ test('docs routes mark only their exact current page', async ({ page }) => {
   }
 });
 
-test('navigation retains the Su study only for components and design notes', async ({ page }) => {
+test('nav links are plain paths, and a component page adds the Su study to its own address', async ({
+  page,
+}) => {
   await page.goto('/components/button?style=quiet-instrument');
   const nav = page.getByRole('navigation', { name: 'Docs', exact: true });
   for (const destination of [
-    {
-      name: 'Card',
-      path: '/components/card',
-      linkStyle: 'quiet-instrument',
-      style: 'quiet-instrument',
-    },
-    {
-      name: 'Design notes',
-      path: '/foundations/design',
-      linkStyle: 'quiet-instrument',
-      style: 'quiet-instrument',
-    },
-    { name: 'Color', path: '/foundations/color', linkStyle: null, style: null },
-    { name: 'Button', path: '/components/button', linkStyle: null, style: 'quiet-instrument' },
+    { name: 'Card', path: '/components/card', style: 'quiet-instrument' },
+    { name: 'Design notes', path: '/foundations/design', style: null },
+    { name: 'Color', path: '/foundations/color', style: null },
+    { name: 'Button', path: '/components/button', style: 'quiet-instrument' },
   ]) {
     const link = nav.getByRole('link', { name: destination.name, exact: true });
-    expect(
-      await link.evaluate((node) =>
-        new URL((node as HTMLAnchorElement).href).searchParams.get('style'),
-      ),
-    ).toBe(destination.linkStyle);
+    // A link with a query could not use the page Next has prefetched.
+    expect(await link.evaluate((node) => new URL((node as HTMLAnchorElement).href).search)).toBe(
+      '',
+    );
     await link.click();
     await expect.poll(() => new URL(page.url()).pathname).toBe(destination.path);
     await expect.poll(() => new URL(page.url()).searchParams.get('style')).toBe(destination.style);

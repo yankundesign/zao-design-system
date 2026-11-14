@@ -111,12 +111,13 @@ export function Menu({ trigger, items, disabled, size = 'default', className }: 
                       {item.shortcut ? (
                         <span
                           data-zao-slot="shortcut"
-                          // Keys read in one order everywhere: "⌘Z" must not become "Z⌘" in RTL.
-                          dir="ltr"
                           aria-hidden={item.keyShortcuts ? true : undefined}
                           className="ms-auto font-mono type-caption whitespace-nowrap text-muted"
                         >
-                          {item.shortcut}
+                          {/* Keys read in one order everywhere: "⌘Z" must not become "Z⌘" in
+                              RTL. The direction sits on an inner element, because the outer
+                              one's own direction would also flip its trailing margin. */}
+                          <bdi dir="ltr">{item.shortcut}</bdi>
                         </span>
                       ) : null}
                     </BaseMenu.Item>

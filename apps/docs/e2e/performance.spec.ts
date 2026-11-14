@@ -105,3 +105,37 @@ for (const host of ['body', 'main'] as const) {
     expect(await restyledByAppend(browser, page, host)).toBeLessThan(500);
   });
 }
+
+test('switching to a component page uses its plain path and never loads the page twice', async ({
+  page,
+}) => {
+  // The study's `?style=` suffix used to ride on every nav link and was restored by a router
+  // navigation on arrival. A link with a query cannot use the page Next has prefetched, so
+  // each switch waited on the network, and each arrival fetched and rendered the page again.
+  await page.goto('/components/button');
+  await expect(page).toHaveURL(/\/components\/button\?style=quiet-instrument$/);
+  const nav = page.locator('nav.docs-nav-desktop');
+  for (const href of await nav
+    .getByRole('link')
+    .evaluateAll((links) => links.map((link) => link.getAttribute('href')))) {
+    expect(href).not.toContain('?');
+  }
+
+  const styled: string[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.searchParams.has('_rsc') && url.searchParams.has('style')) styled.push(url.pathname);
+  });
+  await nav.getByRole('link', { name: 'Tabs', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible();
+  // The address still gains the suffix, without a navigation.
+  await expect(page).toHaveURL(/\/components\/tabs\?style=quiet-instrument$/);
+  await page.waitForTimeout(500);
+  expect(styled).toEqual([]);
+
+  // Back and forward still work across the rewritten addresses.
+  await page.goBack();
+  await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+  await page.goForward();
+  await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible();
+});

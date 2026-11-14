@@ -1,7 +1,7 @@
 'use client';
 
 import { finish } from '@zao/react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import { useFinish } from './use-finish';
 import type { ComponentId } from './component-definitions';
@@ -25,7 +25,6 @@ export function ComponentPreview({
 }) {
   const { theme, resolved } = useFinish();
   const pathname = usePathname();
-  const router = useRouter();
   const availableQuiet = quietStudy !== null;
   const activeQuiet = availableQuiet;
   const activeStyle = activeQuiet ? 'quiet-instrument' : 'baseline';
@@ -45,12 +44,20 @@ export function ComponentPreview({
   ].includes(component);
 
   useEffect(() => {
-    // Keep component URLs aligned with the current Su study.
+    // Keep component URLs aligned with the current Su study. Only the address changes: the page
+    // is the same with or without the suffix, so this must not navigate. A router navigation
+    // here fetched and rendered the page a second time on every arrival.
     const suffix = availableQuiet ? '?style=quiet-instrument' : '';
-    if (window.location.search !== suffix) {
-      router.replace(`${pathname}${suffix}`, { scroll: false });
-    }
-  }, [availableQuiet, pathname, router, selectedStyle]);
+    // Next takes over `history.replaceState` in an effect of its own, which runs after this
+    // one on first load. Wait a task, so the router hears of the new address and keeps its
+    // own state on the entry; without that, Back to this page did nothing.
+    const timer = window.setTimeout(() => {
+      if (window.location.pathname === pathname && window.location.search !== suffix) {
+        window.history.replaceState(null, '', `${pathname}${suffix}${window.location.hash}`);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [availableQuiet, pathname, selectedStyle]);
 
   return (
     <section className="flex flex-col gap-4" aria-labelledby="preview-heading">

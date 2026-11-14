@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { docsSections } from '@/lib/docs-sections';
 import { NavSectionFigure } from './nav-section-figure';
 
@@ -39,25 +39,11 @@ function NavItemLink({ href, label, current }: { href: string; label: string; cu
 }
 
 /**
- * The docs nav. Reading the search params makes a static page render its nearest Suspense
- * fallback, so the fallback is the same nav without the style suffix: the export's first paint
- * holds every link, and nothing moves when the client fills in the suffix.
+ * The docs nav. Its links are plain paths. A link that carried the study's `?style=` suffix
+ * could not use the page Next had already prefetched, so every switch to a component page
+ * waited on the network; the preview adds the suffix to the address once the page is shown.
  */
 export function Nav() {
-  return (
-    <Suspense fallback={<NavLinks suffix="" />}>
-      <NavWithStyle />
-    </Suspense>
-  );
-}
-
-function NavWithStyle() {
-  const searchParams = useSearchParams();
-  const suffix = searchParams.get('style') === 'quiet-instrument' ? '?style=quiet-instrument' : '';
-  return <NavLinks suffix={suffix} />;
-}
-
-function NavLinks({ suffix }: { suffix: string }) {
   const pathname = usePathname();
   const currentSection = sections.find((section) =>
     section.links.some((link) => link.href === pathname),
@@ -77,15 +63,8 @@ function NavLinks({ suffix }: { suffix: string }) {
       <div className="flex flex-col gap-1">
         {section.links.map((link) => {
           const current = pathname === link.href;
-          const keepStyle =
-            link.href.startsWith('/components') || link.href === '/foundations/design';
           return (
-            <NavItemLink
-              key={link.href}
-              href={`${link.href}${keepStyle ? suffix : ''}`}
-              label={link.label}
-              current={current}
-            />
+            <NavItemLink key={link.href} href={link.href} label={link.label} current={current} />
           );
         })}
       </div>

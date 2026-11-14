@@ -795,8 +795,8 @@ test('in RTL a shortcut sits at the trailing edge and its keys keep their order'
   await specimen.getByRole('button', { name: 'Edit', exact: true }).click();
   const redo = specimen.getByRole('menuitem', { name: 'Redo', exact: true });
   const shortcut = redo.locator('[data-zao-slot="shortcut"]');
-  await expect(shortcut).toHaveAttribute('dir', 'ltr');
-  const order = await shortcut.evaluate((node) => {
+  await expect(shortcut.locator('bdi')).toHaveAttribute('dir', 'ltr');
+  const order = await shortcut.locator('bdi').evaluate((node) => {
     // Each key's left edge, in the order the keys are written.
     const text = node.firstChild!;
     const range = document.createRange();
