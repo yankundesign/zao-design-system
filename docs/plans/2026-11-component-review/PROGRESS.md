@@ -56,7 +56,33 @@ On Nov 14 Yankun chose from the studies: publish CR1, CR8, CR9 and CR18 as studi
 | CR1 Button        | `result`, `resultAnnouncement`, `onResultEnd`; IconButton `result`, `resultIcon`.                  | The action keeps its name and width; the result is an overlay hidden from assistive technology, with a polite announcement.                                                                                                                                         |
 | CR18 ApprovalGate | `confirm="hold" \| "dialog"`, `holdLabel`, `cancelLabel`; a drawn `seal-well`.                     | G1 is decided. An activation with no hold behind it (a screen reader's) opens the Dialog. The row must not move under a held pointer, and the hold timing hangs on `:active`.                                                                                       |
 
-**Checked.** The specs for the affected parts pass on a production build (110 cases). The full suite result is recorded under "Final checks" below.
+### Final checks (Nov 14)
+
+On the last commit of `claude/component-review-wave-1`: `pnpm build`, `pnpm typecheck` and `pnpm format:check` pass, and `pnpm test` passes in full in one run: tokens 94, engine 44, lab 31 and 748 docs browser cases, with no failure and no retry.
+
+Earlier full runs on the way there each failed in work from this plan, and each cause was fixed:
+
+- A token test held the loading duration's description to "linear". It now asks for a stepped fill, and Yu's completeness entry says the same.
+- The Button page had two "Save changes" actions once the Result example was added; the example's is now "Publish changes".
+- A finished Progress transitioned its frame's colors, so a change of mode lagged behind it. One registered number moves now.
+- The interruption and geometry tests for Tabs assumed the block slide; they now watch the leading end, and the line rests exactly where it did.
+- One existing chart test ("a loading chart is a drawing") failed once in one full run and passed three times alone and in every later run. It was not changed.
+
+Frames on the five wave 2 pages at full speed (late frames / frames, longest frame):
+
+| Page         | Hover       | Press                     | Tab         |
+| ------------ | ----------- | ------------------------- | ----------- |
+| Button       | 0/404, 17ms | 0/745, 17ms               | 0/118, 17ms |
+| Tabs         | 1/187, 33ms | 0/429, 17ms               | 0/118, 17ms |
+| Switch       | 1/118, 33ms | not pressed by the script | 0/118, 17ms |
+| Progress     | no controls | no controls               | 1/123, 33ms |
+| ApprovalGate | 0/119, 17ms | 0/151, 17ms               | 1/121, 33ms |
+
+**Not done.**
+
+- The frame script does not drag a Switch, hold an approval or wait through a Button result, so those three motions were checked by their browser cases and by eye at 3×, not by frame timing. Nothing was measured at 4× slowdown for wave 2.
+- Touch was not exercised on a device for the Switch drag or the hold.
+- The seven-lens review sheet was not written out per part for wave 2; the studies and the second-pass sheet above are the record.
 
 ## Waves 1 to 4 (Nov 13)
 
