@@ -1,7 +1,7 @@
 'use client';
 
 import { Combobox as BaseCombobox } from '@base-ui/react/combobox';
-import { useId, useMemo } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { FieldCorrection } from './field-correction.js';
 import { useFieldPopup } from './use-field-popup.js';
@@ -40,6 +40,24 @@ const heightClasses: Record<ComboboxSize, string> = {
   large: 'h-10',
 };
 
+/**
+ * An option's label with the first run that matches the typed text set in the medium weight, so
+ * a filtered list shows what matched. Case-insensitive; a label that matched some other way
+ * (an accent, say) is left plain.
+ */
+function MatchedLabel({ label, query }: { label: string; query: string }) {
+  const start = query ? label.toLowerCase().indexOf(query.toLowerCase()) : -1;
+  if (start === -1) return label;
+  const end = start + query.length;
+  return (
+    <>
+      {label.slice(0, start)}
+      <span className="combobox-match font-medium">{label.slice(start, end)}</span>
+      {label.slice(end)}
+    </>
+  );
+}
+
 /** A labeled, filterable single-choice input; typed text must match an option. */
 export function Combobox({
   label,
@@ -67,6 +85,9 @@ export function Combobox({
   const inputId = useId();
   const descriptionId = useId();
   const errorId = useId();
+  // What the person typed, while it is filtering the list. A committed choice fills the input
+  // with its label; that is a value, not a query, so it marks nothing.
+  const [query, setQuery] = useState('');
   const invalid = Boolean(error);
   const describedBy = [error ? errorId : null, description ? descriptionId : null]
     .filter(Boolean)
@@ -99,6 +120,9 @@ export function Combobox({
         onOpenChange={onOpenChange}
         onOpenChangeComplete={onOpenChangeComplete}
         onItemHighlighted={onItemHighlighted}
+        onInputValueChange={(inputValue, details) =>
+          setQuery(details.reason === 'input-change' ? inputValue.trim() : '')
+        }
       >
         <label
           htmlFor={inputId}
@@ -195,7 +219,7 @@ export function Combobox({
                       className="menu-item-construction flex min-h-7 cursor-default items-center gap-2 rounded-none px-2 type-body text-default outline-focus data-disabled:text-disabled"
                     >
                       <span data-zao-slot="item-text" className="min-w-0 flex-1 truncate">
-                        {option.label}
+                        <MatchedLabel label={option.label} query={query} />
                       </span>
                       <span data-zao-slot="indicator-space" className="inline-flex size-4 shrink-0">
                         <BaseCombobox.ItemIndicator data-zao-slot="item-indicator">
