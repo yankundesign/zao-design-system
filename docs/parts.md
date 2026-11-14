@@ -2,7 +2,7 @@
 
 ZAO names a component’s functional parts with `data-zao-slot` and identifies its authored container with `data-zao-component`. These are existing styling hooks, not a replacement for native semantics or the component API. Qualify a part by its owning component before styling it: the same role can have different native semantics or paint in different components.
 
-This catalog includes all 87 package-authored slot names and all 17 component markers. Names are static; parts may be conditional, portal-mounted, or supplied by a compound component. Host-added hooks and Base UI’s internal focus guards, hidden form fields and positioners are outside this catalog. An icon implementation must forward supplied SVG props to expose its `icon` hook.
+This catalog includes all 89 package-authored slot names and all 17 component markers. Names are static; parts may be conditional, portal-mounted, or supplied by a compound component. Host-added hooks and Base UI’s internal focus guards, hidden form fields and positioners are outside this catalog. An icon implementation must forward supplied SVG props to expose its `icon` hook.
 
 The source owners below identify where a hook is authored. Reused Button hooks remain Button-authored even when a component composes Button. No public hooks need renaming for this catalog.
 
@@ -95,13 +95,15 @@ Shared Button hooks also appear through IconButton, Menu.Trigger, Dialog.Trigger
 | `row`                  | Native table row (`tr`), optionally marked as visually selected.                                                  | Table                                                                                  |
 | `record`               | Decision result replacing ApprovalGate's action row, with optional approved impression.                           | ApprovalGate                                                                           |
 | `record-text`          | Decision verb and host-provided person/time inside an ApprovalGate record.                                        | ApprovalGate                                                                           |
+| `result`               | Decorative outcome read on a Button's seated face for one Hold beat, over the retained action.                    | Button                                                                                 |
 | `scroll-area`          | Named keyboard-focusable horizontal scroll region around the native table.                                        | Table                                                                                  |
+| `seal-well`            | Decorative drawn place for the seal in a held ApprovalGate; holding the action fills it.                          | ApprovalGate                                                                           |
 | `selection-line`       | Primary Tabs selected line centered on the ruler guide.                                                           | Tabs                                                                                   |
 | `steps`                | Ordered list carrying the Plan's step sequence.                                                                   | Plan                                                                                   |
 | `separator`            | Semantic divider between Menu action groups.                                                                      | Menu                                                                                   |
 | `shortcut`             | A Menu item's keyboard shortcut as people read it, at the trailing edge.                                          | Menu                                                                                   |
 | `side`                 | Decorative layer carrying the two banded side planes between face and fixed base.                                 | Button, Composer                                                                       |
-| `spinner`              | Decorative loading SVG using Button's functional loading motion.                                                  | Button                                                                                 |
+| `spinner`              | Decorative pending mark: eight hairline ticks that fill a tick per step while an action or step is pending.       | Button                                                                                 |
 | `status`               | Visible Plan state word or non-complete Message lifecycle wording.                                                | Message, Plan                                                                          |
 | `tab`                  | Native Base UI tab target with stationary label and focus outline.                                                | Tabs                                                                                   |
 | `step`                 | Native ordered-list item with its Plan status and rail station.                                                   | Plan                                                                                   |

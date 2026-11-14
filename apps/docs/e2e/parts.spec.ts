@@ -146,7 +146,7 @@ for (const mode of ['light', 'dark'] as const) {
       const tables = inventory.getByRole('table');
       await expect(tables).toHaveCount(3);
       await expect(tables.nth(0).locator('tbody tr')).toHaveCount(17);
-      await expect(tables.nth(1).locator('tbody tr')).toHaveCount(87);
+      await expect(tables.nth(1).locator('tbody tr')).toHaveCount(89);
       await expect(
         inventory.getByRole('heading', { name: 'Construction concepts and DOM paint' }),
       ).toBeVisible();

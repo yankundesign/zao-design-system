@@ -781,6 +781,7 @@
 }
 
 @utility approval-gate-actions {
+  --zao-gate-hold: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -789,6 +790,23 @@
   min-block-size: var(--zao-size-control-md);
   padding-block-start: var(--zao-space-3);
   border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  /* A hold released early: the seal leaves on the fold. */
+  transition: --zao-gate-hold var(--zao-motion-duration-reveal-exit)
+    var(--zao-motion-easing-fold-exit);
+
+  &[data-zao-holding] {
+    --zao-gate-hold: 1;
+    transition: --zao-gate-hold var(--zao-motion-duration-hold) var(--zao-motion-easing-hold);
+  }
+
+  &[data-zao-held] {
+    --zao-gate-hold: 1;
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
 @utility approval-gate-actions-buttons {
@@ -829,6 +847,59 @@
       align-items: stretch;
       inline-size: 100%;
     }
+  }
+}
+
+/* Hold to approve (Nov 14, CR18). The seal's place is drawn at the row's trailing end. While
+ * the primary action is held, its face seats through its rest depth in the Hold role's steps
+ * and the seal fills from its base; released early, the seal leaves on the fold. */
+@property --zao-gate-hold {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@utility approval-gate-hold {
+  display: inline-flex;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* The timing hangs on the press itself, so the travel is on the Hold role from its first
+     * frame; a frame's delay would start it on Seat. */
+    &
+      > [data-zao-component='button']:enabled:not([data-disabled]):is(
+        :active:hover,
+        [data-zao-pressed]
+      ) {
+      --button-spatial-duration: var(--zao-motion-duration-hold);
+      --button-spatial-easing: var(--zao-motion-easing-hold);
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      & > [data-zao-component='button']:enabled:not([data-disabled]):active {
+        --button-spatial-duration: var(--zao-motion-duration-hold);
+        --button-spatial-easing: var(--zao-motion-easing-hold);
+      }
+    }
+  }
+}
+
+@utility approval-gate-seal-well {
+  position: relative;
+  flex: none;
+  inline-size: var(--zao-size-control-md);
+  block-size: var(--zao-size-control-md);
+  outline: var(--zao-stroke-hairline) dashed var(--zao-color-border-default);
+  outline-offset: calc(-1 * var(--zao-stroke-hairline));
+
+  & > .approval-gate-seal-fill {
+    clip-path: inset(calc((1 - var(--zao-gate-hold)) * 100%) 0 0 0);
+  }
+
+  @media (forced-colors: active) {
+    outline-color: CanvasText;
   }
 }
 
@@ -1519,6 +1590,19 @@
     --zao-plane-rest: var(--zao-depth-rest-control);
   }
 
+  /* The result (Nov 14, CR1): for one Hold beat the face stays on its base, in the pressed
+   * fill, while it reads the outcome; then it lifts on its own role. It outranks hover. */
+  &:enabled:not([data-disabled])[data-zao-result] {
+    --button-spatial-duration: var(--zao-motion-duration-seat);
+    --button-spatial-easing: var(--zao-motion-easing-seat);
+    --zao-face-offset: calc(-1 * var(--zao-plane-rest));
+    --button-face-fill: var(--button-pressed-fill);
+  }
+
+  &[data-zao-variant='quiet']:enabled:not([data-disabled])[data-zao-result] {
+    --zao-plane-rest: var(--zao-depth-rest-control);
+  }
+
   @media (hover: none), (pointer: coarse) {
     &[data-zao-variant='quiet']:enabled:not([data-disabled]):active {
       --zao-plane-rest: var(--zao-depth-rest-control);
@@ -1533,7 +1617,8 @@
     &:enabled:not([data-disabled]):hover,
     &:enabled:not([data-disabled]):active,
     &:enabled:not([data-disabled]):active:hover,
-    &:enabled:not([data-disabled])[data-zao-pressed] {
+    &:enabled:not([data-disabled])[data-zao-pressed],
+    &:enabled:not([data-disabled])[data-zao-result] {
       --zao-face-offset: 0px;
     }
 

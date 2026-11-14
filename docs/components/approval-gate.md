@@ -51,6 +51,8 @@ ApprovalGate marks its wrapper `data-zao-component="approval-gate"` and composes
 
 The host supplies `decision: null | { kind: 'approved' | 'declined'; by: string; at: string }`. Before decision, the action row contains Decline and primary Approve. While pending, Approve uses Button loading and Decline is disabled. Once decided, the record replaces the actions in the same row. Only approved records carry the mark. `mark` is required until G2 is decided.
 
+**Confirming a destructive approval (Nov 14, CR18; decides G1).** `confirm="hold"` makes the primary action a hold: pressed with the pointer, Space or Enter, its face seats in the Hold role's four steps while the seal fills a decorative `seal-well` drawn at the row's trailing end, and `onApprove` is called once when it is full. Releasing early cancels and the seal leaves on the fold exit. `confirm="dialog"` opens a confirming Dialog on a press, built from `approveLabel`, the note, the reference and `cancelLabel`. A hold falls back to that Dialog with reduced motion, and for an activation with no hold behind it, such as one from a screen reader. `holdLabel` is the held action's visible label. Without `confirm` the gate takes one press, as before.
+
 ## Interaction
 
 The host owns decision-making. ApprovalGate calls `onApprove` or `onDecline`; it never commits a decision itself. The host supplies both action and result labels, optional reference/facts/note, pending and disabled state, and a one- or two-character mark. Native `div` props are forwarded to the component wrapper.
