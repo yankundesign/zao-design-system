@@ -97,6 +97,30 @@ test('chronological rich content has explicit authorship and separate lifecycle 
   await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
 });
 
+test("an earlier response's header actions wait for hover or focus, and the latest response's stay", async ({
+  page,
+}) => {
+  const { conversation } = await openConversation(page);
+  const items = conversation.locator('ol[data-zao-slot="list"] > li');
+  const headerActions = '.zao-message > [data-zao-slot="actions"][data-zao-placement="header"]';
+  const earlierItem = items.filter({ has: page.locator(headerActions) }).first();
+  const earlier = earlierItem.locator(headerActions);
+  const latest = items.last().locator(headerActions);
+  await expect(earlier).toHaveClass(/(^| )zao-message-actions( |$)/);
+  await expect(latest).toHaveCSS('opacity', '1');
+  expect(await earlierItem.evaluate((node) => node.nextElementSibling !== null)).toBe(true);
+
+  await expect(earlier).toHaveCSS('opacity', '0');
+  await earlierItem.scrollIntoViewIfNeeded();
+  await earlierItem.hover();
+  await expect(earlier).toHaveCSS('opacity', '1');
+  await conversation.page().mouse.move(0, 0);
+  await expect(earlier).toHaveCSS('opacity', '0');
+
+  await earlier.getByRole('button', { name: 'Copy response' }).focus();
+  await expect(earlier).toHaveCSS('opacity', '1');
+});
+
 test('requests read as trailing slips with exchange rhythm and scroll eaves', async ({ page }) => {
   const { conversation, viewport } = await openConversation(page);
   const list = conversation.locator('ol[data-zao-slot="list"]');
