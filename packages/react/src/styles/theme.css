@@ -396,6 +396,26 @@
   }
 }
 
+/* IconButton's label (Nov 13, CR2): the same floating face as a popup, a small rest depth above
+ * its base, with one faceted leading corner. It appears and leaves in place, as before. */
+@utility tooltip-construction {
+  position: relative;
+  isolation: isolate;
+  --zao-construction-face: var(--zao-material-overlay-fill);
+  --zao-plane-rest: var(--zao-depth-rest-small);
+  --zao-face-offset: 0px;
+  /* The slot outranks material-overlay's own radius and drawn contact, as popups do. */
+  &[data-zao-slot='tooltip'] {
+    border-radius: 0;
+    /* The banded planes replace the material's drawn contact (construction-planes). */
+    box-shadow: none;
+    @supports (corner-shape: bevel) {
+      border-top-right-radius: var(--zao-radius-facet);
+      corner-shape: bevel;
+    }
+  }
+}
+
 /* A content surface: static face, base at the surface rest depth. Card and Dialog. A press
  * on a control inside it seats the surface by one contact step (the load path, V11). */
 @utility card-shaded-construction {
