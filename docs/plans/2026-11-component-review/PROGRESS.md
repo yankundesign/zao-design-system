@@ -15,34 +15,34 @@ Companion to [the plan](README.md). Keep this current so work can stop and resum
 
 "First pass" is the Nov 13 look described in the plan: one mode for most pages, Chromium only. "Full" means all seven lines of the review sheet are answered and recorded under "Review sheets" below.
 
-| Part                | Review     | Improvement                 | Gate       | State                                    |
-| ------------------- | ---------- | --------------------------- | ---------- | ---------------------------------------- |
-| Button              | First pass | Result on the face          | CR1        | Proposed, study first                    |
-| IconButton          | First pass | Tooltip construction        | CR2        | Proposed                                 |
-| TextField           | First pass | Correction glyph            | CR3        | Proposed                                 |
-| Select              | First pass | Open cue                    | CR4        | Proposed                                 |
-| Combobox            | First pass | Matched run                 | CR5        | Proposed                                 |
-| Menu                | First pass | Item shortcut               | CR6        | Proposed                                 |
-| Dialog              | First pass | `Dialog.Actions`            | CR7        | Proposed                                 |
-| Tabs                | First pass | Leading selection line      | CR8        | Proposed, study first                    |
-| Switch              | First pass | Dragged face                | CR9        | Proposed, study first                    |
-| Progress            | First pass | Seat at full                | CR10       | Proposed                                 |
-| Card                | First pass | Bevel sliver fix A          | CR11       | Built Nov 13, wave 0                     |
-| Table               | Oct 15     | Table upgrades plan         | CR12       | Follows that plan                        |
-| Conversation        | First pass | Latest counts               | CR13       | Proposed                                 |
-| Message             | First pass | Scoped actions rules        | CR14       | Built Nov 13, wave 0                     |
-| Composer            | First pass | Drop and paste files        | CR15       | Proposed                                 |
-| ComposerContextChip | First pass | Middle shortening           | CR16       | Proposed, confirm the finding first      |
-| Plan                | First pass | Run gauge                   | CR17       | Proposed                                 |
-| ApprovalGate        | First pass | Hold to approve             | CR18       | Proposed, study first                    |
-| Ring                | First pass | Larger on its page          | CR19       | Proposed                                 |
-| Meter               | First pass | Inspection cost             | CR20       | Built Nov 13, wave 0                     |
-| Share strip         | First pass | Inspection cost             | CR20       | Built Nov 13, wave 0                     |
-| Bar                 | First pass | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed |
-| Line                | First pass | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed |
-| Heatmap             | First pass | Inspection cost             | CR20       | Built Nov 13, wave 0                     |
-| Histogram           | First pass | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed |
-| Loading mark        | First pass | Stepped mark (five parts)   | S1         | Proposed, study first                    |
+| Part                | Review                                                   | Improvement                 | Gate       | State                                         |
+| ------------------- | -------------------------------------------------------- | --------------------------- | ---------- | --------------------------------------------- |
+| Button              | First pass                                               | Result on the face          | CR1        | Proposed, study first                         |
+| IconButton          | First pass, plus light, dark and 3× close-ups            | Tooltip construction        | CR2        | Built Nov 13, wave 1                          |
+| TextField           | First pass, plus light, dark, RTL, forced colors, 360px  | Correction glyph            | CR3        | Built Nov 13, wave 1                          |
+| Select              | First pass, plus open and closed in light                | Open cue                    | CR4        | Built Nov 13, wave 1                          |
+| Combobox            | First pass                                               | Matched run                 | CR5        | Proposed                                      |
+| Menu                | First pass                                               | Item shortcut               | CR6        | Proposed                                      |
+| Dialog              | First pass                                               | `Dialog.Actions`            | CR7        | Proposed                                      |
+| Tabs                | First pass                                               | Leading selection line      | CR8        | Proposed, study first                         |
+| Switch              | First pass                                               | Dragged face                | CR9        | Proposed, study first                         |
+| Progress            | First pass                                               | Seat at full                | CR10       | Proposed                                      |
+| Card                | First pass                                               | Bevel sliver fix A          | CR11       | Built Nov 13, wave 0                          |
+| Table               | Oct 15                                                   | Table upgrades plan         | CR12       | Follows that plan                             |
+| Conversation        | First pass                                               | Latest counts               | CR13       | Proposed                                      |
+| Message             | First pass                                               | Scoped actions rules        | CR14       | Built Nov 13, wave 0                          |
+| Composer            | First pass                                               | Drop and paste files        | CR15       | Proposed                                      |
+| ComposerContextChip | First pass, plus a 67-character name at 1280px and 360px | None yet                    | CR16       | Finding did not hold; not built; needs Yankun |
+| Plan                | First pass                                               | Run gauge                   | CR17       | Proposed                                      |
+| ApprovalGate        | First pass                                               | Hold to approve             | CR18       | Proposed, study first                         |
+| Ring                | First pass                                               | Larger on its page          | CR19       | Proposed                                      |
+| Meter               | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                          |
+| Share strip         | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                          |
+| Bar                 | First pass                                               | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed      |
+| Line                | First pass                                               | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed      |
+| Heatmap             | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                          |
+| Histogram           | First pass                                               | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed      |
+| Loading mark        | First pass                                               | Stepped mark (five parts)   | S1         | Proposed, study first                         |
 
 ## Wave 0 (approved and built Nov 13)
 
