@@ -81,11 +81,11 @@ Lens names the main lens of the improvement. "Published" rows change `@zao/react
 
 ### Charts
 
-| Part                                              | Finding (Nov 13)                                                                            | Improvement                                                                               | Lens        | Scope      | Gate |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------- | ---------- | ---- |
-| Ring                                              | On its own page the ring is drawn at the Card's size, about a third of the preview's width. | On the Ring page the ring is drawn large enough to count its 100 marks.                   | Visual      | Docs-local | CR19 |
-| Meter, Share strip, Bar, Line, Heatmap, Histogram | Each pointer step re-rendered every datum control and, when open, the whole data table.     | **Built Nov 13.** A control re-renders only when its own state changes.                   | Performance | Docs-local | CR20 |
-| Bar, Line, Histogram                              | Tabs' ruler answers the pointer by extending a tick. The charts' rulers do nothing.         | The ruler tick nearest the inspected datum extends. One ruler behaves one way everywhere. | Craft       | Docs-local | CR21 |
+| Part                                              | Finding (Nov 13)                                                                            | Improvement                                                                                                                                              | Lens        | Scope      | Gate |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ---------- | ---- |
+| Ring                                              | On its own page the ring is drawn at the Card's size, about a third of the preview's width. | **Built Nov 13.** On the Ring page the ring is drawn at 256px, twice its Card size, so its 100 marks can be counted.                                     | Visual      | Docs-local | CR19 |
+| Meter, Share strip, Bar, Line, Heatmap, Histogram | Each pointer step re-rendered every datum control and, when open, the whole data table.     | **Built Nov 13.** A control re-renders only when its own state changes.                                                                                  | Performance | Docs-local | CR20 |
+| Bar, Histogram                                    | Tabs' ruler answers the pointer by extending a tick. The charts' rulers do nothing.         | **Built Nov 13.** A tick at the major length stands under the inspected datum, in ink. Line is left out: its inspection guide already crosses the ruler. | Craft       | Docs-local | CR21 |
 
 CR20's measured effect, in script milliseconds per second of sweeping: Histogram 83 → 56, Line 55 → 46, Heatmap 36 → 33, Bar 16 → 11, Share strip 13 → 12, Meter 13 → 9.
 

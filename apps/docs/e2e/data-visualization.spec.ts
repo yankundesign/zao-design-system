@@ -1048,3 +1048,58 @@ test('forced colors draw prisms in system colors', async ({ page }) => {
     prism.locator('[data-zao-prism][data-state="rest"] [data-zao-slot="chart-prism-face"]').first(),
   ).toHaveCSS('fill', 'none');
 });
+
+for (const chart of ['bar', 'histogram'] as const) {
+  test(`${chart}: the ruler answers inspection with a tick under the inspected datum`, async ({
+    page,
+  }) => {
+    await page.goto(`/charts/${chart}`);
+    await page.evaluate(() => document.fonts.ready);
+    const frame = page.locator('[data-zao-chart]').first();
+    await frame.scrollIntoViewIfNeeded();
+    const tick = frame.locator('[data-zao-slot="chart-ruler-inspect"]');
+    await expect(tick).toHaveCount(0);
+
+    // Keyboard inspection: the tick stands under the focused datum, at the major length.
+    const datum = frame.locator('[data-zao-slot="chart-datum"]').nth(2);
+    await datum.focus();
+    await expect(tick).toHaveCount(1);
+    const reading = await tick.evaluate((line) => {
+      const box = line.getBoundingClientRect();
+      const ruler = line.parentElement!.querySelector('line')!.getBoundingClientRect();
+      return { x: box.left, top: Math.round(box.top - ruler.top), length: Math.round(box.height) };
+    });
+    const target = (await datum.boundingBox())!;
+    expect(Math.abs(reading.x - (target.x + target.width / 2))).toBeLessThanOrEqual(1);
+    expect(reading).toMatchObject({ top: 0, length: 6 });
+
+    // It follows the inspection and leaves with it; nothing animates.
+    await page.keyboard.press('ArrowRight');
+    await expect(tick).toHaveCount(1);
+    expect((await tick.boundingBox())!.x).toBeGreaterThan(reading.x);
+    expect(await tick.evaluate((line) => getComputedStyle(line).transitionDuration)).toBe('0s');
+    await page.keyboard.press('Escape');
+    await expect(tick).toHaveCount(0);
+  });
+}
+
+test('the ring is drawn at twice its Card size on its own page, with the same 100 marks', async ({
+  page,
+}) => {
+  await page.goto('/charts/ring');
+  const ring = page
+    .locator('[data-zao-specimen="ring"]')
+    .first()
+    .locator('[data-zao-slot="storage-chart"]');
+  const box = (await ring.boundingBox())!;
+  expect([Math.round(box.width), Math.round(box.height)]).toEqual([256, 256]);
+  await expect(ring).toHaveAttribute('viewBox', '0 0 160 160');
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    ),
+  ).toBe(0);
+  await page.goto('/components/card');
+  const card = (await page.locator('[data-zao-slot="storage-chart"]').first().boundingBox())!;
+  expect([Math.round(card.width), Math.round(card.height)]).toEqual([128, 128]);
+});

@@ -25,8 +25,8 @@ export function ChartSpecimen({
   switch (chart) {
     case 'ring':
       return (
-        <div data-zao-specimen="ring" className={compact ? 'min-w-0' : 'max-w-sm min-w-0'}>
-          <StorageRingStudy drawing={drawing} dataView={!compact} />
+        <div data-zao-specimen="ring" className={compact ? 'min-w-0' : 'max-w-xl min-w-0'}>
+          <StorageRingStudy drawing={drawing} dataView={!compact} large={!compact} />
         </div>
       );
     case 'share':

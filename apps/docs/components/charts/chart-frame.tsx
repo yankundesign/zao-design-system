@@ -139,17 +139,24 @@ export function polylineLength(points: readonly { x: number; y: number }[]) {
   return length;
 }
 
-/** Rule 2: a solid baseline with end stops and graduations, like the Tabs ruler. */
+/**
+ * Rule 2: a solid baseline with end stops and graduations, like the Tabs ruler. Like that ruler
+ * it answers inspection (CR21): a tick at the major length stands under the inspected datum, in
+ * ink. It is an inspection state, so it appears and leaves at once (rule 5 holds).
+ */
 export function Ruler({
   x0,
   x1,
   y,
   ticks = [],
+  inspect = null,
 }: {
   x0: number;
   x1: number;
   y: number;
   ticks?: { x: number; major?: boolean }[];
+  /** The inspected datum's position along the ruler, or null when nothing is inspected. */
+  inspect?: number | null;
 }) {
   const line = crisp(y);
   const start = crisp(x0);
@@ -172,6 +179,17 @@ export function Ruler({
           y2={line + (tick.major ? 6 : 3)}
         />
       ))}
+      {inspect !== null && (
+        <line
+          data-zao-slot="chart-ruler-inspect"
+          data-chart-ink="data"
+          x1={crisp(inspect)}
+          y1={line}
+          x2={crisp(inspect)}
+          y2={line + 6}
+          stroke="var(--zao-color-fg-default)"
+        />
+      )}
     </g>
   );
 }

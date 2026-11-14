@@ -108,7 +108,12 @@ export function BarChart({
     >
       <div ref={plotRef} className="chart-plot" style={{ height }}>
         <svg width={width} height={height} aria-hidden="true" focusable="false">
-          <Ruler x0={left} x1={right} y={baseline} />
+          <Ruler
+            x0={left}
+            x1={right}
+            y={baseline}
+            inspect={drawing || active === null ? null : left + slot * (active + 0.5)}
+          />
           {!drawing && (
             <>
               <line
