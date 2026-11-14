@@ -1094,11 +1094,12 @@ test('the ring is drawn at twice its Card size on its own page, with the same 10
   const box = (await ring.boundingBox())!;
   expect([Math.round(box.width), Math.round(box.height)]).toEqual([256, 256]);
   await expect(ring).toHaveAttribute('viewBox', '0 0 160 160');
+  // No horizontal overflow; a classic scrollbar's gutter makes the difference negative.
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     ),
-  ).toBe(0);
+  ).toBeLessThanOrEqual(0);
   await page.goto('/components/card');
   const card = (await page.locator('[data-zao-slot="storage-chart"]').first().boundingBox())!;
   expect([Math.round(card.width), Math.round(card.height)]).toEqual([128, 128]);

@@ -466,12 +466,12 @@ test('a Button holds its result on a seated face for one Hold beat, then shows t
   expect((await link.boundingBox())!.width).toBe((await link.boundingBox())!.height);
 
   // Pending first, then the result.
-  const save = specimen.getByRole('button', { name: 'Save changes', exact: true });
+  const save = specimen.getByRole('button', { name: 'Publish changes', exact: true });
   await save.click();
   await expect(save).toHaveAttribute('data-zao-loading', '');
   await expect(save).not.toHaveAttribute('data-zao-result', '');
   await expect(save).toHaveAttribute('data-zao-result', '', { timeout: 3000 });
-  await expect(save.locator('[data-zao-slot="result"]')).toHaveText('Saved');
+  await expect(save.locator('[data-zao-slot="result"]')).toHaveText('Published');
 });
 
 test('with reduced motion the result is read without the face moving', async ({ page }) => {
