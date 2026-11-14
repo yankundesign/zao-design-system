@@ -8,7 +8,19 @@ import type { ButtonSize } from './button.js';
 export type MenuSize = ButtonSize;
 
 export type MenuAction =
-  { label: string; onSelect?: () => void; disabled?: boolean } | { separator: true };
+  | {
+      label: string;
+      onSelect?: () => void;
+      disabled?: boolean;
+      /** The keyboard shortcut as people read it, such as "⌘K". The host binds the key. */
+      shortcut?: string;
+      /**
+       * The same shortcut in ARIA's form, such as "Meta+K", exposed as `aria-keyshortcuts`.
+       * When set, the visible shortcut is hidden from assistive technology so it is read once.
+       */
+      keyShortcuts?: string;
+    }
+  | { separator: true };
 
 export interface MenuProps {
   /** Visible text that names and opens the actions menu. */
@@ -92,9 +104,19 @@ export function Menu({ trigger, items, disabled, size = 'default', className }: 
                       data-zao-slot="item"
                       data-zao-item-index={index}
                       data-zao-exit-highlighted={exitHighlight === index ? '' : undefined}
-                      className="menu-item-construction flex min-h-control cursor-default items-center rounded-none px-3 py-1.5 type-body text-default outline-focus data-disabled:text-muted"
+                      aria-keyshortcuts={item.keyShortcuts}
+                      className="menu-item-construction flex min-h-control cursor-default items-center gap-4 rounded-none px-3 py-1.5 type-body text-default outline-focus data-disabled:text-muted"
                     >
                       {item.label}
+                      {item.shortcut ? (
+                        <span
+                          data-zao-slot="shortcut"
+                          aria-hidden={item.keyShortcuts ? true : undefined}
+                          className="ms-auto font-mono type-caption whitespace-nowrap text-muted"
+                        >
+                          {item.shortcut}
+                        </span>
+                      ) : null}
                     </BaseMenu.Item>
                   ),
                 )}
