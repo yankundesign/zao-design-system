@@ -187,7 +187,9 @@ const List = forwardRef<HTMLDivElement, TabsListProps>(function TabsList(
               : 'tabs-indicator'
           }
         >
-          {variant === 'primary' && <span data-zao-slot="selection-line" />}
+          {variant === 'primary' && (
+            <span data-zao-slot="selection-line" className="tabs-selection-line" />
+          )}
         </BaseTabs.Indicator>
       </BaseTabs.List>
     </div>

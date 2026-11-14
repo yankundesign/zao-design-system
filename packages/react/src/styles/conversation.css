@@ -141,7 +141,10 @@
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
-.zao-message:has([data-zao-slot='actions'][data-zao-placement='header'])
+/* Unguarded on purpose: a message is a flex column, where grid-column does nothing, until the
+ * rule above makes it a grid. A :has() guard on an ancestor with a featureless target made
+ * Chromium restyle every element below any :has() anchor (the whole page) on any insertion. */
+.zao-message
   > :not([data-zao-slot='header']):not([data-zao-slot='actions'][data-zao-placement='header']) {
   grid-column: 1 / -1;
 }
