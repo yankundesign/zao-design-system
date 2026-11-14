@@ -307,3 +307,79 @@ test.describe('touch feedback', () => {
     }
   });
 });
+
+test('the primary selection line leads with one end and closes with the other', async ({
+  page,
+}) => {
+  await page.goto('/components/tabs');
+  await page.evaluate(() => document.fonts.ready);
+  const list = page.locator('.study .tabs-list[data-zao-variant="primary"]').first();
+  await list.scrollIntoViewIfNeeded();
+  const indicator = list.locator('.tabs-indicator');
+  const roles = () =>
+    indicator.evaluate((node) => {
+      const style = getComputedStyle(node);
+      const names = style.transitionProperty.split(', ');
+      const durations = style.transitionDuration
+        .split(', ')
+        .map((value) => Number.parseFloat(value));
+      const probe = (token: string) => {
+        const sample = document.createElement('span');
+        sample.style.transitionDuration = `var(${token})`;
+        node.append(sample);
+        const value = Number.parseFloat(getComputedStyle(sample).transitionDuration);
+        sample.remove();
+        return value;
+      };
+      return {
+        direction: node.getAttribute('data-activation-direction'),
+        left: durations[names.indexOf('--tabs-start-x')],
+        right: durations[names.indexOf('--tabs-end-x')],
+        slide: probe('--zao-motion-duration-slide'),
+        reveal: probe('--zao-motion-duration-reveal'),
+      };
+    });
+  const edges = () =>
+    list.evaluate((node) => {
+      const line = node.querySelector('.tabs-indicator')!.getBoundingClientRect();
+      const tab = node.querySelector('[role="tab"][aria-selected="true"]')!.getBoundingClientRect();
+      return {
+        width: line.width,
+        atTab: Math.abs(line.left - tab.left) < 0.5 && Math.abs(line.right - tab.right) < 0.5,
+      };
+    });
+
+  // At rest the line is exactly on its tab, as it was when it moved as one block.
+  const rest = await edges();
+  expect(rest.atTab).toBe(true);
+
+  // Moving right: the right end leads on Slide, the left end closes on Reveal.
+  await list.getByRole('tab').nth(2).click();
+  let reading = await roles();
+  expect(reading.direction).toBe('right');
+  expect(reading.right).toBe(reading.slide);
+  expect(reading.left).toBe(reading.reveal);
+  // Slide is the shorter role, which is what makes the line stretch and then close.
+  expect(reading.slide).toBeLessThan(reading.reveal);
+  let widest = 0;
+  for (let sample = 0; sample < 8; sample += 1) {
+    widest = Math.max(widest, (await edges()).width);
+    await page.waitForTimeout(20);
+  }
+  await expect.poll(async () => (await edges()).atTab).toBe(true);
+  const settled = await edges();
+  expect(widest).toBeGreaterThan(Math.max(rest.width, settled.width));
+
+  // Moving left: the ends swap roles.
+  await list.getByRole('tab').nth(0).click();
+  reading = await roles();
+  expect(reading.direction).toBe('left');
+  expect(reading.left).toBe(reading.slide);
+  expect(reading.right).toBe(reading.reveal);
+  await expect.poll(async () => (await edges()).atTab).toBe(true);
+
+  // Reduced motion: no travel at all.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await list.getByRole('tab').nth(2).click();
+  expect((await edges()).atTab).toBe(true);
+});

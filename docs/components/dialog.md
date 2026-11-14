@@ -47,15 +47,16 @@ tokens:
 
 `Dialog` is a compound export: `Root`, `Trigger`, `Portal`, `Backdrop`, `Viewport`, `Popup`, `Title`, `Description`, and `Close`. Root is a Base UI provider with no DOM node. **Popup**, not Root/Trigger/Portal, authors `data-zao-component="dialog"`. Title and Description associate the popup's accessible name and supporting text.
 
-| Literal `data-zao-slot` | Owner and mounting                                                                       |
-| ----------------------- | ---------------------------------------------------------------------------------------- |
-| `trigger`               | Optional host-rendered BaseDialog.Trigger through shared Button; normally outside popup. |
-| `backdrop`              | Host-rendered BaseDialog.Backdrop, in Portal during modal lifecycle.                     |
-| `viewport`              | Host-rendered full-screen positioning/scroll viewport.                                   |
-| `popup`                 | Host-rendered opaque content frame and Dialog component marker.                          |
-| `title`                 | Base UI heading, normally inside Popup.                                                  |
-| `description`           | Optional Base UI supporting paragraph inside Popup.                                      |
-| `close`                 | Host-rendered BaseDialog.Close through shared Button.                                    |
+| Literal `data-zao-slot` | Owner and mounting                                                                                                                                                                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trigger`               | Optional host-rendered BaseDialog.Trigger through shared Button; normally outside popup.                                                                                                                                                     |
+| `backdrop`              | Host-rendered BaseDialog.Backdrop, in Portal during modal lifecycle.                                                                                                                                                                         |
+| `viewport`              | Host-rendered full-screen positioning/scroll viewport.                                                                                                                                                                                       |
+| `popup`                 | Host-rendered opaque content frame and Dialog component marker.                                                                                                                                                                              |
+| `title`                 | Base UI heading, normally inside Popup.                                                                                                                                                                                                      |
+| `description`           | Optional Base UI supporting paragraph inside Popup.                                                                                                                                                                                          |
+| `close`                 | Host-rendered BaseDialog.Close through shared Button.                                                                                                                                                                                        |
+| `actions`, `note`       | Dialog.Actions (Nov 13, CR7): the closing row. A hairline rule above, an optional note at the leading edge, host-supplied actions at the trailing edge with the primary last; under 20rem the actions stack at full width in the same order. |
 
 Root and Portal author no `root`/`portal` slot. Base UI portal wrappers, focus guards, and dismissal attributes are not additional authored parts. The host chooses composition and portal mounting; these children do not appear automatically. Shared Button's face, side, label/loading hooks remain Button-owned. Popup `::before`/`::after` draw banded side planes; the fixed base is their far edge, not a separate element or slot.
 

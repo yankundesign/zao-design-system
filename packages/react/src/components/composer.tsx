@@ -162,7 +162,11 @@ export interface ComposerProps extends Omit<
   context?: ReactNode;
   actions?: ReactNode;
   attachments?: readonly ComposerAttachment[];
-  /** Enables local file selection. Uploading remains the host's responsibility. */
+  /**
+   * Enables local files: the Attach control, a drop onto the tray, and a paste into the draft
+   * all call it. Dropped and pasted files are held to `accept` and `multiple` as the picker's
+   * are. Validating and uploading remain the host's responsibility.
+   */
   onFilesSelect?: (files: File[]) => void;
   onRemoveAttachment?: (id: string) => void;
   accept?: string;
@@ -192,6 +196,28 @@ function motionMilliseconds(value: string) {
   const amount = Number.parseFloat(value);
   if (!Number.isFinite(amount)) return 0;
   return value.trim().endsWith('ms') ? amount : amount * 1000;
+}
+
+/** Whether a dropped or pasted file passes the picker's `accept` list. The host still validates. */
+function acceptsFile(file: File, accept: string | undefined) {
+  const tokens = (accept ?? '')
+    .split(',')
+    .map((token) => token.trim().toLowerCase())
+    .filter(Boolean);
+  if (tokens.length === 0) return true;
+  const name = file.name.toLowerCase();
+  const type = file.type.toLowerCase();
+  return tokens.some((token) =>
+    token.startsWith('.')
+      ? name.endsWith(token)
+      : token.endsWith('/*')
+        ? type.startsWith(token.slice(0, -1))
+        : type === token,
+  );
+}
+
+function carriesFiles(transfer: DataTransfer | null) {
+  return Boolean(transfer && Array.from(transfer.types).includes('Files'));
 }
 
 function sameAttachments(a: readonly ComposerAttachment[], b: readonly ComposerAttachment[]) {
@@ -276,6 +302,10 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
     placeholder,
     textareaProps = {},
     className,
+    onDragEnter,
+    onDragOver,
+    onDragLeave,
+    onDrop,
     ...formProps
   },
   forwardedRef,
@@ -290,6 +320,37 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
   const [sending, setSending] = useState(false);
   const [stopping, setStopping] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  // Files dragged over the tray: it is drawn, not built, until they land or leave.
+  const [draggingFiles, setDraggingFiles] = useState(false);
+  const dragDepth = useRef(0);
+  const takesFiles = Boolean(onFilesSelect) && !disabled;
+
+  /** Dropped and pasted files take the same host path as the Attach control. */
+  function offerFiles(list: FileList | null | undefined) {
+    const offered = Array.from(list ?? []).filter((file) => acceptsFile(file, accept));
+    const files = multiple ? offered : offered.slice(0, 1);
+    if (files.length === 0 || !onFilesSelect) return false;
+    setLocalError(null);
+    onFilesSelect(files);
+    return true;
+  }
+
+  useEffect(() => {
+    if (!draggingFiles) return;
+    // A drag that ends elsewhere never reaches the tray's own handlers.
+    const settle = () => {
+      dragDepth.current = 0;
+      setDraggingFiles(false);
+    };
+    window.addEventListener('drop', settle);
+    window.addEventListener('dragend', settle);
+    window.addEventListener('blur', settle);
+    return () => {
+      window.removeEventListener('drop', settle);
+      window.removeEventListener('dragend', settle);
+      window.removeEventListener('blur', settle);
+    };
+  }, [draggingFiles]);
   const [pointerFocus, setPointerFocus] = useState(false);
   const [attachmentState, setAttachmentState] = useState<AttachmentState>(() => ({
     source: attachments,
@@ -393,6 +454,7 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
     onCompositionEnd,
     onBlur,
     onPointerDown,
+    onPaste,
     'aria-describedby': describedBy,
     ...nativeTextareaProps
   } = textareaProps;
@@ -485,6 +547,34 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
         data-zao-invalid={invalid ? '' : undefined}
         data-zao-pending={sending ? '' : undefined}
         data-zao-responding={responding ? '' : undefined}
+        data-zao-dragging={draggingFiles ? '' : undefined}
+        onDragEnter={(event) => {
+          onDragEnter?.(event);
+          if (event.defaultPrevented || !takesFiles || !carriesFiles(event.dataTransfer)) return;
+          event.preventDefault();
+          dragDepth.current += 1;
+          setDraggingFiles(true);
+        }}
+        onDragOver={(event) => {
+          onDragOver?.(event);
+          if (event.defaultPrevented || !takesFiles || !carriesFiles(event.dataTransfer)) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'copy';
+        }}
+        onDragLeave={(event) => {
+          onDragLeave?.(event);
+          if (!draggingFiles) return;
+          dragDepth.current = Math.max(0, dragDepth.current - 1);
+          if (dragDepth.current === 0) setDraggingFiles(false);
+        }}
+        onDrop={(event) => {
+          onDrop?.(event);
+          if (event.defaultPrevented || !takesFiles || !carriesFiles(event.dataTransfer)) return;
+          event.preventDefault();
+          dragDepth.current = 0;
+          setDraggingFiles(false);
+          offerFiles(event.dataTransfer.files);
+        }}
         className={[
           'composer-construction construction-shading focus-brackets flex min-w-0 flex-col gap-2 rounded-none border border-subtle bg-surface px-4 py-3 text-default',
           className,
@@ -599,6 +689,14 @@ export const Composer = forwardRef<HTMLFormElement, ComposerProps>(function Comp
             onPointerDown={(event) => {
               onPointerDown?.(event);
               if (!disabled && !event.defaultPrevented) setPointerFocus(true);
+            }}
+            onPaste={(event) => {
+              onPaste?.(event);
+              if (event.defaultPrevented || !takesFiles) return;
+              // Pasted files attach; pasted text stays an ordinary paste.
+              if (event.clipboardData.files.length > 0 && offerFiles(event.clipboardData.files)) {
+                event.preventDefault();
+              }
             }}
             onKeyDown={(event) => {
               onKeyDown?.(event);

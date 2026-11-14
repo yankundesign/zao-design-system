@@ -316,6 +316,17 @@ async function attach(info: TestInfo, evidence: unknown) {
   });
 }
 
+/**
+ * What the Tabs probe watches. The secondary face still moves by its transform. A primary
+ * indicator's two ends are registered lengths (component review, CR8): the end that leads the
+ * first move travels on Slide, so that is the one to watch.
+ */
+function tabTravel(kind: TabKind, direction: string) {
+  if (kind === 'secondary') return 'transform';
+  if (kind === 'vertical') return '--tabs-end-y';
+  return direction === 'rtl' ? '--tabs-start-x' : '--tabs-end-x';
+}
+
 function tabList(page: Page, kind: TabKind) {
   return page.getByRole('tablist', {
     name:
@@ -349,10 +360,11 @@ for (const context of contexts) {
       );
       await arm(list, {
         paint: '[data-zao-slot="indicator"]',
-        property: 'transform',
+        property: tabTravel(kind, context.direction),
         role: 'slide',
         fixed: '[data-zao-slot="tab"]',
       });
+      const travel = tabTravel(kind, context.direction);
       const resting = (await report(page)).current!;
       const forward =
         kind === 'vertical'
@@ -388,11 +400,17 @@ for (const context of contexts) {
         .at(-1)!;
       assertUnfinished(reversalInput.before!);
       const reversal = evidence.runs.at(-1)!;
-      const start = String(reversal.animations[0]!.keyframes[0]!.transform);
+      const start = String(reversal.animations[0]!.keyframes[0]![travel]);
       const cancelled = evidence.cancellations.at(-1)!;
       const progress = cancelledProgress(cancelled);
       const continuity = await page.evaluate(
-        ({ frames, progress, start }) => {
+        ({ frames, progress, start, travel }) => {
+          if (travel !== 'transform') {
+            // A length: the reversal starts where the interrupted end had reached.
+            const from = Number.parseFloat(String(frames[0]![travel]));
+            const to = Number.parseFloat(String(frames.at(-1)![travel]));
+            return { xPx: Number.parseFloat(start) - (from + (to - from) * progress), yPx: 0 };
+          }
           const from = new DOMMatrixReadOnly(String(frames[0]!.transform));
           const to = new DOMMatrixReadOnly(String(frames.at(-1)!.transform));
           const next = new DOMMatrixReadOnly(start);
@@ -401,12 +419,12 @@ for (const context of contexts) {
             yPx: next.m42 - (from.m42 + (to.m42 - from.m42) * progress),
           };
         },
-        { frames: cancelled.outgoing.keyframes, progress, start },
+        { frames: cancelled.outgoing.keyframes, progress, start, travel },
       );
       expect(Math.abs(continuity.xPx)).toBeLessThan(0.05);
       expect(Math.abs(continuity.yPx)).toBeLessThan(0.05);
       expect(start).not.toBe(
-        String(resting.animations[0]?.keyframes[0]?.transform ?? resting.value),
+        String(resting.animations[0]?.keyframes[0]?.[travel] ?? resting.value),
       );
       for (const sample of [outgoing, reversalInput.before!, reversal, evidence.current!])
         sameRects(sample.fixed, resting.fixed);
@@ -642,7 +660,7 @@ test.describe('reduced motion', () => {
         await first.focus();
         await arm(list, {
           paint: '[data-zao-slot="indicator"]',
-          property: 'transform',
+          property: tabTravel(kind, context.direction),
           role: 'slide',
           fixed: '[data-zao-slot="tab"]',
         });

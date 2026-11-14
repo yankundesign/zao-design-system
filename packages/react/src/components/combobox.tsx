@@ -1,8 +1,9 @@
 'use client';
 
 import { Combobox as BaseCombobox } from '@base-ui/react/combobox';
-import { useId, useMemo } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { FieldCorrection } from './field-correction.js';
 import { useFieldPopup } from './use-field-popup.js';
 
 export type ComboboxSize = 'small' | 'default' | 'large';
@@ -39,6 +40,24 @@ const heightClasses: Record<ComboboxSize, string> = {
   large: 'h-10',
 };
 
+/**
+ * An option's label with the first run that matches the typed text set in the medium weight, so
+ * a filtered list shows what matched. Case-insensitive; a label that matched some other way
+ * (an accent, say) is left plain.
+ */
+function MatchedLabel({ label, query }: { label: string; query: string }) {
+  const start = query ? label.toLowerCase().indexOf(query.toLowerCase()) : -1;
+  if (start === -1) return label;
+  const end = start + query.length;
+  return (
+    <>
+      {label.slice(0, start)}
+      <span className="combobox-match font-medium">{label.slice(start, end)}</span>
+      {label.slice(end)}
+    </>
+  );
+}
+
 /** A labeled, filterable single-choice input; typed text must match an option. */
 export function Combobox({
   label,
@@ -66,6 +85,9 @@ export function Combobox({
   const inputId = useId();
   const descriptionId = useId();
   const errorId = useId();
+  // What the person typed, while it is filtering the list. A committed choice fills the input
+  // with its label; that is a value, not a query, so it marks nothing.
+  const [query, setQuery] = useState('');
   const invalid = Boolean(error);
   const describedBy = [error ? errorId : null, description ? descriptionId : null]
     .filter(Boolean)
@@ -98,6 +120,9 @@ export function Combobox({
         onOpenChange={onOpenChange}
         onOpenChangeComplete={onOpenChangeComplete}
         onItemHighlighted={onItemHighlighted}
+        onInputValueChange={(inputValue, details) =>
+          setQuery(details.reason === 'input-change' ? inputValue.trim() : '')
+        }
       >
         <label
           htmlFor={inputId}
@@ -144,9 +169,9 @@ export function Combobox({
           <BaseCombobox.Trigger
             data-zao-slot="trigger"
             aria-label={`Open ${label} options`}
-            className="inline-flex h-full min-h-6 min-w-7 shrink-0 items-center justify-center pl-1 pr-2 text-muted outline-focus hover:text-default data-disabled:text-disabled"
+            className="field-open-cue inline-flex h-full min-h-6 min-w-7 shrink-0 items-center justify-center pl-1 pr-2 text-muted outline-focus hover:text-default data-disabled:text-disabled"
           >
-            <svg className="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <svg className="field-caret size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.5" />
             </svg>
           </BaseCombobox.Trigger>
@@ -194,7 +219,7 @@ export function Combobox({
                       className="menu-item-construction flex min-h-7 cursor-default items-center gap-2 rounded-none px-2 type-body text-default outline-focus data-disabled:text-disabled"
                     >
                       <span data-zao-slot="item-text" className="min-w-0 flex-1 truncate">
-                        {option.label}
+                        <MatchedLabel label={option.label} query={query} />
                       </span>
                       <span data-zao-slot="indicator-space" className="inline-flex size-4 shrink-0">
                         <BaseCombobox.ItemIndicator data-zao-slot="item-indicator">
@@ -218,8 +243,12 @@ export function Combobox({
         </BaseCombobox.Portal>
       </BaseCombobox.Root>
       {error && (
-        <div id={errorId} data-zao-slot="error" className="type-caption text-danger">
-          {error}
+        <div
+          id={errorId}
+          data-zao-slot="error"
+          className="flex items-start gap-1 type-caption text-danger"
+        >
+          <FieldCorrection>{error}</FieldCorrection>
         </div>
       )}
       {description && (

@@ -22,6 +22,13 @@
   );
 }
 
+/* The shortcuts menu opens below its trigger, inside the preview: four rows and a separator. */
+.docs-menu-preview [data-zao-specimen='menu-shortcuts'] > [data-zao-component='menu'] {
+  margin-block-end: calc(
+    var(--zao-size-control-md) * 4 + var(--zao-space-1) * 6 + var(--zao-stroke-hairline) * 3
+  );
+}
+
 @media (min-width: 64rem) {
   .docs-detail-section {
     grid-template-columns: 180px minmax(0, 1fr);

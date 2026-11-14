@@ -18,9 +18,19 @@ export interface IconButtonProps extends Omit<
   | 'block'
   | 'loading'
   | 'loadingAnnouncement'
+  | 'result'
+  | 'resultAnnouncement'
 > {
   /** An Iconoir icon component, such as Settings from iconoir-react. */
   icon: IconButtonIcon;
+  /**
+   * The outcome of the action, such as "Copied", announced politely. For one Hold beat the
+   * face stays seated and shows `resultIcon`. Pass `null` from the first render while there is
+   * no result. Clear it in `onResultEnd`.
+   */
+  result?: string | null;
+  /** The icon shown with the result, such as a check. Defaults to the action's own icon. */
+  resultIcon?: IconButtonIcon;
   /** A concise action label, used for both the accessible name and visible tooltip. */
   'aria-label': string;
 }
@@ -30,6 +40,8 @@ export const IconButton = forwardRef<HTMLElement, IconButtonProps>(function Icon
   {
     icon: Icon,
     'aria-label': label,
+    result,
+    resultIcon: ResultIcon = Icon,
     className,
     disabled,
     variant = 'secondary',
@@ -59,6 +71,14 @@ export const IconButton = forwardRef<HTMLElement, IconButtonProps>(function Icon
               variant={variant}
               size={size}
               className="icon-button-sizing"
+              result={
+                result ? (
+                  <ResultIcon data-zao-slot="icon" aria-hidden="true" focusable="false" />
+                ) : (
+                  result
+                )
+              }
+              resultAnnouncement={result ?? undefined}
             >
               <Icon data-zao-slot="icon" aria-hidden="true" focusable="false" />
             </Button>
@@ -68,7 +88,7 @@ export const IconButton = forwardRef<HTMLElement, IconButtonProps>(function Icon
           <BaseTooltip.Positioner side="bottom" sideOffset={4} className="z-30">
             <BaseTooltip.Popup
               data-zao-slot="tooltip"
-              className="material-overlay max-w-xs px-2 py-1.5 type-caption text-default"
+              className="construction-shading material-overlay tooltip-construction construction-planes max-w-xs px-2 py-1.5 type-caption text-default"
             >
               {label}
             </BaseTooltip.Popup>

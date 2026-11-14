@@ -396,6 +396,26 @@
   }
 }
 
+/* IconButton's label (Nov 13, CR2): the same floating face as a popup, a small rest depth above
+ * its base, with one faceted leading corner. It appears and leaves in place, as before. */
+@utility tooltip-construction {
+  position: relative;
+  isolation: isolate;
+  --zao-construction-face: var(--zao-material-overlay-fill);
+  --zao-plane-rest: var(--zao-depth-rest-small);
+  --zao-face-offset: 0px;
+  /* The slot outranks material-overlay's own radius and drawn contact, as popups do. */
+  &[data-zao-slot='tooltip'] {
+    border-radius: 0;
+    /* The banded planes replace the material's drawn contact (construction-planes). */
+    box-shadow: none;
+    @supports (corner-shape: bevel) {
+      border-top-right-radius: var(--zao-radius-facet);
+      corner-shape: bevel;
+    }
+  }
+}
+
 /* A content surface: static face, base at the surface rest depth. Card and Dialog. A press
  * on a control inside it seats the surface by one contact step (the load path, V11). */
 @utility card-shaded-construction {
@@ -452,6 +472,14 @@
   );
   --zao-construction-side: var(--zao-plane-x-near);
 
+  /* Where the planes start, their near bands paint the shaded edges, so the native border stays
+   * lit all round. Chromium mitres a bevelled border's sides across the whole box: with unequal
+   * opposite sides, a part more than twice as wide as tall drew its shaded bottom side along the
+   * middle of the top edge (and a tall one its left side down the right edge). */
+  &:where(.construction-planes) {
+    border-color: var(--zao-card-edge-lit);
+  }
+
   @media (forced-colors: active) {
     border-color: CanvasText;
   }
@@ -489,6 +517,34 @@
     justify-content: space-between;
     gap: var(--zao-space-1) var(--zao-space-3);
     margin-block-end: var(--zao-space-2);
+  }
+
+  /* The run gauge (Nov 13, CR17): one hairline tick per step beside the count. A finished step
+   * is a full tick in ink, as the ring draws its used marks long; the rest are half ticks in
+   * the muted ink, and a failed step is a full tick in the danger ink. Borders, so forced
+   * colors keep the ticks and their lengths. */
+  & .zao-plan-reading {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--zao-space-2);
+  }
+  & .zao-plan-gauge {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: var(--zao-space-0-5);
+    block-size: var(--zao-space-2);
+  }
+  & .zao-plan-tick {
+    block-size: 50%;
+    border-inline-start: var(--zao-stroke-hairline) solid var(--zao-color-fg-muted);
+  }
+  & .zao-plan-tick:is([data-zao-tick='done'], [data-zao-tick='declined']) {
+    block-size: 100%;
+    border-color: var(--zao-color-fg-default);
+  }
+  & .zao-plan-tick[data-zao-tick='failed'] {
+    block-size: 100%;
+    border-color: var(--zao-color-danger-text);
   }
 
   & .zao-plan-steps {
@@ -618,7 +674,7 @@
     color: var(--zao-color-fg-muted);
   }
   & .zao-plan-status .button-loading-indicator {
-    width: var(--zao-space-3);
+    width: var(--zao-space-4);
     height: var(--zao-space-3);
   }
   & .zao-plan-body {
@@ -725,6 +781,7 @@
 }
 
 @utility approval-gate-actions {
+  --zao-gate-hold: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -733,6 +790,23 @@
   min-block-size: var(--zao-size-control-md);
   padding-block-start: var(--zao-space-3);
   border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+  /* A hold released early: the seal leaves on the fold. */
+  transition: --zao-gate-hold var(--zao-motion-duration-reveal-exit)
+    var(--zao-motion-easing-fold-exit);
+
+  &[data-zao-holding] {
+    --zao-gate-hold: 1;
+    transition: --zao-gate-hold var(--zao-motion-duration-hold) var(--zao-motion-easing-hold);
+  }
+
+  &[data-zao-held] {
+    --zao-gate-hold: 1;
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
 @utility approval-gate-actions-buttons {
@@ -740,6 +814,93 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--zao-space-2);
+}
+
+/* Dialog.Actions (Nov 13, CR7): ApprovalGate's action row, closing a Dialog. A hairline rule
+ * above, a note at the leading edge, the actions at the trailing edge. The row is its own
+ * container: under 20rem the actions stack at full width, in their own order. */
+@utility dialog-actions {
+  container-type: inline-size;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zao-space-2) var(--zao-space-3);
+  min-block-size: var(--zao-size-control-md);
+  padding-block-start: var(--zao-space-3);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+
+  & > [data-zao-slot='note']:empty {
+    display: none;
+  }
+  & > .dialog-actions-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--zao-space-2);
+    margin-inline-start: auto;
+  }
+  @container (max-width: 20rem) {
+    & > .dialog-actions-buttons {
+      flex-direction: column;
+      align-items: stretch;
+      inline-size: 100%;
+    }
+  }
+}
+
+/* Hold to approve (Nov 14, CR18). The seal's place is drawn at the row's trailing end. While
+ * the primary action is held, its face seats through its rest depth in the Hold role's steps
+ * and the seal fills from its base; released early, the seal leaves on the fold. */
+@property --zao-gate-hold {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@utility approval-gate-hold {
+  display: inline-flex;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* The timing hangs on the press itself, so the travel is on the Hold role from its first
+     * frame; a frame's delay would start it on Seat. */
+    &
+      > [data-zao-component='button']:enabled:not([data-disabled]):is(
+        :active:hover,
+        [data-zao-pressed]
+      ) {
+      --button-spatial-duration: var(--zao-motion-duration-hold);
+      --button-spatial-easing: var(--zao-motion-easing-hold);
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      & > [data-zao-component='button']:enabled:not([data-disabled]):active {
+        --button-spatial-duration: var(--zao-motion-duration-hold);
+        --button-spatial-easing: var(--zao-motion-easing-hold);
+      }
+    }
+  }
+}
+
+@utility approval-gate-seal-well {
+  position: relative;
+  flex: none;
+  inline-size: var(--zao-size-control-md);
+  block-size: var(--zao-size-control-md);
+  outline: var(--zao-stroke-hairline) dashed var(--zao-color-border-default);
+  outline-offset: calc(-1 * var(--zao-stroke-hairline));
+
+  & > .approval-gate-seal-fill {
+    clip-path: inset(calc((1 - var(--zao-gate-hold)) * 100%) 0 0 0);
+  }
+
+  @media (forced-colors: active) {
+    outline-color: CanvasText;
+  }
 }
 
 @utility approval-gate-record {
@@ -1299,28 +1460,87 @@
   width: var(--button-icon-size);
   height: var(--button-icon-size);
 
-  & > svg {
+  & > svg,
+  & > .button-loading-indicator {
     width: 100%;
     height: 100%;
   }
 }
 
+/* The pending mark (Nov 14, S1 A): eight hairline ticks, one per motion grade. They fill one
+ * more per step, eight steps per loading duration, and start again. Stepped, never spun. A
+ * window slides over the lit ticks while they slide back under it, so only transforms move and
+ * the mark keeps stepping while the page is busy. At rest, and with reduced motion, every tick
+ * is lit: the still mark. */
 @keyframes zao-button-loading {
-  to {
-    transform: rotate(360deg);
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes zao-button-loading-lit {
+  from {
+    transform: translateX(100%);
   }
 }
 
 @utility button-loading-indicator {
-  animation: zao-button-loading var(--zao-motion-duration-loading) linear infinite;
-  stroke-width: var(--zao-stroke-hairline);
+  --loading-tick-rule:
+    0 var(--zao-stroke-hairline), transparent var(--zao-stroke-hairline) var(--zao-space-0-5);
+  --loading-ink: currentColor;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
 
-  & > path {
-    vector-effect: non-scaling-stroke;
+  /* Eight ticks at two pixels apart, centered in the mark's box whatever its size. */
+  & > .button-loading-ticks {
+    position: absolute;
+    inset-block-start: calc(50% - var(--zao-space-1));
+    inset-inline-start: calc(50% - var(--zao-space-2));
+    inline-size: var(--zao-space-4);
+    block-size: var(--zao-space-2);
+    overflow: hidden;
+    /* Every tick at rest, in a tint of the ink. */
+    background: repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--loading-ink) 35%, transparent) var(--loading-tick-rule)
+    );
+  }
+  &:dir(rtl) > .button-loading-ticks {
+    transform: scaleX(-1);
+  }
+
+  & .button-loading-window,
+  & .button-loading-lit {
+    position: absolute;
+    inset: 0;
+    animation-duration: var(--zao-motion-duration-loading);
+    animation-timing-function: steps(8, start);
+    animation-iteration-count: infinite;
+  }
+  & .button-loading-window {
+    overflow: hidden;
+    animation-name: zao-button-loading;
+  }
+  & .button-loading-lit {
+    background: repeating-linear-gradient(90deg, var(--loading-ink) var(--loading-tick-rule));
+    animation-name: zao-button-loading-lit;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    animation: none;
+    & .button-loading-window,
+    & .button-loading-lit {
+      animation: none;
+    }
+  }
+
+  /* Forced colors drop backgrounds; the ticks are the whole mark, so they keep a system ink. */
+  @media (forced-colors: active) {
+    --loading-ink: CanvasText;
+    & .button-loading-ticks,
+    & .button-loading-lit {
+      forced-color-adjust: none;
+    }
   }
 }
 
@@ -1483,6 +1703,19 @@
     --zao-plane-rest: var(--zao-depth-rest-control);
   }
 
+  /* The result (Nov 14, CR1): for one Hold beat the face stays on its base, in the pressed
+   * fill, while it reads the outcome; then it lifts on its own role. It outranks hover. */
+  &:enabled:not([data-disabled])[data-zao-result] {
+    --button-spatial-duration: var(--zao-motion-duration-seat);
+    --button-spatial-easing: var(--zao-motion-easing-seat);
+    --zao-face-offset: calc(-1 * var(--zao-plane-rest));
+    --button-face-fill: var(--button-pressed-fill);
+  }
+
+  &[data-zao-variant='quiet']:enabled:not([data-disabled])[data-zao-result] {
+    --zao-plane-rest: var(--zao-depth-rest-control);
+  }
+
   @media (hover: none), (pointer: coarse) {
     &[data-zao-variant='quiet']:enabled:not([data-disabled]):active {
       --zao-plane-rest: var(--zao-depth-rest-control);
@@ -1497,7 +1730,8 @@
     &:enabled:not([data-disabled]):hover,
     &:enabled:not([data-disabled]):active,
     &:enabled:not([data-disabled]):active:hover,
-    &:enabled:not([data-disabled])[data-zao-pressed] {
+    &:enabled:not([data-disabled])[data-zao-pressed],
+    &:enabled:not([data-disabled])[data-zao-result] {
       --zao-face-offset: 0px;
     }
 
@@ -1535,6 +1769,14 @@
     & [data-zao-slot='menu-indicator'] {
       transform: rotate(180deg);
     }
+  }
+}
+
+/* Select and Combobox (Nov 13, CR4): the trigger's caret turns while its list is open, as
+ * Menu's does. Instant, like Menu's. */
+@utility field-open-cue {
+  &[aria-expanded='true'] .field-caret {
+    transform: rotate(180deg);
   }
 }
 

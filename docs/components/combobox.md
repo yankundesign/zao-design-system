@@ -86,20 +86,20 @@ tokens:
 
 The outer field carries `data-zao-component="combobox"`. A native label targets the generated input ID. Base UI owns the editable combobox, the selected string/null, auxiliary native actions and option list. The input-group frame and native targets stay fixed; the input text does not ride a lifted face.
 
-| Literal `data-zao-slot`             | Owner and presence                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `root`, `label`                     | Always-present wrapper and native label associated by `htmlFor`.                                       |
-| `input-group`, `input`              | Stationary recessed group and native BaseCombobox.Input.                                               |
-| `clear-space`                       | Always-present 7-fen (28px) carrier, retaining input width when Clear is absent.                       |
-| `clear`                             | Base UI clear button, mounted as the selected-value lifecycle requires; no `keepMounted` override.     |
-| `trigger`                           | Native button named `Open ${label} options`, with decorative caret.                                    |
-| `portal`                            | Local Base UI portal wrapper using `contents` to avoid a flex-layout box.                              |
-| `popup`, `viewport`, `list`         | Conditional floating frame, available-height scroll viewport and named option list.                    |
-| `empty`                             | Base UI empty-filter result; visible text is `No matches found.`                                       |
-| `item`, `item-text`                 | Filtered option target and its label.                                                                  |
-| `indicator-space`, `item-indicator` | Reserved 16px mark carrier and conditionally mounted committed-value checkmark.                        |
-| `reveal-edge`                       | Decorative sibling of viewport; package hook whose moving-lip styling exists only in Quiet instrument. |
-| `error`, `description`              | Associated guidance siblings when the corresponding content is truthy.                                 |
+| Literal `data-zao-slot`             | Owner and presence                                                                                                                                                                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `root`, `label`                     | Always-present wrapper and native label associated by `htmlFor`.                                                                                                                                                                           |
+| `input-group`, `input`              | Stationary recessed group and native BaseCombobox.Input.                                                                                                                                                                                   |
+| `clear-space`                       | Always-present 7-fen (28px) carrier, retaining input width when Clear is absent.                                                                                                                                                           |
+| `clear`                             | Base UI clear button, mounted as the selected-value lifecycle requires; no `keepMounted` override.                                                                                                                                         |
+| `trigger`                           | Native button named `Open ${label} options`, with decorative caret. Since Nov 13 (CR4) its caret turns half a turn while the list is open (`field-open-cue`), instantly.                                                                   |
+| `portal`                            | Local Base UI portal wrapper using `contents` to avoid a flex-layout box.                                                                                                                                                                  |
+| `popup`, `viewport`, `list`         | Conditional floating frame, available-height scroll viewport and named option list.                                                                                                                                                        |
+| `empty`                             | Base UI empty-filter result; visible text is `No matches found.`                                                                                                                                                                           |
+| `item`, `item-text`                 | Filtered option target and its label.                                                                                                                                                                                                      |
+| `indicator-space`, `item-indicator` | Reserved 16px mark carrier and conditionally mounted committed-value checkmark.                                                                                                                                                            |
+| `reveal-edge`                       | Decorative sibling of viewport; package hook whose moving-lip styling exists only in Quiet instrument.                                                                                                                                     |
+| `error`, `description`              | Associated guidance siblings when the corresponding content is truthy. Since Nov 13 (CR3) the error is a flex row: a decorative warning glyph (`error-icon`, hidden from assistive technology, in the message's ink) and then the message. |
 
 Input-group frame markers, option values, last exit highlight, Base UI focus guards and hidden form inputs are not additional slots or public props. The popup's own pseudo-elements draw its two banded planes; physical side/base/joint and recessed wall concepts create no elements.
 
@@ -113,19 +113,19 @@ Sources: [implementation/types](../../packages/react/src/components/combobox.tsx
 
 ## States
 
-| State/input        | Current contract                                                                                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Size               | `small`, `default` (default), `large`; same label/text roles and option-row minimum.                                                                                      |
-| No selection       | Optional placeholder, default `Choose an option`; Clear is absent but reserved space remains.                                                                             |
-| Filtering          | Input query filters the existing option set; typing alone does not create a new selected value.                                                                           |
-| No matches         | `No matches found.`; this is an empty result, not automatic invalid/error state.                                                                                          |
-| Rest/hover/focus   | Published canvas well and field edge; normal enabled hover uses `border-strong`. Study adds square light/dark frame, focus-within emphasis and one outside group outline. |
-| Invalid            | Truthy external error supplies group marker, input `aria-invalid`, invalid edge and associated error. Invalid overrides normal hover.                                     |
-| Disabled field     | Base UI prevents editing/opening/clearing; disabled ink and fill. In the study the noninvalid disabled edge is subtle; invalid wins when combined.                        |
-| Disabled option    | Identified, without active emphasis or value commitment.                                                                                                                  |
-| Highlighted option | Enabled navigation fill only; input retains focus and virtual option highlighting.                                                                                        |
-| Selected option    | Independent checkmark identifies the committed value; highlighting a different row does not replace it.                                                                   |
-| Closing            | Last highlight paint persists through dismissal using presentation-only state.                                                                                            |
+| State/input        | Current contract                                                                                                                                                                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Size               | `small`, `default` (default), `large`; same label/text roles and option-row minimum.                                                                                                                                                          |
+| No selection       | Optional placeholder, default `Choose an option`; Clear is absent but reserved space remains.                                                                                                                                                 |
+| Filtering          | Input query filters the existing option set; typing alone does not create a new selected value. Since Nov 13 (CR5) the first run of each option's label that matches the typed text is set in `font-medium`; a committed value marks nothing. |
+| No matches         | `No matches found.`; this is an empty result, not automatic invalid/error state.                                                                                                                                                              |
+| Rest/hover/focus   | Published canvas well and field edge; normal enabled hover uses `border-strong`. Study adds square light/dark frame, focus-within emphasis and one outside group outline.                                                                     |
+| Invalid            | Truthy external error supplies group marker, input `aria-invalid`, invalid edge and associated error. Invalid overrides normal hover.                                                                                                         |
+| Disabled field     | Base UI prevents editing/opening/clearing; disabled ink and fill. In the study the noninvalid disabled edge is subtle; invalid wins when combined.                                                                                            |
+| Disabled option    | Identified, without active emphasis or value commitment.                                                                                                                                                                                      |
+| Highlighted option | Enabled navigation fill only; input retains focus and virtual option highlighting.                                                                                                                                                            |
+| Selected option    | Independent checkmark identifies the committed value; highlighting a different row does not replace it.                                                                                                                                       |
+| Closing            | Last highlight paint persists through dismissal using presentation-only state.                                                                                                                                                                |
 
 There is no exposed read-only, loading, freeform creation, multiple-selection, input-query state, or controlled-open API. The host supplies options and externally validated error content; the wrapper does not implement async search or a fetching state. Published field-role contrast promises apply to normal/invalid edges on canvas and surface, not disabled-only ink.
 

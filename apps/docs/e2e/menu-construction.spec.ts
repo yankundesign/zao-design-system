@@ -744,3 +744,74 @@ test('real Quiet instrument, dark: native selection closes without moving scroll
   expect(await bounds(trigger)).toEqual(fixedTrigger);
   expect(await scrollPosition(page)).toEqual(fixedScroll);
 });
+
+test('a Menu item shows its shortcut at the trailing edge and exposes it once', async ({
+  page,
+}) => {
+  await page.goto('/components/menu');
+  const specimen = page.locator('.study [data-zao-specimen="menu-shortcuts"]');
+  await specimen.getByRole('button', { name: 'Edit', exact: true }).click();
+  const popup = specimen.locator('[data-zao-slot="popup"]');
+  await expect(popup).toBeVisible();
+  const undo = specimen.getByRole('menuitem', { name: 'Undo', exact: true });
+  // The visible keys are a label; assistive technology gets them through aria-keyshortcuts.
+  await expect(undo).toHaveAttribute('aria-keyshortcuts', 'Meta+Z');
+  const shortcut = undo.locator('[data-zao-slot="shortcut"]');
+  await expect(shortcut).toHaveText('⌘Z');
+  await expect(shortcut).toHaveAttribute('aria-hidden', 'true');
+  const layout = await undo.evaluate((item) => {
+    const keys = item.querySelector('[data-zao-slot="shortcut"]')!;
+    const box = item.getBoundingClientRect();
+    const keysBox = keys.getBoundingClientRect();
+    const style = getComputedStyle(item);
+    return {
+      trailing: Math.round(box.right - Number.parseFloat(style.paddingRight) - keysBox.right),
+      family: getComputedStyle(keys).fontFamily,
+    };
+  });
+  expect(layout.trailing).toBe(0);
+  expect(layout.family).toMatch(/mono/i);
+  // Every shortcut ends on the same edge, whatever its label's length.
+  const edges = await specimen
+    .locator('[data-zao-slot="shortcut"]')
+    .evaluateAll((nodes) => nodes.map((node) => Math.round(node.getBoundingClientRect().right)));
+  expect(new Set(edges).size).toBe(1);
+  // The popup stays inside its preview, clear of the caption below it.
+  const popupBottom = (await popup.boundingBox())!.y + (await popup.boundingBox())!.height;
+  const caption = (await specimen.locator('p').boundingBox())!;
+  expect(popupBottom).toBeLessThanOrEqual(caption.y);
+  await page.keyboard.press('Escape');
+  await expect(popup).toHaveCount(0);
+});
+
+test('in RTL a shortcut sits at the trailing edge and its keys keep their order', async ({
+  page,
+}) => {
+  await page.goto('/components/menu');
+  await page.evaluate(() => {
+    document.documentElement.dir = 'rtl';
+  });
+  const specimen = page.locator('.study [data-zao-specimen="menu-shortcuts"]');
+  await specimen.getByRole('button', { name: 'Edit', exact: true }).click();
+  const redo = specimen.getByRole('menuitem', { name: 'Redo', exact: true });
+  const shortcut = redo.locator('[data-zao-slot="shortcut"]');
+  await expect(shortcut.locator('bdi')).toHaveAttribute('dir', 'ltr');
+  const order = await shortcut.locator('bdi').evaluate((node) => {
+    // Each key's left edge, in the order the keys are written.
+    const text = node.firstChild!;
+    const range = document.createRange();
+    return Array.from(node.textContent!, (_, index) => {
+      range.setStart(text, index);
+      range.setEnd(text, index + 1);
+      return range.getBoundingClientRect().left;
+    });
+  });
+  expect(order).toEqual([...order].sort((a, b) => a - b));
+  const edges = await redo.evaluate((item) => {
+    const keys = item.querySelector('[data-zao-slot="shortcut"]')!.getBoundingClientRect();
+    const box = item.getBoundingClientRect();
+    return { toLeft: keys.left - box.left, toRight: box.right - keys.right };
+  });
+  // The trailing edge is the left one in RTL.
+  expect(edges.toLeft).toBeLessThan(edges.toRight);
+});

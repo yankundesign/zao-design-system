@@ -67,17 +67,17 @@ tokens:
 
 The outer wrapper carries `data-zao-component="menu"`. Its trigger reuses the native [Button](button.md), with Button-authored face/side/focus construction. Base UI owns the menu popup, focus, item navigation and dismissal.
 
-| Literal `data-zao-slot` | Menu ownership and presence                                             |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `root`                  | Always-present local wrapper and portal container.                      |
-| `trigger`               | BaseMenu.Trigger rendered through shared secondary Button.              |
-| `menu-indicator`        | Decorative 16px caret inside the trigger, always present.               |
-| `portal`                | Base UI portal locally mounted into the wrapper during popup lifecycle. |
-| `popup`                 | Floating frame, conditional on Base UI lifecycle.                       |
-| `items`                 | Inner scrolling wrapper; frame/lip are not scrolling rows.              |
-| `separator`             | Conditional Base UI separator for `{ separator: true }` entries.        |
-| `item`                  | Base UI action target for each nonseparator entry.                      |
-| `reveal-edge`           | Decorative front lip, sibling of the scrolling content.                 |
+| Literal `data-zao-slot` | Menu ownership and presence                                                                                                                                                                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`                  | Always-present local wrapper and portal container.                                                                                                                                                                                                  |
+| `trigger`               | BaseMenu.Trigger rendered through shared secondary Button.                                                                                                                                                                                          |
+| `menu-indicator`        | Decorative 16px caret inside the trigger, always present.                                                                                                                                                                                           |
+| `portal`                | Base UI portal locally mounted into the wrapper during popup lifecycle.                                                                                                                                                                             |
+| `popup`                 | Floating frame, conditional on Base UI lifecycle.                                                                                                                                                                                                   |
+| `items`                 | Inner scrolling wrapper; frame/lip are not scrolling rows.                                                                                                                                                                                          |
+| `separator`             | Conditional Base UI separator for `{ separator: true }` entries.                                                                                                                                                                                    |
+| `item`                  | Base UI action target for each nonseparator entry. Since Nov 13 (CR6) an item may carry a `shortcut` part: the keys as people read them, in the mono caption face and muted ink at the trailing edge, with `aria-keyshortcuts` from `keyShortcuts`. |
+| `reveal-edge`           | Decorative front lip, sibling of the scrolling content.                                                                                                                                                                                             |
 
 Button's reused slots remain Button-owned; they are not added to Menu's `parts`. Popup `::before`/`::after` draw two banded side planes. The base is their fixed far edge, not a DOM node. The joint is the collision-resolved trigger/popup relationship. `reveal-edge::after` draws the lip; `data-side` is Base UI placement, not a physical part name. Item-index and exit-highlight attributes are presentation markers, not API.
 

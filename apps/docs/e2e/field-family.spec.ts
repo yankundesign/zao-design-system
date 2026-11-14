@@ -519,3 +519,99 @@ test.describe('touch', () => {
     });
   }
 });
+
+for (const field of fields) {
+  test(`${field}: a correction is marked by a decorative glyph as well as its hue`, async ({
+    page,
+  }) => {
+    const study = await openPage(page, field, contexts[0]);
+    const error = study.locator(`[data-zao-component="${field}"] [data-zao-slot="error"]`).first();
+    await expect(error).toBeVisible();
+    const glyph = error.locator('svg[data-zao-slot="error-icon"]');
+    await expect(glyph).toHaveAttribute('aria-hidden', 'true');
+    await expect(glyph).toHaveAttribute('focusable', 'false');
+    const reading = await error.evaluate((node) => {
+      const glyph = node.querySelector('svg')!;
+      const message = glyph.nextElementSibling!;
+      const glyphBox = glyph.getBoundingClientRect();
+      const messageBox = message.getBoundingClientRect();
+      return {
+        first: node.firstElementChild === glyph,
+        size: [glyphBox.width, glyphBox.height],
+        // One caption line: the glyph shares the message's first line box.
+        sameLine: Math.abs(glyphBox.top - messageBox.top) <= 1,
+        before: glyphBox.right <= messageBox.left,
+        ink: getComputedStyle(glyph).color === getComputedStyle(message).color,
+        text: node.textContent,
+      };
+    });
+    expect(reading).toMatchObject({
+      first: true,
+      size: [16, 16],
+      sameLine: true,
+      before: true,
+      ink: true,
+    });
+    // The glyph adds nothing to the message a screen reader hears.
+    expect(reading.text).toBe(reading.text?.trim());
+    expect(reading.text?.length).toBeGreaterThan(0);
+  });
+}
+
+for (const field of choices) {
+  test(`${field}: the caret turns while the list is open and the trigger stays put`, async ({
+    page,
+  }) => {
+    const study = await openPage(page, field, contexts[0]);
+    const root = study.locator(`[data-zao-component="${field}"]`).first();
+    const trigger = root.locator('[data-zao-slot="trigger"]');
+    const caret = trigger.locator('.field-caret');
+    const closed = await box(trigger);
+    await expect(caret).toHaveCSS('transform', 'none');
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    // Half a turn, as Menu's indicator; instant.
+    await expect(caret).toHaveCSS('transform', 'matrix(-1, 0, 0, -1, 0, 0)');
+    expect(await box(trigger)).toEqual(closed);
+    await page.keyboard.press('Escape');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(caret).toHaveCSS('transform', 'none');
+  });
+}
+
+test('combobox: a filtered option shows the run that matched, and a committed value marks nothing', async ({
+  page,
+}) => {
+  const study = await openPage(page, 'combobox', contexts[0]);
+  const root = study
+    .locator('[data-zao-component="combobox"]')
+    .filter({ has: page.getByRole('combobox', { name: 'Destination workspace' }) });
+  const input = root.locator('[data-zao-slot="input"]');
+  const items = root.locator('[data-zao-slot="item"]');
+  const matches = root.locator('.combobox-match');
+
+  await input.click();
+  await expect(items.first()).toBeVisible();
+  await expect(matches).toHaveCount(0);
+
+  await input.pressSequentially('ST');
+  await expect(items).toHaveCount(2);
+  // Case-insensitive, the label's own letters, and the medium weight.
+  await expect(matches).toHaveText(['st', 'st']);
+  const weights = await matches.first().evaluate((match) => ({
+    match: getComputedStyle(match).fontWeight,
+    label: getComputedStyle(match.parentElement!).fontWeight,
+    medium: getComputedStyle(match).getPropertyValue('--zao-font-weight-medium').trim(),
+  }));
+  expect(weights.match).toBe(weights.medium);
+  expect(Number(weights.match)).toBeGreaterThan(Number(weights.label));
+  await expect(items.first()).toHaveText('East workspace');
+  await expect(items.first()).toHaveAccessibleName('East workspace');
+
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(input).toHaveValue('East workspace');
+  await root.locator('[data-zao-slot="trigger"]').click();
+  await expect(items.first()).toBeVisible();
+  await expect(matches).toHaveCount(0);
+});

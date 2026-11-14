@@ -77,6 +77,16 @@
     --zao-face-offset: calc(-1 * var(--zao-plane-rest));
   }
 
+  /* Dragged (Nov 14, CR9): the face follows the pointer between its ends with no transition of
+   * its own, and settles on the Slide role when released. Horizontal touches belong to it. */
+  .switch-construction:not([data-disabled], [data-readonly]) {
+    touch-action: pan-y;
+  }
+
+  .switch-construction[data-zao-dragging] > [data-zao-slot='thumb'] {
+    transition: none;
+  }
+
   .switch-construction[data-readonly] {
     cursor: default;
   }

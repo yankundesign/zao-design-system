@@ -3,6 +3,7 @@
 import { Select as BaseSelect } from '@base-ui/react/select';
 import { useId } from 'react';
 import type { ReactNode } from 'react';
+import { FieldCorrection } from './field-correction.js';
 import { useFieldPopup } from './use-field-popup.js';
 
 export type SelectSize = 'small' | 'default' | 'large';
@@ -99,7 +100,7 @@ export function Select({
           aria-describedby={describedBy || undefined}
           aria-invalid={invalid || undefined}
           className={[
-            'construction-well field-well inline-flex w-full items-center justify-between gap-2 rounded-control border bg-canvas px-2 type-body text-default outline-focus transition-colors duration-fast',
+            'field-open-cue construction-well field-well inline-flex w-full items-center justify-between gap-2 rounded-control border bg-canvas px-2 type-body text-default outline-focus transition-colors duration-fast',
             'data-disabled:cursor-not-allowed data-disabled:bg-field-disabled data-disabled:text-disabled',
             invalid ? 'border-field-invalid' : 'border-field',
             !invalid && !disabled ? 'hover:border-strong' : null,
@@ -114,7 +115,7 @@ export function Select({
             className="min-w-0 truncate data-placeholder:text-muted"
           />
           <BaseSelect.Icon data-zao-slot="icon" className="ml-auto shrink-0 text-muted">
-            <svg className="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <svg className="field-caret size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.5" />
             </svg>
           </BaseSelect.Icon>
@@ -180,8 +181,12 @@ export function Select({
         </BaseSelect.Portal>
       </BaseSelect.Root>
       {error && (
-        <div id={errorId} data-zao-slot="error" className="type-caption text-danger">
-          {error}
+        <div
+          id={errorId}
+          data-zao-slot="error"
+          className="flex items-start gap-1 type-caption text-danger"
+        >
+          <FieldCorrection>{error}</FieldCorrection>
         </div>
       )}
       {description && (

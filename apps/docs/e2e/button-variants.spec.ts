@@ -280,10 +280,11 @@ for (const context of contexts) {
   }) => {
     const specimen = await openSpecimen(page, context);
     for (const [label, slot, iconCount] of [
-      ['Save report', null, 1],
-      ['Sync workspace', 'leading-icon', 3],
-      ['Open summary', 'trailing-icon', 2],
-      ['Delete draft', 'trailing-action', 1],
+      // The count is of icons; the pending mark is drawn with ticks, not an svg.
+      ['Save report', null, 0],
+      ['Sync workspace', 'leading-icon', 2],
+      ['Open summary', 'trailing-icon', 1],
+      ['Delete draft', 'trailing-action', 0],
     ] as const) {
       const button = specimen.getByRole('button', { name: label, exact: true });
       await expect(button).toHaveAccessibleName(label);
@@ -291,11 +292,27 @@ for (const context of contexts) {
       const spinner = button.locator('[data-zao-slot="spinner"]');
       await expect(spinner).toHaveCount(1);
       await expect(spinner).toHaveAttribute('aria-hidden', 'true');
-      await expect(spinner).toHaveAttribute('focusable', 'false');
       await expect(button.locator('svg')).toHaveCount(iconCount);
-      await expect(spinner).toHaveCSS('animation-duration', '1s');
-      await expect(spinner).toHaveCSS('animation-timing-function', 'linear');
-      await expect(spinner).toHaveCSS('animation-iteration-count', 'infinite');
+      // Eight ticks, two pixels apart, centered in the mark; they fill a tick per step.
+      const ticks = spinner.locator('.button-loading-ticks');
+      expect(
+        await ticks.evaluate((node) => {
+          const box = node.getBoundingClientRect();
+          const mark = node.parentElement!.getBoundingClientRect();
+          return {
+            size: [box.width, box.height],
+            centered:
+              Math.abs(box.left + box.width / 2 - (mark.left + mark.width / 2)) < 0.01 &&
+              Math.abs(box.top + box.height / 2 - (mark.top + mark.height / 2)) < 0.01,
+          };
+        }),
+      ).toEqual({ size: [16, 8], centered: true });
+      for (const part of ['.button-loading-window', '.button-loading-lit']) {
+        const moving = spinner.locator(part);
+        await expect(moving).toHaveCSS('animation-duration', '1s');
+        await expect(moving).toHaveCSS('animation-timing-function', 'steps(8, start)');
+        await expect(moving).toHaveCSS('animation-iteration-count', 'infinite');
+      }
       if (slot) {
         await expect(
           button.locator(`[data-zao-slot="${slot}"] > [data-zao-slot="spinner"]`),
@@ -326,8 +343,14 @@ for (const context of contexts) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     for (const spinner of await specimen.locator('[data-zao-slot="spinner"]').all()) {
       await expect(spinner).toBeVisible();
-      await expect(spinner).toHaveCSS('animation-name', 'none');
-      await expect.poll(() => spinner.evaluate((node) => node.getAnimations().length)).toBe(0);
+      // The still mark: nothing moves, and every tick is lit.
+      await expect
+        .poll(() => spinner.evaluate((node) => node.getAnimations({ subtree: true }).length))
+        .toBe(0);
+      for (const part of ['.button-loading-window', '.button-loading-lit']) {
+        await expect(spinner.locator(part)).toHaveCSS('animation-name', 'none');
+        await expect(spinner.locator(part)).toHaveCSS('transform', 'none');
+      }
     }
   });
 }
@@ -390,4 +413,79 @@ test.describe('Button loading with touch', () => {
     await expect(form).toHaveAttribute('data-demo-clicks', '2');
     await expect(form).toHaveAttribute('data-demo-submissions', '2');
   });
+});
+
+test('a Button holds its result on a seated face for one Hold beat, then shows the action again', async ({
+  page,
+}) => {
+  await page.goto('/components/button');
+  await page.evaluate(() => document.fonts.ready);
+  const specimen = page.locator('.study [data-zao-specimen="button-result"]');
+  await specimen.scrollIntoViewIfNeeded();
+  const copy = specimen.getByRole('button', { name: 'Copy response', exact: true });
+  const status = copy.locator(
+    'xpath=following-sibling::*[@data-zao-slot="loading-announcement"][1]',
+  );
+  const width = (await copy.boundingBox())!.width;
+  const read = () =>
+    copy.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        result: node.hasAttribute('data-zao-result'),
+        seated:
+          style.getPropertyValue('--zao-face-offset').trim() ===
+          `-${style.getPropertyValue('--zao-plane-rest').trim()}`,
+        shown: node.querySelector('[data-zao-slot="result"]')?.textContent ?? null,
+        actionHidden: getComputedStyle(node.querySelector('[data-zao-slot="button-content"]')!)
+          .opacity,
+      };
+    });
+
+  await copy.click();
+  await page.mouse.move(2, 2);
+  await expect(copy).toHaveAttribute('data-zao-result', '');
+  await expect.poll(async () => (await read()).seated).toBe(true);
+  expect(await read()).toMatchObject({ result: true, shown: 'Copied', actionHidden: '0' });
+  // The action keeps its name and its width; the outcome is announced politely beside it.
+  await expect(copy).toHaveAccessibleName('Copy response');
+  expect((await copy.boundingBox())!.width).toBe(width);
+  await expect(status).toHaveText('Copied response');
+  await expect(status).toHaveAttribute('role', 'status');
+
+  // After the Hold beat the action shows again and the announcement clears.
+  await expect(copy).not.toHaveAttribute('data-zao-result', '', { timeout: 3000 });
+  expect(await read()).toMatchObject({ result: false, shown: null, actionHidden: '1' });
+  await expect(status).toHaveText('');
+
+  // An icon action swaps to its result icon, with the same name and tooltip label.
+  const link = specimen.getByRole('button', { name: 'Copy link', exact: true });
+  await link.click();
+  await expect(link).toHaveAttribute('data-zao-result', '');
+  await expect(link.locator('[data-zao-slot="result"] svg')).toHaveCount(1);
+  await expect(link).toHaveAccessibleName('Copy link');
+  expect((await link.boundingBox())!.width).toBe((await link.boundingBox())!.height);
+
+  // Pending first, then the result.
+  const save = specimen.getByRole('button', { name: 'Publish changes', exact: true });
+  await save.click();
+  await expect(save).toHaveAttribute('data-zao-loading', '');
+  await expect(save).not.toHaveAttribute('data-zao-result', '');
+  await expect(save).toHaveAttribute('data-zao-result', '', { timeout: 3000 });
+  await expect(save.locator('[data-zao-slot="result"]')).toHaveText('Published');
+});
+
+test('with reduced motion the result is read without the face moving', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/components/button');
+  const copy = page
+    .locator('.study [data-zao-specimen="button-result"]')
+    .getByRole('button', { name: 'Copy response', exact: true });
+  await copy.scrollIntoViewIfNeeded();
+  await copy.click();
+  await expect(copy.locator('[data-zao-slot="result"]')).toHaveText('Copied');
+  expect(
+    await copy.evaluate((node) =>
+      getComputedStyle(node).getPropertyValue('--zao-face-offset').trim(),
+    ),
+  ).toBe('0px');
 });

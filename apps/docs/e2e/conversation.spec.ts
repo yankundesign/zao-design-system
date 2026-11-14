@@ -97,6 +97,30 @@ test('chronological rich content has explicit authorship and separate lifecycle 
   await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
 });
 
+test("an earlier response's header actions wait for hover or focus, and the latest response's stay", async ({
+  page,
+}) => {
+  const { conversation } = await openConversation(page);
+  const items = conversation.locator('ol[data-zao-slot="list"] > li');
+  const headerActions = '.zao-message > [data-zao-slot="actions"][data-zao-placement="header"]';
+  const earlierItem = items.filter({ has: page.locator(headerActions) }).first();
+  const earlier = earlierItem.locator(headerActions);
+  const latest = items.last().locator(headerActions);
+  await expect(earlier).toHaveClass(/(^| )zao-message-actions( |$)/);
+  await expect(latest).toHaveCSS('opacity', '1');
+  expect(await earlierItem.evaluate((node) => node.nextElementSibling !== null)).toBe(true);
+
+  await expect(earlier).toHaveCSS('opacity', '0');
+  await earlierItem.scrollIntoViewIfNeeded();
+  await earlierItem.hover();
+  await expect(earlier).toHaveCSS('opacity', '1');
+  await conversation.page().mouse.move(0, 0);
+  await expect(earlier).toHaveCSS('opacity', '0');
+
+  await earlier.getByRole('button', { name: 'Copy response' }).focus();
+  await expect(earlier).toHaveCSS('opacity', '1');
+});
+
 test('requests read as trailing slips with exchange rhythm and scroll eaves', async ({ page }) => {
   const { conversation, viewport } = await openConversation(page);
   const list = conversation.locator('ol[data-zao-slot="list"]');
@@ -298,6 +322,40 @@ test('streaming follows at the end, preserves a next draft, and stopping keeps p
   );
   await expect(input).toHaveValue('Prepare another question.');
   await expect(conversation.locator('[data-zao-slot="announcement"]')).toContainText(/stop/i);
+});
+
+test('Latest counts the messages that arrive while the reader is away, and not a message that grows', async ({
+  page,
+}) => {
+  const { specimen, conversation, viewport } = await openConversation(page);
+  await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
+  const latest = conversation.locator('[data-zao-slot="latest"]');
+  await viewport.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await expect(latest).toHaveText('Latest response');
+
+  // A late result grows the current message: nothing new to count.
+  await specimen.getByRole('button', { name: 'Add late result', exact: true }).click();
+  await expect(latest).toHaveText('Latest response');
+
+  // A request and its response are two new list items.
+  const input = specimen.getByRole('textbox', { name: 'Follow-up request', exact: true });
+  await input.fill('Compare this with last week.');
+  await input.press('Control+Enter');
+  await expect(latest).toHaveText('2 new messages');
+  await expect(latest).toHaveAccessibleName('2 new messages');
+  expect(await viewport.evaluate((element) => element.scrollTop)).toBe(0);
+
+  await latest.click();
+  await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
+  // Back at the end the count is spent. The control keeps its place while it holds focus, and
+  // the next departure starts from none.
+  await expect(latest).toHaveText('Latest response');
+  await viewport.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await expect(latest).toHaveText('Latest response');
 });
 
 test('scrolling back during streaming suspends following and announces lifecycle rather than tokens', async ({

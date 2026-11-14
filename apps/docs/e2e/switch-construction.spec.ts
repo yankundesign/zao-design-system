@@ -444,3 +444,72 @@ test.describe('touch', () => {
     }
   });
 });
+
+for (const direction of ['ltr', 'rtl'] as const) {
+  test(`${direction}: a dragged face follows the pointer and settles on the nearer end`, async ({
+    page,
+  }) => {
+    await page.goto('/components/switch');
+    await page.evaluate((dir) => {
+      document.documentElement.dir = dir;
+    }, direction);
+    // The page is live once its anatomy figure has measured.
+    await expect(page.locator('[data-anatomy-kind="switch"]')).toHaveAttribute(
+      'data-anatomy-ready',
+      'true',
+    );
+    const control = page
+      .locator('.study [data-zao-component="switch"]:not([data-disabled]):not([data-readonly])')
+      .first();
+    await control.scrollIntoViewIfNeeded();
+    const box = (await control.boundingBox())!;
+    const y = box.y + box.height / 2;
+    const on = () => control.evaluate((node) => node.hasAttribute('data-checked'));
+    const faceX = () =>
+      control.evaluate((node) => {
+        const thumb = node.querySelector('[data-zao-slot="thumb"]')!.getBoundingClientRect();
+        return thumb.left + thumb.width / 2;
+      });
+    // Drag the face toward its other end by `amount` pixels and release.
+    const drag = async (amount: number) => {
+      const toOther = ((await on()) ? -1 : 1) * (direction === 'rtl' ? -1 : 1);
+      const x = await faceX();
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x + toOther * amount, y, { steps: 4 });
+      const during = await control.evaluate((node) => ({
+        dragging: node.hasAttribute('data-zao-dragging'),
+        followed: (node as HTMLElement).style.getPropertyValue('--switch-position') !== '',
+        thumbTransition: getComputedStyle(node.querySelector('[data-zao-slot="thumb"]')!)
+          .transitionDuration,
+      }));
+      await page.mouse.up();
+      return during;
+    };
+
+    const start = await on();
+    // Short of the middle: the face follows, then returns; the state is unchanged.
+    expect(await drag(5)).toEqual({ dragging: true, followed: true, thumbTransition: '0s' });
+    expect(await on()).toBe(start);
+    await expect(control).not.toHaveAttribute('data-zao-dragging', '');
+    expect(
+      await control.evaluate((node) =>
+        (node as HTMLElement).style.getPropertyValue('--switch-position'),
+      ),
+    ).toBe('');
+
+    // Past the middle, and far past the housing: each settles on the other end.
+    await drag(14);
+    expect(await on()).toBe(!start);
+    await drag(40);
+    expect(await on()).toBe(start);
+    expect((await control.boundingBox())!).toEqual(box);
+
+    // A press without travel, and the keyboard, toggle as before.
+    await control.click();
+    expect(await on()).toBe(!start);
+    await control.focus();
+    await page.keyboard.press('Space');
+    expect(await on()).toBe(start);
+  });
+}

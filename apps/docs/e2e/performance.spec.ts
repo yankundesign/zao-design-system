@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Browser, Page } from '@playwright/test';
 
 /**
  * Next's webpack build merges the root page's client manifest into every route's, and where the
@@ -47,4 +48,94 @@ test('a static docs page paints its nav before hydration', async ({ request }) =
   expect(html).toContain('Browse docs · Foundations / Space');
   expect(html.match(/<nav aria-label="Docs"/g)).toHaveLength(2);
   expect(html).toContain('href="/components/button"');
+});
+
+/**
+ * The most elements one style recalculation visits when an empty div is appended to `host`.
+ * Chromium's trace reports the count; durations vary with the machine, and counts do not.
+ * Two marks bound the appends, so a restyle the page owes to its own loading is left out.
+ */
+async function restyledByAppend(browser: Browser, page: Page, host: 'body' | 'main') {
+  await browser.startTracing(page, { categories: ['devtools.timeline', 'blink.user_timing'] });
+  await page.evaluate((selector) => {
+    const parent = document.querySelector(selector)!;
+    void document.body.offsetHeight;
+    performance.mark('zao-append-start');
+    for (let index = 0; index < 3; index += 1) {
+      const node = document.createElement('div');
+      parent.append(node);
+      void document.body.offsetHeight;
+      node.remove();
+      void document.body.offsetHeight;
+    }
+    performance.mark('zao-append-end');
+  }, host);
+  const trace = JSON.parse((await browser.stopTracing()).toString()) as {
+    traceEvents: { name: string; ts: number; args?: { elementCount?: number } }[];
+  };
+  const at = (name: string) => trace.traceEvents.find((event) => event.name === name)?.ts;
+  const from = at('zao-append-start');
+  const to = at('zao-append-end');
+  expect(from).toBeDefined();
+  expect(to).toBeDefined();
+  const counts = trace.traceEvents
+    .filter((event) => event.name === 'UpdateLayoutTree' && event.ts >= from! && event.ts <= to!)
+    .map((event) => event.args?.elementCount)
+    .filter((count): count is number => typeof count === 'number');
+  expect(counts.length).toBeGreaterThan(0);
+  return Math.max(...counts);
+}
+
+for (const host of ['body', 'main'] as const) {
+  test(`an insertion into the landing's ${host} restyles a small part of the page`, async ({
+    browser,
+    page,
+  }) => {
+    // Two kinds of published rule once made an insertion restyle thousands of parts here: a
+    // :has() on an ancestor (any insertion below body), and a :last-child on an ancestor (an
+    // append to a page-level container). Each restyles whatever its last compound could match,
+    // so that compound names a class, never a bare attribute such as data-zao-slot.
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    // The guard means something only once the workspace's parts are on the page.
+    await expect
+      .poll(() => page.evaluate(() => document.querySelectorAll('[data-zao-slot]').length))
+      .toBeGreaterThan(1000);
+    await expect(page.locator('.zao-message').first()).toBeAttached();
+    expect(await restyledByAppend(browser, page, host)).toBeLessThan(500);
+  });
+}
+
+test('switching to a component page uses its plain path and never loads the page twice', async ({
+  page,
+}) => {
+  // The study's `?style=` suffix used to ride on every nav link and was restored by a router
+  // navigation on arrival. A link with a query cannot use the page Next has prefetched, so
+  // each switch waited on the network, and each arrival fetched and rendered the page again.
+  await page.goto('/components/button');
+  await expect(page).toHaveURL(/\/components\/button\?style=quiet-instrument$/);
+  const nav = page.locator('nav.docs-nav-desktop');
+  for (const href of await nav
+    .getByRole('link')
+    .evaluateAll((links) => links.map((link) => link.getAttribute('href')))) {
+    expect(href).not.toContain('?');
+  }
+
+  const styled: string[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.searchParams.has('_rsc') && url.searchParams.has('style')) styled.push(url.pathname);
+  });
+  await nav.getByRole('link', { name: 'Tabs', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible();
+  // The address still gains the suffix, without a navigation.
+  await expect(page).toHaveURL(/\/components\/tabs\?style=quiet-instrument$/);
+  await page.waitForTimeout(500);
+  expect(styled).toEqual([]);
+
+  // Back and forward still work across the rewritten addresses.
+  await page.goBack();
+  await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+  await page.goForward();
+  await expect(page.getByRole('heading', { level: 1, name: 'Tabs' })).toBeVisible();
 });

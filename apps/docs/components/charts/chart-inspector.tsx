@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useId, useRef, useState } from 'react';
+import { memo, useCallback, useId, useState } from 'react';
 import type { KeyboardEvent, PointerEvent } from 'react';
 
 export interface InspectableDatum {
@@ -41,6 +41,25 @@ export function useInspection(count: number): Inspection {
   const within = (index: number | null) => (index !== null && index < count ? index : null);
   const active = dismissed ? null : (within(hovered) ?? within(focused) ?? within(selected));
 
+  // Stable for the life of the chart, so a datum control re-renders only when its own state
+  // changes: a hover re-renders none of them.
+  const toggle = useCallback((index: number, label: string) => {
+    setDismissed(false);
+    setSelected((current) => {
+      const next = current === index ? null : index;
+      setAnnouncement(next === null ? 'Selection cleared.' : `Selected ${label}.`);
+      return next;
+    });
+  }, []);
+  const clear = useCallback(() => {
+    setDismissed(true);
+    setSelected((current) => {
+      if (current !== null) setAnnouncement('Selection cleared.');
+      return null;
+    });
+  }, []);
+  const undismiss = useCallback(() => setDismissed(false), []);
+
   return {
     active,
     selected: within(selected),
@@ -50,24 +69,89 @@ export function useInspection(count: number): Inspection {
     setHovered,
     setFocused,
     setCursor: setCursorState,
-    toggle: (index, label) => {
-      setDismissed(false);
-      setSelected((current) => {
-        const next = current === index ? null : index;
-        setAnnouncement(next === null ? 'Selection cleared.' : `Selected ${label}.`);
-        return next;
-      });
-    },
-    clear: () => {
-      setDismissed(true);
-      setSelected((current) => {
-        if (current !== null) setAnnouncement('Selection cleared.');
-        return null;
-      });
-    },
-    undismiss: () => setDismissed(false),
+    toggle,
+    clear,
+    undismiss,
   };
 }
+
+/**
+ * One datum's native button. Memoized on its own geometry and state, so moving the pointer
+ * across a plot re-renders no controls, and an arrow key re-renders the two that trade focus.
+ */
+const DatumControl = memo(function DatumControl({
+  index,
+  count,
+  columns,
+  x,
+  y,
+  width,
+  height,
+  label,
+  current,
+  selected,
+  setCursor,
+  setFocused,
+  toggle,
+  clear,
+  undismiss,
+}: {
+  index: number;
+  count: number;
+  columns?: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label: string;
+  /** Holds the group's one tab stop. */
+  current: boolean;
+  selected: boolean;
+} & Pick<Inspection, 'setCursor' | 'setFocused' | 'toggle' | 'clear' | 'undismiss'>) {
+  function move(event: KeyboardEvent<HTMLButtonElement>) {
+    if (event.key === 'Escape') {
+      clear();
+      return;
+    }
+    const last = count - 1;
+    const step = columns ?? 1;
+    const targets: Record<string, number> = {
+      ArrowRight: index + 1,
+      ArrowLeft: index - 1,
+      ArrowDown: columns ? index + step : index + 1,
+      ArrowUp: columns ? index - step : index - 1,
+      Home: 0,
+      End: last,
+    };
+    const target = targets[event.key];
+    if (target === undefined) return;
+    event.preventDefault();
+    const next = Math.min(last, Math.max(0, target));
+    setCursor(next);
+    // The group holds exactly one button per datum, in order.
+    (event.currentTarget.parentElement?.children[next] as HTMLElement | undefined)?.focus();
+  }
+
+  return (
+    <button
+      type="button"
+      data-zao-slot="chart-datum"
+      tabIndex={current ? 0 : -1}
+      aria-label={label}
+      aria-pressed={selected}
+      className="chart-datum-control absolute outline-focus focus-visible:outline-2 focus-visible:-outline-offset-1"
+      style={{ left: x, top: y, width, height }}
+      onFocus={() => {
+        setCursor(index);
+        setFocused(index);
+        undismiss();
+      }}
+      onBlur={() => setFocused(null)}
+      onKeyDown={move}
+      onClick={() => toggle(index, label)}
+    />
+  );
+});
 
 /**
  * One tab stop with roving focus across native buttons, one per datum. Pointer
@@ -94,7 +178,6 @@ export function ChartInspector({
   nearest?: 'x' | 'box';
 }) {
   const hintId = useId();
-  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
 
   const locate = useCallback(
     (event: PointerEvent<HTMLDivElement>) => {
@@ -122,29 +205,6 @@ export function ChartInspector({
     [data, nearest],
   );
 
-  function move(from: number, event: KeyboardEvent<HTMLButtonElement>) {
-    if (event.key === 'Escape') {
-      inspection.clear();
-      return;
-    }
-    const last = data.length - 1;
-    const step = columns ?? 1;
-    const targets: Record<string, number> = {
-      ArrowRight: from + 1,
-      ArrowLeft: from - 1,
-      ArrowDown: columns ? from + step : from + 1,
-      ArrowUp: columns ? from - step : from - 1,
-      Home: 0,
-      End: last,
-    };
-    const target = targets[event.key];
-    if (target === undefined) return;
-    event.preventDefault();
-    const next = Math.min(last, Math.max(0, target));
-    inspection.setCursor(next);
-    buttons.current[next]?.focus();
-  }
-
   return (
     <div
       data-zao-slot="chart-inspector"
@@ -170,26 +230,23 @@ export function ChartInspector({
       </p>
       <div role="group" aria-label={`Inspect ${name}`} aria-describedby={hintId}>
         {data.map((datum, index) => (
-          <button
+          <DatumControl
             key={index}
-            ref={(node) => {
-              buttons.current[index] = node;
-            }}
-            type="button"
-            data-zao-slot="chart-datum"
-            tabIndex={index === inspection.cursor ? 0 : -1}
-            aria-label={datum.label}
-            aria-pressed={inspection.selected === index}
-            className="chart-datum-control absolute outline-focus focus-visible:outline-2 focus-visible:-outline-offset-1"
-            style={{ left: datum.x, top: datum.y, width: datum.width, height: datum.height }}
-            onFocus={() => {
-              inspection.setCursor(index);
-              inspection.setFocused(index);
-              inspection.undismiss();
-            }}
-            onBlur={() => inspection.setFocused(null)}
-            onKeyDown={(event) => move(index, event)}
-            onClick={() => inspection.toggle(index, datum.label)}
+            index={index}
+            count={data.length}
+            columns={columns}
+            x={datum.x}
+            y={datum.y}
+            width={datum.width}
+            height={datum.height}
+            label={datum.label}
+            current={index === inspection.cursor}
+            selected={inspection.selected === index}
+            setCursor={inspection.setCursor}
+            setFocused={inspection.setFocused}
+            toggle={inspection.toggle}
+            clear={inspection.clear}
+            undismiss={inspection.undismiss}
           />
         ))}
       </div>

@@ -2,8 +2,8 @@
 
 import { Button as BaseButton } from '@base-ui/react/button';
 import type { ButtonProps as BaseButtonProps } from '@base-ui/react/button';
-import { forwardRef, useEffect, useState } from 'react';
-import type { ComponentType, PointerEvent, SVGProps } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import type { ComponentType, PointerEvent, ReactNode, SVGProps } from 'react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'quiet' | 'danger';
 export type ButtonSize = 'small' | 'default' | 'large';
@@ -29,6 +29,17 @@ export interface ButtonProps extends Omit<
   loading?: boolean;
   /** Announced politely while loading; use a task name such as "Saving changes". */
   loadingAnnouncement?: string;
+  /**
+   * The outcome of the action, such as "Copied", shown on the face once the host knows it. The
+   * face stays seated for the Hold beat while it reads the result, then lifts and shows the
+   * action again. Use the action's own verb, and keep it no longer than the label. Pass `null`
+   * from the first render while there is no result, so the label's structure stays the same.
+   */
+  result?: ReactNode;
+  /** Announced politely with the result; defaults to `result` when that is text. */
+  resultAnnouncement?: string;
+  /** The beat has ended and the action is showing again. Clear `result` here. */
+  onResultEnd?: () => void;
   /** Layout classes for the button, such as `w-full`. */
   className?: string;
 }
@@ -39,19 +50,20 @@ const sizeClasses: Record<ButtonSize, string> = {
   large: 'h-10 px-4',
 };
 
+/**
+ * The pending mark: eight hairline ticks, one per motion grade, that fill in eight steps per
+ * loading duration and start again. The ticks are a pixel wide and two apart in a box of any
+ * size. Only transforms move, so the mark keeps stepping while the page is busy.
+ */
 export function LoadingIndicator() {
   return (
-    <svg
-      data-zao-slot="spinner"
-      className="button-loading-indicator"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M12 3a9 9 0 1 1-9 9" />
-    </svg>
+    <span data-zao-slot="spinner" className="button-loading-indicator" aria-hidden="true">
+      <span className="button-loading-ticks">
+        <span className="button-loading-window">
+          <span className="button-loading-lit" />
+        </span>
+      </span>
+    </span>
   );
 }
 
@@ -66,6 +78,9 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
     block = false,
     loading,
     loadingAnnouncement = 'Loading',
+    result,
+    resultAnnouncement,
+    onResultEnd,
     className,
     type = 'button',
     children,
@@ -87,9 +102,38 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
   const [keyboardPressed, setKeyboardPressed] = useState(false);
   const [pressedPointerId, setPressedPointerId] = useState<number | null>(null);
   const unavailable = Boolean(disabled || loading);
+  // A result arrives once and is shown for one Hold beat (CR1). The host owns the result; the
+  // Button owns the beat, and tells the host when it has ended.
+  const element = useRef<HTMLElement | null>(null);
+  const hasResult = result !== undefined && result !== null && result !== false && !loading;
+  const [resultShown, setResultShown] = useState(false);
+  const resultEnd = useRef(onResultEnd);
+  useEffect(() => {
+    resultEnd.current = onResultEnd;
+  }, [onResultEnd]);
+
+  useEffect(() => {
+    if (!hasResult) {
+      setResultShown(false);
+      return;
+    }
+    setResultShown(true);
+    const value = getComputedStyle(element.current ?? document.body)
+      .getPropertyValue('--zao-motion-duration-hold')
+      .trim();
+    const amount = Number.parseFloat(value);
+    const beat = !Number.isFinite(amount) ? 0 : value.endsWith('ms') ? amount : amount * 1000;
+    const timer = window.setTimeout(() => {
+      setResultShown(false);
+      resultEnd.current?.();
+    }, beat);
+    return () => window.clearTimeout(timer);
+  }, [hasResult]);
+
+  const showingResult = hasResult && resultShown;
   // Plain children stay on the face so disabled ink updates without an extra inherited layer.
   const hasVisualContent = Boolean(
-    LeadingIcon || TrailingIcon || TrailingAction || loading !== undefined,
+    LeadingIcon || TrailingIcon || TrailingAction || loading !== undefined || result !== undefined,
   );
   const spinnerSlot = LeadingIcon
     ? 'leading-icon'
@@ -123,7 +167,11 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
     <>
       <BaseButton
         {...props}
-        ref={ref}
+        ref={(node: HTMLElement | null) => {
+          element.current = node;
+          if (typeof ref === 'function') ref(node);
+          else if (ref) ref.current = node;
+        }}
         type={type}
         disabled={unavailable}
         focusableWhenDisabled={loading && !disabled}
@@ -132,6 +180,7 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
         data-zao-variant={variant}
         data-zao-size={size}
         data-zao-loading={loading ? '' : undefined}
+        data-zao-result={showingResult ? '' : undefined}
         data-zao-pressed={
           !unavailable && (keyboardPressed || pressedPointerId !== null) ? '' : undefined
         }
@@ -215,7 +264,16 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
         >
           {hasVisualContent ? (
             <>
-              <span data-zao-slot="button-content" className="inline-flex items-center gap-2">
+              <span
+                data-zao-slot="button-content"
+                className={[
+                  'inline-flex items-center gap-2',
+                  // The action keeps its place and its name while the result is read over it.
+                  showingResult ? 'opacity-0' : undefined,
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
                 {LeadingIcon && (
                   <span data-zao-slot="leading-icon" className="button-visual" aria-hidden="true">
                     {loading && spinnerSlot === 'leading-icon' ? (
@@ -249,7 +307,9 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
               {TrailingAction && (
                 <span
                   data-zao-slot="trailing-action"
-                  className="button-visual ms-auto"
+                  className={['button-visual ms-auto', showingResult ? 'opacity-0' : undefined]
+                    .filter(Boolean)
+                    .join(' ')}
                   aria-hidden="true"
                 >
                   {loading && spinnerSlot === 'trailing-action' ? (
@@ -257,6 +317,15 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
                   ) : (
                     <TrailingAction aria-hidden="true" focusable="false" />
                   )}
+                </span>
+              )}
+              {showingResult && (
+                <span
+                  data-zao-slot="result"
+                  aria-hidden="true"
+                  className="absolute inset-0 flex items-center justify-center gap-2"
+                >
+                  {result}
                 </span>
               )}
               {loading && spinnerSlot === 'label' && (
@@ -275,15 +344,19 @@ export const Button = forwardRef<HTMLElement, ButtonProps>(function Button(
           )}
         </span>
       </BaseButton>
-      {loading !== undefined && (
+      {(loading !== undefined || result !== undefined) && (
         <span
           data-zao-slot="loading-announcement"
           className="button-loading-announcement"
-          role={loading ? 'status' : undefined}
+          role={loading || showingResult ? 'status' : undefined}
           aria-live="polite"
           aria-atomic="true"
         >
-          {loading ? loadingAnnouncement : ''}
+          {loading
+            ? loadingAnnouncement
+            : showingResult
+              ? (resultAnnouncement ?? (typeof result === 'string' ? result : ''))
+              : ''}
         </span>
       )}
     </>

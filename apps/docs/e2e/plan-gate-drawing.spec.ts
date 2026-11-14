@@ -224,3 +224,136 @@ test('Plan and approval records fit a narrow canvas and retain their constructio
   const segment = await step.evaluate((node) => getComputedStyle(node, '::after').backgroundColor);
   expect(segment).not.toBe('rgba(0, 0, 0, 0)');
 });
+
+test('Plan draws its count as a gauge: one tick per step, finished steps long and in ink', async ({
+  page,
+}) => {
+  await page.goto('/components/plan');
+  const plan = page.locator('[data-zao-component="plan"]').first();
+  const gauge = plan.locator('[data-zao-slot="gauge"]');
+  await expect(gauge).toHaveAttribute('aria-hidden', 'true');
+  const ticks = gauge.locator('.zao-plan-tick');
+  await expect(ticks).toHaveCount(await plan.locator('[data-zao-slot="step"]').count());
+  // The sentence still carries the count; the gauge only draws it.
+  await expect(plan.locator('[data-zao-slot="summary"]')).toContainText('2 of 7 done');
+
+  const reading = await gauge.evaluate((node) => {
+    const sample = (token: string) => {
+      const probe = document.createElement('span');
+      probe.style.color = `var(${token})`;
+      node.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    };
+    return {
+      ink: sample('--zao-color-fg-default'),
+      muted: sample('--zao-color-fg-muted'),
+      danger: sample('--zao-color-danger-text'),
+      ticks: Array.from(node.querySelectorAll<HTMLElement>('.zao-plan-tick'), (tick) => ({
+        status: tick.dataset.zaoTick,
+        height: tick.getBoundingClientRect().height,
+        width: getComputedStyle(tick).borderInlineStartWidth,
+        color: getComputedStyle(tick).borderInlineStartColor,
+      })),
+    };
+  });
+  // The order of the ticks is the order of the steps.
+  expect(reading.ticks.map((tick) => tick.status)).toEqual(
+    await plan
+      .locator('[data-zao-slot="step"]')
+      .evaluateAll((steps) => steps.map((step) => (step as HTMLElement).dataset.zaoStatus)),
+  );
+  for (const tick of reading.ticks) {
+    expect(tick.width).toBe('1px');
+    if (tick.status === 'done' || tick.status === 'declined') {
+      expect(tick).toMatchObject({ height: 8, color: reading.ink });
+    } else if (tick.status === 'failed') {
+      expect(tick).toMatchObject({ height: 8, color: reading.danger });
+    } else {
+      expect(tick).toMatchObject({ height: 4, color: reading.muted });
+    }
+  }
+});
+
+test('a held approval records only a completed hold, by pointer or keyboard', async ({ page }) => {
+  await page.goto('/components/approval-gate');
+  const specimen = page.locator('.study [data-zao-specimen="approval-gate-hold"]');
+  const gate = specimen.locator('[data-zao-component="approval-gate"]').first();
+  const action = gate.getByRole('button', { name: 'Hold to delete workspace', exact: true });
+  await action.scrollIntoViewIfNeeded();
+  const row = gate.locator('.approval-gate-actions');
+  const record = gate.locator('[data-zao-slot="record"]');
+  const well = gate.locator('[data-zao-slot="seal-well"]');
+  await expect(well).toHaveAttribute('aria-hidden', 'true');
+  await expect(action).toHaveAccessibleDescription(/hold/i);
+  const rowBox = await row.boundingBox();
+
+  // A short press approves nothing and opens nothing.
+  await action.hover();
+  await page.mouse.down();
+  await expect(row).toHaveAttribute('data-zao-holding', '');
+  // The row does not move under a held pointer.
+  expect(await row.boundingBox()).toEqual(rowBox);
+  await page.mouse.up();
+  await expect(row).not.toHaveAttribute('data-zao-holding', '');
+  await expect(record).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  // A completed hold records the decision once and moves focus to the record.
+  await page.mouse.down();
+  await expect(record).toContainText('Deleted workspace');
+  await page.mouse.up();
+  await expect(record).toBeFocused();
+  await expect(record.locator('[data-zao-slot="impression"]')).toHaveCount(1);
+
+  // Keyboard: a tap does nothing; a held Space approves.
+  await specimen.getByRole('button', { name: 'Reset both', exact: true }).click();
+  await action.focus();
+  await page.keyboard.press('Enter');
+  await expect(record).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.keyboard.down('Space');
+  await expect(record).toContainText('Deleted workspace');
+  await page.keyboard.up('Space');
+});
+
+test('an approval that cannot be held is confirmed in a Dialog', async ({ page }) => {
+  await page.goto('/components/approval-gate');
+  const specimen = page.locator('.study [data-zao-specimen="approval-gate-hold"]');
+  const gates = specimen.locator('[data-zao-component="approval-gate"]');
+  const held = gates.first();
+  await held.scrollIntoViewIfNeeded();
+
+  // An activation with no hold behind it, as a screen reader sends.
+  await held
+    .getByRole('button', { name: 'Hold to delete workspace', exact: true })
+    .evaluate((node) => (node as HTMLElement).click());
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('heading')).toHaveText('Delete workspace?');
+  await expect(dialog.getByRole('button')).toHaveText(['Cancel', 'Delete workspace']);
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(held.locator('[data-zao-slot="record"]')).toHaveCount(0);
+
+  // `confirm="dialog"`: a press asks once more, and approving there records it.
+  const asked = gates.nth(1);
+  await asked.getByRole('button', { name: 'Delete workspace', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Delete workspace', exact: true }).click();
+  await expect(asked.locator('[data-zao-slot="record"]')).toContainText('Deleted workspace');
+});
+
+test('with reduced motion a hold becomes the confirming Dialog', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/components/approval-gate');
+  const gate = page
+    .locator('.study [data-zao-specimen="approval-gate-hold"] [data-zao-component="approval-gate"]')
+    .first();
+  const action = gate.getByRole('button', { name: 'Hold to delete workspace', exact: true });
+  await action.scrollIntoViewIfNeeded();
+  await action.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(gate.locator('.approval-gate-actions')).not.toHaveAttribute('data-zao-holding', '');
+});
