@@ -62,4 +62,4 @@ These are places where the plan left room. Each uses an existing token or preced
 - **Next:** WP 1.2 `frozenColumn` and the edge eaves. Its column map is docs-local under G6's lean; say so here if you build it before G6 is answered.
 - Phases 2, 3 (except WP 3.3) and 4 can also start. WP 2.1 reads Slide only as G1's lean; WP 3.3 waits for G2.
 - WP 6.3's `AGENTS.md` section and `decision-drafts.md` are not written yet.
-- Not pushed, and no pull request: both wait for Yankun.
+- **Nov 14:** pushed at Yankun's go-ahead as pull request 8. The branch was built and tested on `fbd867d`; it merges into the current `main` without conflicts but the suite was not rerun on the merged result, so the pull request's CI is the first run against it.
