@@ -166,3 +166,33 @@ test('an interrupted width update keeps its fixed reference and respects finish 
   expect(update.destination).toBeCloseTo(0.2, 3);
   expect((await geometry(progress)).track).toEqual(resting.track);
 });
+
+for (const mode of ['light', 'dark'] as const) {
+  test(`su ${mode}: a finished Progress fills its frame, and an unfinished one keeps its well`, async ({
+    page,
+  }) => {
+    const specimen = await openProgress(page, 'su', mode);
+    const read = (label: string) =>
+      specimen
+        .locator('[data-zao-component="progress"]')
+        .filter({ hasText: label })
+        .locator('[data-zao-slot="track"]')
+        .evaluate((track) => {
+          const frame = getComputedStyle(track, '::before');
+          const face = getComputedStyle(track.querySelector('[data-zao-slot="indicator"]')!);
+          return {
+            complete: track.hasAttribute('data-complete'),
+            frameIsFaceInk: frame.borderTopColor === face.backgroundColor,
+            walls: frame.boxShadow !== 'none',
+            height: track.getBoundingClientRect().height,
+          };
+        });
+    const finished = await read('Prepare workspace');
+    const running = await read('Upload files');
+    // At full the frame and the well's walls take the face's ink: one solid block.
+    expect(finished).toMatchObject({ complete: true, frameIsFaceInk: true, walls: false });
+    // Below full the recessed well is unchanged, and the track is the same size either way.
+    expect(running).toMatchObject({ complete: false, frameIsFaceInk: false, walls: true });
+    expect(finished.height).toBe(running.height);
+  });
+}
