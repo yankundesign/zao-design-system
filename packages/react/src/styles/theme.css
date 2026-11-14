@@ -1264,20 +1264,29 @@
     position: sticky;
     inset-block-start: 0;
     z-index: 2;
+    border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
     background-color: var(--zao-construction-face);
   }
 
-  & > thead > tr:last-child > * {
-    border-block-end: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
-  }
-
-  & > tbody + tbody > tr:first-child > *,
+  /*
+   * None of these rules tests :first-child or :last-child on an ancestor. Chromium keeps one
+   * invalidation set for every rule that does and applies it under any element that becomes or
+   * stops being a first or last child, anywhere on the page, so a Table rule ending in `*`
+   * would restyle a whole page on an insertion (performance.spec.ts guards it). The header's
+   * rule is drawn under every header row (a held header has one), a later body's rows all take
+   * a top rule, and a second footer row gives its rule back.
+   */
+  & > tbody + tbody > tr > *,
   & > tbody > tr + tr > * {
     border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
   }
 
-  & > tfoot > tr:first-child > * {
+  & > tfoot > tr > * {
     border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-default);
+  }
+
+  & > tfoot > tr + tr > * {
+    border-block-start-width: 0;
   }
 
   /* A group head sticks under the header; a later one slides over the earlier one. */
@@ -1312,7 +1321,7 @@
    * plane appears, drawn in the frame's shading. Scroll position drives it evenly; nothing is
    * timed. */
   @supports (animation-timeline: scroll()) {
-    & > thead > tr:last-child > * {
+    & > thead > tr > * {
       animation: zao-table-header-stuck linear both;
       animation-timeline: scroll(nearest block);
       animation-range: 0px var(--zao-space-4);
@@ -1338,7 +1347,7 @@
   }
 
   @media (forced-colors: active) {
-    & > thead > tr:last-child > * {
+    & > thead > tr > * {
       border-block-end-color: CanvasText;
       animation: none;
     }
