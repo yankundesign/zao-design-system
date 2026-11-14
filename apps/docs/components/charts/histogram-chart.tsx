@@ -286,7 +286,13 @@ export function HistogramChart({
               )}
             </>
           )}
-          <Ruler x0={left} x1={right} y={baseline} ticks={ticks} />
+          <Ruler
+            x0={left}
+            x1={right}
+            y={baseline}
+            ticks={ticks}
+            inspect={drawing || active === null ? null : x(active)}
+          />
           {!drawing && (
             <>
               <MinuteLabels ticks={ticks} y={baseline + 22} />

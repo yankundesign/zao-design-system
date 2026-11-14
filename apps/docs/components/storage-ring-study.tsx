@@ -52,6 +52,7 @@ export function StorageRingStudy({
   drawing = false,
   dataView = false,
   framed = false,
+  large = false,
 }: {
   /** Scale only, no marks and no numbers, while storage use loads (charts wave 1, C3). */
   drawing?: boolean;
@@ -62,6 +63,11 @@ export function StorageRingStudy({
    * rule, as in `ChartFrame`. The chart gallery uses it beside the other charts; Card doesn't.
    */
   framed?: boolean;
+  /**
+   * Draw the ring at twice its Card size (CR19), on the Ring page only: the same 100 marks and
+   * scale ring, with hairlines that do not scale, so each mark can be counted.
+   */
+  large?: boolean;
 } = {}) {
   const detailId = useId();
   const root = useRef<HTMLDivElement>(null);
@@ -118,7 +124,7 @@ export function StorageRingStudy({
       >
         <svg
           data-zao-slot="storage-chart"
-          className="h-32 w-32 shrink-0"
+          className={large ? 'size-64 shrink-0' : 'h-32 w-32 shrink-0'}
           viewBox="0 0 160 160"
           aria-hidden="true"
           focusable="false"
