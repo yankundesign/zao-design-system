@@ -83,18 +83,18 @@ tokens:
 
 The labeled outer wrapper carries `data-zao-component="select"`. Base UI Select owns the single selected string/null value, a native button trigger with combobox semantics, option list, and hidden form input when applicable. This is not a native HTML `<select>` and is not a shared raised Button trigger. The recessed field and its target remain stationary.
 
-| Literal `data-zao-slot`    | Owner and presence                                                                                           |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `root`, `label`            | Outer field and BaseSelect.Label, always rendered.                                                           |
-| `trigger`, `value`, `icon` | Native trigger, committed-value/placeholder carrier, and decorative caret.                                   |
-| `portal`                   | BaseSelect.Portal mounts floating content into the local outer wrapper; `contents` avoids a flex-layout box. |
-| `popup`                    | Floating frame, mounted through Base UI's open/close lifecycle.                                              |
-| `viewport`, `list`         | Bounded scrolling region and named BaseSelect.List.                                                          |
-| `item`, `item-text`        | One option and label per supplied option.                                                                    |
-| `indicator-space`          | A permanent 4-fen (16px) carrier per option, retaining row geometry.                                         |
-| `item-indicator`           | Base UI mounts the committed-value checkmark as appropriate.                                                 |
-| `reveal-edge`              | Decorative sibling of the viewport; authored in the package, but moving-lip styling is study-only.           |
-| `error`, `description`     | Outer guidance siblings, each mounted when its corresponding content is truthy.                              |
+| Literal `data-zao-slot`    | Owner and presence                                                                                                                                                                                                                                  |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`, `label`            | Outer field and BaseSelect.Label, always rendered.                                                                                                                                                                                                  |
+| `trigger`, `value`, `icon` | Native trigger, committed-value/placeholder carrier, and decorative caret. Since Nov 13 (CR4) the caret turns half a turn while the list is open (`field-open-cue`), instantly, as Menu's indicator does.                                           |
+| `portal`                   | BaseSelect.Portal mounts floating content into the local outer wrapper; `contents` avoids a flex-layout box.                                                                                                                                        |
+| `popup`                    | Floating frame, mounted through Base UI's open/close lifecycle.                                                                                                                                                                                     |
+| `viewport`, `list`         | Bounded scrolling region and named BaseSelect.List.                                                                                                                                                                                                 |
+| `item`, `item-text`        | One option and label per supplied option.                                                                                                                                                                                                           |
+| `indicator-space`          | A permanent 4-fen (16px) carrier per option, retaining row geometry.                                                                                                                                                                                |
+| `item-indicator`           | Base UI mounts the committed-value checkmark as appropriate.                                                                                                                                                                                        |
+| `reveal-edge`              | Decorative sibling of the viewport; authored in the package, but moving-lip styling is study-only.                                                                                                                                                  |
+| `error`, `description`     | Outer guidance siblings, each mounted when its corresponding content is truthy. Since Nov 13 (CR3) the error is a flex row: a decorative warning glyph (`error-icon`, hidden from assistive technology, in the message's ink) and then the message. |
 
 Base UI positioners, focus guards, and hidden form inputs are not additional authored slots. `data-zao-field-frame`, invalid/disabled markers, `data-zao-option-value`, and the transient exit-highlight marker are existing attributes, not parts or props. Popup `::before`/`::after` paint the two banded planes; no separate side/base/joint slot exists.
 

@@ -86,20 +86,20 @@ tokens:
 
 The outer field carries `data-zao-component="combobox"`. A native label targets the generated input ID. Base UI owns the editable combobox, the selected string/null, auxiliary native actions and option list. The input-group frame and native targets stay fixed; the input text does not ride a lifted face.
 
-| Literal `data-zao-slot`             | Owner and presence                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `root`, `label`                     | Always-present wrapper and native label associated by `htmlFor`.                                       |
-| `input-group`, `input`              | Stationary recessed group and native BaseCombobox.Input.                                               |
-| `clear-space`                       | Always-present 7-fen (28px) carrier, retaining input width when Clear is absent.                       |
-| `clear`                             | Base UI clear button, mounted as the selected-value lifecycle requires; no `keepMounted` override.     |
-| `trigger`                           | Native button named `Open ${label} options`, with decorative caret.                                    |
-| `portal`                            | Local Base UI portal wrapper using `contents` to avoid a flex-layout box.                              |
-| `popup`, `viewport`, `list`         | Conditional floating frame, available-height scroll viewport and named option list.                    |
-| `empty`                             | Base UI empty-filter result; visible text is `No matches found.`                                       |
-| `item`, `item-text`                 | Filtered option target and its label.                                                                  |
-| `indicator-space`, `item-indicator` | Reserved 16px mark carrier and conditionally mounted committed-value checkmark.                        |
-| `reveal-edge`                       | Decorative sibling of viewport; package hook whose moving-lip styling exists only in Quiet instrument. |
-| `error`, `description`              | Associated guidance siblings when the corresponding content is truthy.                                 |
+| Literal `data-zao-slot`             | Owner and presence                                                                                                                                                                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `root`, `label`                     | Always-present wrapper and native label associated by `htmlFor`.                                                                                                                                                                           |
+| `input-group`, `input`              | Stationary recessed group and native BaseCombobox.Input.                                                                                                                                                                                   |
+| `clear-space`                       | Always-present 7-fen (28px) carrier, retaining input width when Clear is absent.                                                                                                                                                           |
+| `clear`                             | Base UI clear button, mounted as the selected-value lifecycle requires; no `keepMounted` override.                                                                                                                                         |
+| `trigger`                           | Native button named `Open ${label} options`, with decorative caret. Since Nov 13 (CR4) its caret turns half a turn while the list is open (`field-open-cue`), instantly.                                                                   |
+| `portal`                            | Local Base UI portal wrapper using `contents` to avoid a flex-layout box.                                                                                                                                                                  |
+| `popup`, `viewport`, `list`         | Conditional floating frame, available-height scroll viewport and named option list.                                                                                                                                                        |
+| `empty`                             | Base UI empty-filter result; visible text is `No matches found.`                                                                                                                                                                           |
+| `item`, `item-text`                 | Filtered option target and its label.                                                                                                                                                                                                      |
+| `indicator-space`, `item-indicator` | Reserved 16px mark carrier and conditionally mounted committed-value checkmark.                                                                                                                                                            |
+| `reveal-edge`                       | Decorative sibling of viewport; package hook whose moving-lip styling exists only in Quiet instrument.                                                                                                                                     |
+| `error`, `description`              | Associated guidance siblings when the corresponding content is truthy. Since Nov 13 (CR3) the error is a flex row: a decorative warning glyph (`error-icon`, hidden from assistive technology, in the message's ink) and then the message. |
 
 Input-group frame markers, option values, last exit highlight, Base UI focus guards and hidden form inputs are not additional slots or public props. The popup's own pseudo-elements draw its two banded planes; physical side/base/joint and recessed wall concepts create no elements.
 

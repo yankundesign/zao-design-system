@@ -1453,6 +1453,14 @@
   }
 }
 
+/* Select and Combobox (Nov 13, CR4): the trigger's caret turns while its list is open, as
+ * Menu's does. Instant, like Menu's. */
+@utility field-open-cue {
+  &[aria-expanded='true'] .field-caret {
+    transform: rotate(180deg);
+  }
+}
+
 /* One progress value keeps the reveal and its leading edge together, including reversal. */
 @property --zao-menu-reveal-progress {
   syntax: '<number>';

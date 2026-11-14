@@ -145,9 +145,9 @@ export function Combobox({
           <BaseCombobox.Trigger
             data-zao-slot="trigger"
             aria-label={`Open ${label} options`}
-            className="inline-flex h-full min-h-6 min-w-7 shrink-0 items-center justify-center pl-1 pr-2 text-muted outline-focus hover:text-default data-disabled:text-disabled"
+            className="field-open-cue inline-flex h-full min-h-6 min-w-7 shrink-0 items-center justify-center pl-1 pr-2 text-muted outline-focus hover:text-default data-disabled:text-disabled"
           >
-            <svg className="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <svg className="field-caret size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.5" />
             </svg>
           </BaseCombobox.Trigger>
