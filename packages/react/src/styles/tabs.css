@@ -140,9 +140,13 @@
     transform: translate(-50%, -50%);
   }
 
+  /* A rule whose :has() sits on an ancestor names its target by class. Chromium shares one
+   * invalidation set across every such rule and applies it below any element a :has() tests,
+   * so an attribute here (data-zao-slot) restyled every slotted part on the page on any
+   * insertion. The class matches the same element. */
   .tabs-list:has(> .tabs-tab[data-active]:is(:active, [data-zao-pressed]))
     > .tabs-indicator
-    > [data-zao-slot='selection-line'] {
+    > .tabs-selection-line {
     block-size: var(--tabs-stroke);
   }
 
@@ -314,7 +318,7 @@
 
     &:has(> .tabs-tab[data-active]:is(:active, [data-zao-pressed]))
       > .tabs-indicator
-      > [data-zao-slot='selection-line'] {
+      > .tabs-selection-line {
       inline-size: var(--tabs-stroke);
       block-size: auto;
     }

@@ -452,6 +452,14 @@
   );
   --zao-construction-side: var(--zao-plane-x-near);
 
+  /* Where the planes start, their near bands paint the shaded edges, so the native border stays
+   * lit all round. Chromium mitres a bevelled border's sides across the whole box: with unequal
+   * opposite sides, a part more than twice as wide as tall drew its shaded bottom side along the
+   * middle of the top edge (and a tall one its left side down the right edge). */
+  &:where(.construction-planes) {
+    border-color: var(--zao-card-edge-lit);
+  }
+
   @media (forced-colors: active) {
     border-color: CanvasText;
   }

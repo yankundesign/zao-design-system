@@ -141,15 +141,22 @@
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
-.zao-message:has([data-zao-slot='actions'][data-zao-placement='header'])
+/* Unguarded on purpose: a message is a flex column, where grid-column does nothing, until the
+ * rule above makes it a grid. A :has() guard on an ancestor with a featureless target made
+ * Chromium restyle every element below any :has() anchor (the whole page) on any insertion. */
+.zao-message
   > :not([data-zao-slot='header']):not([data-zao-slot='actions'][data-zao-placement='header']) {
   grid-column: 1 / -1;
 }
 
+/* A rule with :last-child on an ancestor names its target by class. When a part stops being its
+ * parent's last child, Chromium restyles whatever below it the rule could reach; an attribute
+ * here (data-zao-slot) reached every slotted part, so appending to a page-level container
+ * restyled them all. The class matches the same element. */
 .zao-conversation-list
   > li:not(:last-child)
   > .zao-message
-  > [data-zao-slot='actions'][data-zao-placement='header'] {
+  > .zao-message-actions[data-zao-placement='header'] {
   opacity: 0;
   transition: opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
 }
@@ -158,7 +165,7 @@
   .zao-conversation-list
     > li:not(:last-child):is(:hover, :focus-within)
     > .zao-message
-    > [data-zao-slot='actions'][data-zao-placement='header'] {
+    > .zao-message-actions[data-zao-placement='header'] {
     opacity: 1;
   }
 }
@@ -167,7 +174,7 @@
   .zao-conversation-list
     > li:not(:last-child)
     > .zao-message
-    > [data-zao-slot='actions'][data-zao-placement='header'] {
+    > .zao-message-actions[data-zao-placement='header'] {
     opacity: 1;
   }
 }
