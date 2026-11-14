@@ -2,7 +2,7 @@
 
 ZAO names a component’s functional parts with `data-zao-slot` and identifies its authored container with `data-zao-component`. These are existing styling hooks, not a replacement for native semantics or the component API. Qualify a part by its owning component before styling it: the same role can have different native semantics or paint in different components.
 
-This catalog includes all 85 package-authored slot names and all 17 component markers. Names are static; parts may be conditional, portal-mounted, or supplied by a compound component. Host-added hooks and Base UI’s internal focus guards, hidden form fields and positioners are outside this catalog. An icon implementation must forward supplied SVG props to expose its `icon` hook.
+This catalog includes all 87 package-authored slot names and all 17 component markers. Names are static; parts may be conditional, portal-mounted, or supplied by a compound component. Host-added hooks and Base UI’s internal focus guards, hidden form fields and positioners are outside this catalog. An icon implementation must forward supplied SVG props to expose its `icon` hook.
 
 The source owners below identify where a hook is authored. Reused Button hooks remain Button-authored even when a component composes Button. No public hooks need renaming for this catalog.
 
@@ -62,6 +62,7 @@ Shared Button hooks also appear through IconButton, Menu.Trigger, Dialog.Trigger
 | `face`                 | Front painted plane: Button content surface or Switch thumb surface.                                              | Button, Switch                                                                         |
 | `facts`                | Definition list of request facts shown by ApprovalGate.                                                           | ApprovalGate                                                                           |
 | `footer`               | Native table footer group (`tfoot`).                                                                              | Table                                                                                  |
+| `gauge`                | Decorative run gauge in a Plan header: one hairline tick per step beside the count.                               | Plan                                                                                   |
 | `graduation`           | Primary Tabs mark at an actual adjacent-tab gap midpoint: full height when horizontal, minor when vertical.       | Tabs                                                                                   |
 | `guidance`             | Visually hidden Composer keyboard instructions associated with the draft.                                         | Composer                                                                               |
 | `head`                 | Native table header cell (`th`) with row or column scope.                                                         | Table                                                                                  |
@@ -98,6 +99,7 @@ Shared Button hooks also appear through IconButton, Menu.Trigger, Dialog.Trigger
 | `selection-line`       | Primary Tabs selected line centered on the ruler guide.                                                           | Tabs                                                                                   |
 | `steps`                | Ordered list carrying the Plan's step sequence.                                                                   | Plan                                                                                   |
 | `separator`            | Semantic divider between Menu action groups.                                                                      | Menu                                                                                   |
+| `shortcut`             | A Menu item's keyboard shortcut as people read it, at the trailing edge.                                          | Menu                                                                                   |
 | `side`                 | Decorative layer carrying the two banded side planes between face and fixed base.                                 | Button, Composer                                                                       |
 | `spinner`              | Decorative loading SVG using Button's functional loading motion.                                                  | Button                                                                                 |
 | `status`               | Visible Plan state word or non-complete Message lifecycle wording.                                                | Message, Plan                                                                          |

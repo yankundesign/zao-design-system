@@ -519,6 +519,34 @@
     margin-block-end: var(--zao-space-2);
   }
 
+  /* The run gauge (Nov 13, CR17): one hairline tick per step beside the count. A finished step
+   * is a full tick in ink, as the ring draws its used marks long; the rest are half ticks in
+   * the muted ink, and a failed step is a full tick in the danger ink. Borders, so forced
+   * colors keep the ticks and their lengths. */
+  & .zao-plan-reading {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--zao-space-2);
+  }
+  & .zao-plan-gauge {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: var(--zao-space-0-5);
+    block-size: var(--zao-space-2);
+  }
+  & .zao-plan-tick {
+    block-size: 50%;
+    border-inline-start: var(--zao-stroke-hairline) solid var(--zao-color-fg-muted);
+  }
+  & .zao-plan-tick:is([data-zao-tick='done'], [data-zao-tick='declined']) {
+    block-size: 100%;
+    border-color: var(--zao-color-fg-default);
+  }
+  & .zao-plan-tick[data-zao-tick='failed'] {
+    block-size: 100%;
+    border-color: var(--zao-color-danger-text);
+  }
+
   & .zao-plan-steps {
     margin: 0;
     padding: 0;

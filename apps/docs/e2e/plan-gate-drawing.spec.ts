@@ -224,3 +224,54 @@ test('Plan and approval records fit a narrow canvas and retain their constructio
   const segment = await step.evaluate((node) => getComputedStyle(node, '::after').backgroundColor);
   expect(segment).not.toBe('rgba(0, 0, 0, 0)');
 });
+
+test('Plan draws its count as a gauge: one tick per step, finished steps long and in ink', async ({
+  page,
+}) => {
+  await page.goto('/components/plan');
+  const plan = page.locator('[data-zao-component="plan"]').first();
+  const gauge = plan.locator('[data-zao-slot="gauge"]');
+  await expect(gauge).toHaveAttribute('aria-hidden', 'true');
+  const ticks = gauge.locator('.zao-plan-tick');
+  await expect(ticks).toHaveCount(await plan.locator('[data-zao-slot="step"]').count());
+  // The sentence still carries the count; the gauge only draws it.
+  await expect(plan.locator('[data-zao-slot="summary"]')).toContainText('2 of 7 done');
+
+  const reading = await gauge.evaluate((node) => {
+    const sample = (token: string) => {
+      const probe = document.createElement('span');
+      probe.style.color = `var(${token})`;
+      node.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    };
+    return {
+      ink: sample('--zao-color-fg-default'),
+      muted: sample('--zao-color-fg-muted'),
+      danger: sample('--zao-color-danger-text'),
+      ticks: Array.from(node.querySelectorAll<HTMLElement>('.zao-plan-tick'), (tick) => ({
+        status: tick.dataset.zaoTick,
+        height: tick.getBoundingClientRect().height,
+        width: getComputedStyle(tick).borderInlineStartWidth,
+        color: getComputedStyle(tick).borderInlineStartColor,
+      })),
+    };
+  });
+  // The order of the ticks is the order of the steps.
+  expect(reading.ticks.map((tick) => tick.status)).toEqual(
+    await plan
+      .locator('[data-zao-slot="step"]')
+      .evaluateAll((steps) => steps.map((step) => (step as HTMLElement).dataset.zaoStatus)),
+  );
+  for (const tick of reading.ticks) {
+    expect(tick.width).toBe('1px');
+    if (tick.status === 'done' || tick.status === 'declined') {
+      expect(tick).toMatchObject({ height: 8, color: reading.ink });
+    } else if (tick.status === 'failed') {
+      expect(tick).toMatchObject({ height: 8, color: reading.danger });
+    } else {
+      expect(tick).toMatchObject({ height: 4, color: reading.muted });
+    }
+  }
+});

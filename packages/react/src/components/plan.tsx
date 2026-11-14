@@ -91,9 +91,21 @@ const Root = forwardRef<HTMLElement, PlanRootProps>(function PlanRoot(
         <span id={`${id}-label`} data-zao-slot="label" className="type-label font-medium">
           {label}
         </span>
-        <span data-zao-slot="summary" className="type-caption figures-tabular text-muted">
-          {pending ? '' : 'Finished · '}
-          {finished} of {steps.length} done
+        <span className="zao-plan-reading">
+          {/* One tick per step, in order: the count, drawn. The sentence beside it says it. */}
+          <span data-zao-slot="gauge" aria-hidden="true" className="zao-plan-gauge">
+            {steps.map((step, index) => (
+              <span
+                key={step.key ?? index}
+                className="zao-plan-tick"
+                data-zao-tick={(step.props as PlanStepProps).status}
+              />
+            ))}
+          </span>
+          <span data-zao-slot="summary" className="type-caption figures-tabular text-muted">
+            {pending ? '' : 'Finished · '}
+            {finished} of {steps.length} done
+          </span>
         </span>
       </header>
       <PlanAnnounceContext.Provider value={announce}>
