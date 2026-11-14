@@ -783,3 +783,35 @@ test('a Menu item shows its shortcut at the trailing edge and exposes it once', 
   await page.keyboard.press('Escape');
   await expect(popup).toHaveCount(0);
 });
+
+test('in RTL a shortcut sits at the trailing edge and its keys keep their order', async ({
+  page,
+}) => {
+  await page.goto('/components/menu');
+  await page.evaluate(() => {
+    document.documentElement.dir = 'rtl';
+  });
+  const specimen = page.locator('.study [data-zao-specimen="menu-shortcuts"]');
+  await specimen.getByRole('button', { name: 'Edit', exact: true }).click();
+  const redo = specimen.getByRole('menuitem', { name: 'Redo', exact: true });
+  const shortcut = redo.locator('[data-zao-slot="shortcut"]');
+  await expect(shortcut).toHaveAttribute('dir', 'ltr');
+  const order = await shortcut.evaluate((node) => {
+    // Each key's left edge, in the order the keys are written.
+    const text = node.firstChild!;
+    const range = document.createRange();
+    return Array.from(node.textContent!, (_, index) => {
+      range.setStart(text, index);
+      range.setEnd(text, index + 1);
+      return range.getBoundingClientRect().left;
+    });
+  });
+  expect(order).toEqual([...order].sort((a, b) => a - b));
+  const edges = await redo.evaluate((item) => {
+    const keys = item.querySelector('[data-zao-slot="shortcut"]')!.getBoundingClientRect();
+    const box = item.getBoundingClientRect();
+    return { toLeft: keys.left - box.left, toRight: box.right - keys.right };
+  });
+  // The trailing edge is the left one in RTL.
+  expect(edges.toLeft).toBeLessThan(edges.toRight);
+});

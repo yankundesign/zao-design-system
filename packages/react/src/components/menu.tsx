@@ -111,6 +111,8 @@ export function Menu({ trigger, items, disabled, size = 'default', className }: 
                       {item.shortcut ? (
                         <span
                           data-zao-slot="shortcut"
+                          // Keys read in one order everywhere: "⌘Z" must not become "Z⌘" in RTL.
+                          dir="ltr"
                           aria-hidden={item.keyShortcuts ? true : undefined}
                           className="ms-auto font-mono type-caption whitespace-nowrap text-muted"
                         >
