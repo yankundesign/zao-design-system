@@ -113,19 +113,19 @@ Sources: [implementation/types](../../packages/react/src/components/combobox.tsx
 
 ## States
 
-| State/input        | Current contract                                                                                                                                                          |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Size               | `small`, `default` (default), `large`; same label/text roles and option-row minimum.                                                                                      |
-| No selection       | Optional placeholder, default `Choose an option`; Clear is absent but reserved space remains.                                                                             |
-| Filtering          | Input query filters the existing option set; typing alone does not create a new selected value.                                                                           |
-| No matches         | `No matches found.`; this is an empty result, not automatic invalid/error state.                                                                                          |
-| Rest/hover/focus   | Published canvas well and field edge; normal enabled hover uses `border-strong`. Study adds square light/dark frame, focus-within emphasis and one outside group outline. |
-| Invalid            | Truthy external error supplies group marker, input `aria-invalid`, invalid edge and associated error. Invalid overrides normal hover.                                     |
-| Disabled field     | Base UI prevents editing/opening/clearing; disabled ink and fill. In the study the noninvalid disabled edge is subtle; invalid wins when combined.                        |
-| Disabled option    | Identified, without active emphasis or value commitment.                                                                                                                  |
-| Highlighted option | Enabled navigation fill only; input retains focus and virtual option highlighting.                                                                                        |
-| Selected option    | Independent checkmark identifies the committed value; highlighting a different row does not replace it.                                                                   |
-| Closing            | Last highlight paint persists through dismissal using presentation-only state.                                                                                            |
+| State/input        | Current contract                                                                                                                                                                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Size               | `small`, `default` (default), `large`; same label/text roles and option-row minimum.                                                                                                                                                          |
+| No selection       | Optional placeholder, default `Choose an option`; Clear is absent but reserved space remains.                                                                                                                                                 |
+| Filtering          | Input query filters the existing option set; typing alone does not create a new selected value. Since Nov 13 (CR5) the first run of each option's label that matches the typed text is set in `font-medium`; a committed value marks nothing. |
+| No matches         | `No matches found.`; this is an empty result, not automatic invalid/error state.                                                                                                                                                              |
+| Rest/hover/focus   | Published canvas well and field edge; normal enabled hover uses `border-strong`. Study adds square light/dark frame, focus-within emphasis and one outside group outline.                                                                     |
+| Invalid            | Truthy external error supplies group marker, input `aria-invalid`, invalid edge and associated error. Invalid overrides normal hover.                                                                                                         |
+| Disabled field     | Base UI prevents editing/opening/clearing; disabled ink and fill. In the study the noninvalid disabled edge is subtle; invalid wins when combined.                                                                                            |
+| Disabled option    | Identified, without active emphasis or value commitment.                                                                                                                                                                                      |
+| Highlighted option | Enabled navigation fill only; input retains focus and virtual option highlighting.                                                                                                                                                            |
+| Selected option    | Independent checkmark identifies the committed value; highlighting a different row does not replace it.                                                                                                                                       |
+| Closing            | Last highlight paint persists through dismissal using presentation-only state.                                                                                                                                                                |
 
 There is no exposed read-only, loading, freeform creation, multiple-selection, input-query state, or controlled-open API. The host supplies options and externally validated error content; the wrapper does not implement async search or a fetching state. Published field-role contrast promises apply to normal/invalid edges on canvas and surface, not disabled-only ink.
 

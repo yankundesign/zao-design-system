@@ -35,6 +35,8 @@ interface ScrollContextValue {
   label: string;
   didCommit: boolean;
   atLatest: boolean;
+  /** Messages added to the list since the reader left its end; 0 at the end. */
+  arrived: number;
   registerViewport: (element: HTMLDivElement | null) => void;
   registerList: (element: HTMLOListElement | null) => void;
   scrollToLatest: () => void;
@@ -139,6 +141,22 @@ const Root = forwardRef<HTMLElement, ConversationRootProps>(function Conversatio
     previousGeometry.current = geometry(element);
     setAtLatest(true);
   }, []);
+
+  // Count what arrives while the reader is away from the end, for Latest's label. A message
+  // that only grows adds nothing: the count is of list items.
+  const [arrived, setArrived] = useState(0);
+  useEffect(() => {
+    if (atLatest || !list) {
+      setArrived(0);
+      return;
+    }
+    const baseline = list.children.length;
+    const observer = new MutationObserver(() => {
+      setArrived(Math.max(0, list.children.length - baseline));
+    });
+    observer.observe(list, { childList: true });
+    return () => observer.disconnect();
+  }, [atLatest, list]);
 
   const reportAnnouncement = useCallback((message: string) => {
     setAutomaticAnnouncement(message);
@@ -252,8 +270,16 @@ const Root = forwardRef<HTMLElement, ConversationRootProps>(function Conversatio
   }, [viewport, list, scrollToLatest]);
 
   const scrollContext = useMemo(
-    () => ({ label, atLatest, didCommit, registerViewport, registerList, scrollToLatest }),
-    [label, atLatest, didCommit, scrollToLatest],
+    () => ({
+      label,
+      atLatest,
+      arrived,
+      didCommit,
+      registerViewport,
+      registerList,
+      scrollToLatest,
+    }),
+    [label, atLatest, arrived, didCommit, scrollToLatest],
   );
 
   return (
@@ -337,10 +363,15 @@ const Item = forwardRef<HTMLLIElement, ConversationItemProps>(function Conversat
 });
 
 const Latest = forwardRef<HTMLElement, ConversationLatestProps>(function ConversationLatest(
-  { className, children = 'Latest response', size = 'small', onClick, onFocus, onBlur, ...props },
+  { className, children, size = 'small', onClick, onFocus, onBlur, ...props },
   ref,
 ) {
-  const { atLatest, scrollToLatest } = useConversationScroll();
+  const { atLatest, arrived, scrollToLatest } = useConversationScroll();
+  // The host's own label wins. Otherwise the control says how many messages arrived while the
+  // reader was away, and falls back to its plain name when none did.
+  const label =
+    children ??
+    (arrived > 0 ? `${arrived} new ${arrived === 1 ? 'message' : 'messages'}` : 'Latest response');
   const [focused, setFocused] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -415,7 +446,7 @@ const Latest = forwardRef<HTMLElement, ConversationLatestProps>(function Convers
         onBlur?.(event);
       }}
     >
-      {children}
+      {label}
     </Button>
   );
 });

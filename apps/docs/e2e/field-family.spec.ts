@@ -578,3 +578,34 @@ for (const field of choices) {
     await expect(caret).toHaveCSS('transform', 'none');
   });
 }
+
+test('combobox: a filtered option shows the run that matched, and a committed value marks nothing', async ({
+  page,
+}) => {
+  const study = await openPage(page, 'combobox', contexts[0]);
+  const root = study
+    .locator('[data-zao-component="combobox"]')
+    .filter({ has: page.getByRole('combobox', { name: 'Destination workspace' }) });
+  const input = root.locator('[data-zao-slot="input"]');
+  const items = root.locator('[data-zao-slot="item"]');
+  const matches = root.locator('.combobox-match');
+
+  await input.click();
+  await expect(items.first()).toBeVisible();
+  await expect(matches).toHaveCount(0);
+
+  await input.pressSequentially('ST');
+  await expect(items).toHaveCount(2);
+  // Case-insensitive, the label's own letters, and the medium weight.
+  await expect(matches).toHaveText(['st', 'st']);
+  await expect(matches.first()).toHaveCSS('font-weight', '500');
+  await expect(items.first()).toHaveText('East workspace');
+  await expect(items.first()).toHaveAccessibleName('East workspace');
+
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(input).toHaveValue('East workspace');
+  await root.locator('[data-zao-slot="trigger"]').click();
+  await expect(items.first()).toBeVisible();
+  await expect(matches).toHaveCount(0);
+});

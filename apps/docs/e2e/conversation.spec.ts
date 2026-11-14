@@ -324,6 +324,39 @@ test('streaming follows at the end, preserves a next draft, and stopping keeps p
   await expect(conversation.locator('[data-zao-slot="announcement"]')).toContainText(/stop/i);
 });
 
+test('Latest counts the messages that arrive while the reader is away, and not a message that grows', async ({
+  page,
+}) => {
+  const { specimen, conversation, viewport } = await openConversation(page);
+  await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
+  const latest = conversation.locator('[data-zao-slot="latest"]');
+  await viewport.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await expect(latest).toHaveText('Latest response');
+
+  // A late result grows the current message: nothing new to count.
+  await specimen.getByRole('button', { name: 'Add late result', exact: true }).click();
+  await expect(latest).toHaveText('Latest response');
+
+  // A request and its response are two new list items.
+  const input = specimen.getByRole('textbox', { name: 'Follow-up request', exact: true });
+  await input.fill('Compare this with last week.');
+  await input.press('Control+Enter');
+  await expect(latest).toHaveText('2 new messages');
+  await expect(latest).toHaveAccessibleName('2 new messages');
+  expect(await viewport.evaluate((element) => element.scrollTop)).toBe(0);
+
+  await latest.click();
+  await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
+  // Back at the end the count is spent; the next departure starts from none.
+  await expect(latest).toHaveCount(0);
+  await viewport.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await expect(latest).toHaveText('Latest response');
+});
+
 test('scrolling back during streaming suspends following and announces lifecycle rather than tokens', async ({
   page,
 }) => {
