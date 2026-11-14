@@ -598,7 +598,13 @@ test('combobox: a filtered option shows the run that matched, and a committed va
   await expect(items).toHaveCount(2);
   // Case-insensitive, the label's own letters, and the medium weight.
   await expect(matches).toHaveText(['st', 'st']);
-  await expect(matches.first()).toHaveCSS('font-weight', '500');
+  const weights = await matches.first().evaluate((match) => ({
+    match: getComputedStyle(match).fontWeight,
+    label: getComputedStyle(match.parentElement!).fontWeight,
+    medium: getComputedStyle(match).getPropertyValue('--zao-font-weight-medium').trim(),
+  }));
+  expect(weights.match).toBe(weights.medium);
+  expect(Number(weights.match)).toBeGreaterThan(Number(weights.label));
   await expect(items.first()).toHaveText('East workspace');
   await expect(items.first()).toHaveAccessibleName('East workspace');
 

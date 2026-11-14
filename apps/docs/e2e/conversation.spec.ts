@@ -349,8 +349,9 @@ test('Latest counts the messages that arrive while the reader is away, and not a
 
   await latest.click();
   await expect.poll(() => distanceFromEnd(viewport)).toBeLessThanOrEqual(1);
-  // Back at the end the count is spent; the next departure starts from none.
-  await expect(latest).toHaveCount(0);
+  // Back at the end the count is spent. The control keeps its place while it holds focus, and
+  // the next departure starts from none.
+  await expect(latest).toHaveText('Latest response');
   await viewport.evaluate((element) => {
     element.scrollTop = 0;
   });

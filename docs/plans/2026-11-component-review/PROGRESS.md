@@ -2,47 +2,93 @@
 
 Companion to [the plan](README.md). Keep this current so work can stop and resume.
 
-**Status, Nov 13, 2026:** Yankun approved wave 0. It is built on `claude/component-review-wave-0` (not pushed, not merged). Every other row waits for its gate.
+**Status, Nov 13, 2026:** Wave 0 is in pull request 6 (`claude/component-review-wave-0`). Waves 1, 3 and 4 are built on `claude/component-review-wave-1`, stacked on wave 0 and not pushed. Wave 2 is six private studies on the same branch that wait for Yankun's choice. Two rows are open: CR16 and CR12.
 
 ## Resume here
 
-1. Wave 0 needs a merge into `main`. Ask Yankun before pushing or opening a pull request.
-2. Ask Yankun which rows of waves 1–4 he approves.
-3. For an approved row, run the review sheet on its part and fill in that part's line below before building.
-4. Build one row per pull request, and update the row's state here.
+1. Wave 0 needs a merge into `main` (pull request 6). `claude/component-review-wave-1` is stacked on it; ask Yankun before pushing it or opening its pull request.
+2. Show Yankun `/studies/component-review` and record his choice for S1, CR1, CR18, CR9, CR8 and CR10. Publish a study only after he chooses, one row per commit, with a changeset, and remove its section from the studies page.
+3. Ask Yankun what ComposerContextChip gains (CR16), and whether the table upgrades plan starts (CR12).
+4. Run the seven-lens review sheet for a part before publishing a study for it, and record it under "Review sheets".
 
 ## Every part
 
 "First pass" is the Nov 13 look described in the plan: one mode for most pages, Chromium only. "Full" means all seven lines of the review sheet are answered and recorded under "Review sheets" below.
 
-| Part                | Review                                                   | Improvement                 | Gate       | State                                         |
-| ------------------- | -------------------------------------------------------- | --------------------------- | ---------- | --------------------------------------------- |
-| Button              | First pass                                               | Result on the face          | CR1        | Proposed, study first                         |
-| IconButton          | First pass, plus light, dark and 3× close-ups            | Tooltip construction        | CR2        | Built Nov 13, wave 1                          |
-| TextField           | First pass, plus light, dark, RTL, forced colors, 360px  | Correction glyph            | CR3        | Built Nov 13, wave 1                          |
-| Select              | First pass, plus open and closed in light                | Open cue                    | CR4        | Built Nov 13, wave 1                          |
-| Combobox            | First pass                                               | Matched run                 | CR5        | Proposed                                      |
-| Menu                | First pass                                               | Item shortcut               | CR6        | Proposed                                      |
-| Dialog              | First pass                                               | `Dialog.Actions`            | CR7        | Proposed                                      |
-| Tabs                | First pass                                               | Leading selection line      | CR8        | Proposed, study first                         |
-| Switch              | First pass                                               | Dragged face                | CR9        | Proposed, study first                         |
-| Progress            | First pass                                               | Seat at full                | CR10       | Proposed                                      |
-| Card                | First pass                                               | Bevel sliver fix A          | CR11       | Built Nov 13, wave 0                          |
-| Table               | Oct 15                                                   | Table upgrades plan         | CR12       | Follows that plan                             |
-| Conversation        | First pass                                               | Latest counts               | CR13       | Proposed                                      |
-| Message             | First pass                                               | Scoped actions rules        | CR14       | Built Nov 13, wave 0                          |
-| Composer            | First pass                                               | Drop and paste files        | CR15       | Proposed                                      |
-| ComposerContextChip | First pass, plus a 67-character name at 1280px and 360px | None yet                    | CR16       | Finding did not hold; not built; needs Yankun |
-| Plan                | First pass                                               | Run gauge                   | CR17       | Proposed                                      |
-| ApprovalGate        | First pass                                               | Hold to approve             | CR18       | Proposed, study first                         |
-| Ring                | First pass                                               | Larger on its page          | CR19       | Proposed                                      |
-| Meter               | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                          |
-| Share strip         | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                          |
-| Bar                 | First pass                                               | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed      |
-| Line                | First pass                                               | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed      |
-| Heatmap             | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                          |
-| Histogram           | First pass                                               | Inspection cost, ruler tick | CR20, CR21 | CR20 built Nov 13, wave 0; CR21 proposed      |
-| Loading mark        | First pass                                               | Stepped mark (five parts)   | S1         | Proposed, study first                         |
+| Part                | Review                                                   | Improvement                 | Gate       | State                                                                    |
+| ------------------- | -------------------------------------------------------- | --------------------------- | ---------- | ------------------------------------------------------------------------ |
+| Button              | First pass, plus 3× close-ups                            | Result on the face          | CR1        | Study built; waits for Yankun                                            |
+| IconButton          | First pass, plus light, dark and 3× close-ups            | Tooltip construction        | CR2        | Built Nov 13, wave 1                                                     |
+| TextField           | First pass, plus light, dark, RTL, forced colors, 360px  | Correction glyph            | CR3        | Built Nov 13, wave 1                                                     |
+| Select              | First pass, plus open and closed in light                | Open cue                    | CR4        | Built Nov 13, wave 1                                                     |
+| Combobox            | First pass, plus 3× close-ups                            | Matched run                 | CR5        | Built Nov 13, wave 3                                                     |
+| Menu                | First pass, plus 3× close-ups                            | Item shortcut               | CR6        | Built Nov 13, wave 3                                                     |
+| Dialog              | First pass, plus 3× close-ups                            | `Dialog.Actions`            | CR7        | Built Nov 13, wave 3                                                     |
+| Tabs                | First pass, plus 3× close-ups                            | Leading selection line      | CR8        | Study built; waits for Yankun                                            |
+| Switch              | First pass, plus 3× close-ups                            | Dragged face                | CR9        | Study built; waits for Yankun                                            |
+| Progress            | First pass, plus 3× close-ups                            | Seat at full, or flush      | CR10       | Study built; waits for Yankun                                            |
+| Card                | First pass                                               | Bevel sliver fix A          | CR11       | Built Nov 13, wave 0                                                     |
+| Table               | Oct 15                                                   | Table upgrades plan         | CR12       | Not started: its own plan and task                                       |
+| Conversation        | First pass, plus 3× close-ups                            | Latest counts               | CR13       | Built Nov 13, wave 3                                                     |
+| Message             | First pass                                               | Scoped actions rules        | CR14       | Built Nov 13, wave 0                                                     |
+| Composer            | First pass, plus 3× close-ups                            | Drop and paste files        | CR15       | Built Nov 13, wave 3                                                     |
+| ComposerContextChip | First pass, plus a 67-character name at 1280px and 360px | None yet                    | CR16       | Finding did not hold; not built; needs Yankun                            |
+| Plan                | First pass, plus 3× close-ups                            | Run gauge                   | CR17       | Built Nov 13, wave 3                                                     |
+| ApprovalGate        | First pass, plus 3× close-ups                            | Hold to approve             | CR18       | Study built; waits for Yankun                                            |
+| Ring                | First pass, plus 3× close-ups                            | Larger on its page          | CR19       | Built Nov 13, wave 4                                                     |
+| Meter               | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                                                     |
+| Share strip         | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                                                     |
+| Bar                 | First pass, plus 3× close-ups                            | Inspection cost, ruler tick | CR20, CR21 | Built Nov 13, waves 0 and 4                                              |
+| Line                | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0; CR21 left out, its guide already crosses the ruler |
+| Heatmap             | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                                                     |
+| Histogram           | First pass, plus 3× close-ups                            | Inspection cost, ruler tick | CR20, CR21 | Built Nov 13, waves 0 and 4                                              |
+| Loading mark        | First pass, plus 3× close-ups                            | Stepped mark (five parts)   | S1         | Study built; waits for Yankun                                            |
+
+## Waves 1 to 4 (Nov 13)
+
+On Nov 13 Yankun said to continue with waves 1–4. Each built row takes its gate's lean; a "study first" row is a private comparison. All of it is on `claude/component-review-wave-1`, cut from the wave 0 branch, one commit per row or pair of rows.
+
+| Wave | Row                           | Outcome                                                                         |
+| ---- | ----------------------------- | ------------------------------------------------------------------------------- |
+| 1    | CR2 IconButton tooltip        | Built. `tooltip-construction construction-planes` at `depth.rest.small`.        |
+| 1    | CR3 field correction          | Built. A warning glyph before the message in TextField, Select and Combobox.    |
+| 1    | CR4 field open cue            | Built. The caret turns while the list is open, in Select and Combobox.          |
+| 1    | CR16 context chip             | **Not built.** The finding did not hold: a long name already wraps, under test. |
+| 3    | CR5 Combobox match            | Built. The matched run in `font-medium`; a committed value marks nothing.       |
+| 3    | CR6 Menu shortcut             | Built, with `keyShortcuts` added for `aria-keyshortcuts`.                       |
+| 3    | CR7 `Dialog.Actions`          | Built. Stacks in DOM order under 20rem, not primary first.                      |
+| 3    | CR13 Latest count             | Built. Says "message", not "result".                                            |
+| 3    | CR15 Composer drop and paste  | Built. A dashed perimeter at rest while files are held over the tray.           |
+| 3    | CR17 Plan gauge               | Built. Finished steps are full ticks; the rest are half ticks.                  |
+| 4    | CR19 Ring size                | Built. 256px on the Ring page.                                                  |
+| 4    | CR21 ruler tick               | Built for Bar and Histogram. Line left out.                                     |
+| 4    | CR12 Table                    | **Not started.** It follows its own plan, which has six open gates.             |
+| 2    | S1, CR1, CR18, CR9, CR8, CR10 | Studies built at `/studies/component-review`. None published.                   |
+
+**Where the build departs from a lean, and why.**
+
+- **CR6.** `keyShortcuts` was added: "⌘K" is what people read but is not valid `aria-keyshortcuts`.
+- **CR7.** Stacked actions keep their DOM order (primary last). Primary first would need a reversed visual order, which breaks the match between focus order and reading order.
+- **CR13.** The count is of list items, which includes the reader's own request, so the label says "message".
+- **CR15.** The tray uses the dashed drawing a removing context tag uses. The whole `construction-drawing` utility would also redraw the tray's buttons.
+- **CR17.** Unfinished steps are half height as well as muted. Two inks alone are hard to tell apart at one hairline.
+- **CR21.** Line already draws its inspection guide through the ruler, so a tick there would be hidden.
+
+**What the studies found.**
+
+- **CR8.** The lean named the roles the wrong way round. Slide is 157.5ms and Reveal is 198ms in Su, so the leading end must travel on Slide for the line to stretch and close. The study does that.
+- **CR10.** Seating the face by `depth.contact` is one pixel and barely reads. The study adds B, where the face fills its frame at full, for comparison.
+- **CR18.** The hold timing has to hang on the press itself (`:active`), not on host state: a frame of React latency started the face on the 80ms Seat role instead. A published version needs the same care.
+- **CR18.** The row must keep its actions still while held. A note that changed width moved the button from under the pointer and cancelled the hold.
+
+**Checked Nov 13.** `pnpm build`, `pnpm typecheck` and `pnpm format:check` pass. `pnpm test` ran in full once after waves 1, 3 and 4: tokens 94, engine 44 and lab 31 pass, and 734 of 736 docs browser cases passed. Both failures were in new tests (one expected Latest to unmount while it held focus; one hard-coded a medium weight of 500 where Su's is 530). Both tests were fixed, and the affected specs then passed (125 cases), as did the three studies cases, twice. The full suite was not run again after those test fixes or after the studies page was added.
+
+**Not done.**
+
+- The seven-lens review sheets were not run in full. Each built row was checked in light and dark at 3× and by its new browser cases; RTL, forced colors and 360px were checked for the field correction only. Touch was not exercised for any row.
+- The studies cover left-to-right only for CR8, and no study was checked on a touch device.
+- Frame measurements (`measure-frames.mjs`) were not repeated for the built rows.
+- Nothing on `claude/component-review-wave-1` is pushed.
 
 ## Wave 0 (approved and built Nov 13)
 
