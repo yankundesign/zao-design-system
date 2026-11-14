@@ -2,14 +2,13 @@
 
 Companion to [the plan](README.md). Keep this current so work can stop and resume.
 
-**Status, Nov 13, 2026:** Wave 0 is in pull request 6 (`claude/component-review-wave-0`). Waves 1, 3 and 4 are built on `claude/component-review-wave-1`, stacked on wave 0 and not pushed. Wave 2 is six private studies on the same branch that wait for Yankun's choice. Two rows are open: CR16 and CR12.
+**Status, Nov 14, 2026:** Waves 0 to 4 are built. Wave 0 is in pull request 6 (`claude/component-review-wave-0`). Waves 1 to 4, and the docs page-switching fix, are on `claude/component-review-wave-1`, stacked on it and not pushed. ComposerContextChip was left as it is by Yankun's decision, and Table runs in its own session.
 
 ## Resume here
 
 1. Wave 0 needs a merge into `main` (pull request 6). `claude/component-review-wave-1` is stacked on it; ask Yankun before pushing it or opening its pull request.
-2. Show Yankun `/studies/component-review` and record his choice for S1, CR1, CR18, CR9, CR8 and CR10. Publish a study only after he chooses, one row per commit, with a changeset, and remove its section from the studies page.
-3. Ask Yankun what ComposerContextChip gains (CR16), and whether the table upgrades plan starts (CR12).
-4. Run the seven-lens review sheet for a part before publishing a study for it, and record it under "Review sheets".
+2. Table (CR12) is in its own session, on the table upgrades plan.
+3. Open for Yankun: the forced-colors Button boundary (see "Review sheets"), and whether `Dialog.Actions` should stack primary first.
 
 ## Every part
 
@@ -17,24 +16,24 @@ Companion to [the plan](README.md). Keep this current so work can stop and resum
 
 | Part                | Review                                                   | Improvement                 | Gate       | State                                                                    |
 | ------------------- | -------------------------------------------------------- | --------------------------- | ---------- | ------------------------------------------------------------------------ |
-| Button              | First pass, plus 3× close-ups                            | Result on the face          | CR1        | Study built; waits for Yankun                                            |
+| Button              | First pass, the study, and 3× close-ups                  | Result on the face          | CR1        | Published Nov 14, wave 2                                                 |
 | IconButton          | First pass, plus light, dark and 3× close-ups            | Tooltip construction        | CR2        | Built Nov 13, wave 1                                                     |
 | TextField           | First pass, plus light, dark, RTL, forced colors, 360px  | Correction glyph            | CR3        | Built Nov 13, wave 1                                                     |
 | Select              | First pass, plus open and closed in light                | Open cue                    | CR4        | Built Nov 13, wave 1                                                     |
 | Combobox            | First pass, plus 3× close-ups                            | Matched run                 | CR5        | Built Nov 13, wave 3                                                     |
 | Menu                | First pass, plus 3× close-ups                            | Item shortcut               | CR6        | Built Nov 13, wave 3                                                     |
 | Dialog              | First pass, plus 3× close-ups                            | `Dialog.Actions`            | CR7        | Built Nov 13, wave 3                                                     |
-| Tabs                | First pass, plus 3× close-ups                            | Leading selection line      | CR8        | Study built; waits for Yankun                                            |
-| Switch              | First pass, plus 3× close-ups                            | Dragged face                | CR9        | Study built; waits for Yankun                                            |
-| Progress            | First pass, plus 3× close-ups                            | Seat at full, or flush      | CR10       | Study built; waits for Yankun                                            |
+| Tabs                | First pass, the study, and 3× close-ups                  | Leading selection line      | CR8        | Published Nov 14, wave 2                                                 |
+| Switch              | First pass, the study, and 3× close-ups                  | Dragged face                | CR9        | Published Nov 14, wave 2                                                 |
+| Progress            | First pass, the study, and 3× close-ups                  | Flush at full (B)           | CR10       | Published Nov 14, wave 2                                                 |
 | Card                | First pass                                               | Bevel sliver fix A          | CR11       | Built Nov 13, wave 0                                                     |
-| Table               | Oct 15                                                   | Table upgrades plan         | CR12       | Not started: its own plan and task                                       |
+| Table               | Oct 15                                                   | Table upgrades plan         | CR12       | In its own session (started Nov 14)                                      |
 | Conversation        | First pass, plus 3× close-ups                            | Latest counts               | CR13       | Built Nov 13, wave 3                                                     |
 | Message             | First pass                                               | Scoped actions rules        | CR14       | Built Nov 13, wave 0                                                     |
 | Composer            | First pass, plus 3× close-ups                            | Drop and paste files        | CR15       | Built Nov 13, wave 3                                                     |
-| ComposerContextChip | First pass, plus a 67-character name at 1280px and 360px | None yet                    | CR16       | Finding did not hold; not built; needs Yankun                            |
+| ComposerContextChip | First pass, plus a 67-character name at 1280px and 360px | None                        | CR16       | Closed Nov 14: left as it is, by decision                                |
 | Plan                | First pass, plus 3× close-ups                            | Run gauge                   | CR17       | Built Nov 13, wave 3                                                     |
-| ApprovalGate        | First pass, plus 3× close-ups                            | Hold to approve             | CR18       | Study built; waits for Yankun                                            |
+| ApprovalGate        | First pass, the study, and 3× close-ups                  | Hold to approve             | CR18       | Published Nov 14, wave 2                                                 |
 | Ring                | First pass, plus 3× close-ups                            | Larger on its page          | CR19       | Built Nov 13, wave 4                                                     |
 | Meter               | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                                                     |
 | Share strip         | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                                                     |
@@ -42,7 +41,22 @@ Companion to [the plan](README.md). Keep this current so work can stop and resum
 | Line                | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0; CR21 left out, its guide already crosses the ruler |
 | Heatmap             | First pass                                               | Inspection cost             | CR20       | Built Nov 13, wave 0                                                     |
 | Histogram           | First pass, plus 3× close-ups                            | Inspection cost, ruler tick | CR20, CR21 | Built Nov 13, waves 0 and 4                                              |
-| Loading mark        | First pass, plus 3× close-ups                            | Stepped mark (five parts)   | S1         | Study built; waits for Yankun                                            |
+| Loading mark        | First pass, the study, and 3× close-ups                  | Grade ticks (A), five parts | S1         | Published Nov 14, wave 2                                                 |
+
+## Wave 2, published (Nov 14)
+
+On Nov 14 Yankun chose from the studies: publish CR1, CR8, CR9 and CR18 as studied; S1 A; CR10 B; leave ComposerContextChip as it is (CR16). The private studies page and its tests are removed.
+
+| Row               | What was published                                                                                 | Notes from building it                                                                                                                                                                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1 loading mark   | Eight grade ticks in place of the arc, in every pending state. The mark is a `span`, not an `svg`. | A first version animated a custom property and cost 23ms of style work per second with five marks in view. The published one moves only transforms and costs under 1ms.                                                                                             |
+| CR10 Progress     | At full, the frame and well walls take the face's ink.                                             | B, not the lean.                                                                                                                                                                                                                                                    |
+| CR8 Tabs          | The primary line's leading end on Slide, trailing end on Reveal.                                   | A first version placed the indicator by insets and drifted by 1/64px at rest, which the existing geometry tests caught. The published one keeps the translation and size and transitions four registered lengths. The interruption tests now watch the leading end. |
+| CR9 Switch        | The face follows a drag and settles on the nearer end.                                             | Stopping the click after a drag that ends where it began also needs `preventDefault`, or a wrapping label toggles the Switch anyway.                                                                                                                                |
+| CR1 Button        | `result`, `resultAnnouncement`, `onResultEnd`; IconButton `result`, `resultIcon`.                  | The action keeps its name and width; the result is an overlay hidden from assistive technology, with a polite announcement.                                                                                                                                         |
+| CR18 ApprovalGate | `confirm="hold" \| "dialog"`, `holdLabel`, `cancelLabel`; a drawn `seal-well`.                     | G1 is decided. An activation with no hold behind it (a screen reader's) opens the Dialog. The row must not move under a held pointer, and the hold timing hangs on `:active`.                                                                                       |
+
+**Checked.** The specs for the affected parts pass on a production build (110 cases). The full suite result is recorded under "Final checks" below.
 
 ## Waves 1 to 4 (Nov 13)
 
