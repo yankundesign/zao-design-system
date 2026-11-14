@@ -13,6 +13,7 @@ import type {
   DialogViewportProps as BaseDialogViewportProps,
 } from '@base-ui/react/dialog';
 import { forwardRef } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { Button } from './button.js';
 import type { ButtonProps } from './button.js';
 
@@ -33,6 +34,10 @@ export type DialogPopupProps = StyledPartProps<BaseDialogPopupProps>;
 export type DialogTitleProps = StyledPartProps<BaseDialogTitleProps>;
 export type DialogDescriptionProps = StyledPartProps<BaseDialogDescriptionProps>;
 export type DialogCloseProps = StyledButtonPartProps<BaseDialogCloseProps>;
+export interface DialogActionsProps extends ComponentPropsWithoutRef<'div'> {
+  /** Optional supporting text at the row's leading edge, such as what the action affects. */
+  note?: ReactNode;
+}
 
 function classes(base: string, extra?: string) {
   return extra ? `${base} ${extra}` : base;
@@ -144,6 +149,31 @@ const Close = forwardRef<HTMLButtonElement, DialogCloseProps>(function DialogClo
   );
 });
 
+/**
+ * The row that closes a Dialog: a hairline rule above, an optional note at the leading edge and
+ * the actions at the trailing edge. Put the primary action last. In a narrow popup the actions
+ * stack at full width in the same order, so reading order and focus order agree.
+ */
+const Actions = forwardRef<HTMLDivElement, DialogActionsProps>(function DialogActions(
+  { note, className, children, ...props },
+  ref,
+) {
+  return (
+    <div
+      {...props}
+      ref={ref}
+      data-zao-slot="actions"
+      className={classes('dialog-actions', className)}
+    >
+      {/* An empty note keeps the actions at the trailing edge, as ApprovalGate's row does. */}
+      <span data-zao-slot="note" className="type-caption text-muted">
+        {note}
+      </span>
+      <span className="dialog-actions-buttons">{children}</span>
+    </div>
+  );
+});
+
 /** A modal dialog with accessible title, focus management, and dismissal from Base UI. */
 export const Dialog = {
   Root: BaseDialog.Root,
@@ -155,4 +185,5 @@ export const Dialog = {
   Title,
   Description,
   Close,
+  Actions,
 };

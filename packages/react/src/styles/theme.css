@@ -798,6 +798,40 @@
   gap: var(--zao-space-2);
 }
 
+/* Dialog.Actions (Nov 13, CR7): ApprovalGate's action row, closing a Dialog. A hairline rule
+ * above, a note at the leading edge, the actions at the trailing edge. The row is its own
+ * container: under 20rem the actions stack at full width, in their own order. */
+@utility dialog-actions {
+  container-type: inline-size;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--zao-space-2) var(--zao-space-3);
+  min-block-size: var(--zao-size-control-md);
+  padding-block-start: var(--zao-space-3);
+  border-block-start: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+
+  & > [data-zao-slot='note']:empty {
+    display: none;
+  }
+  & > .dialog-actions-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--zao-space-2);
+    margin-inline-start: auto;
+  }
+  @container (max-width: 20rem) {
+    & > .dialog-actions-buttons {
+      flex-direction: column;
+      align-items: stretch;
+      inline-size: 100%;
+    }
+  }
+}
+
 @utility approval-gate-record {
   display: flex;
   align-items: center;
