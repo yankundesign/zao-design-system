@@ -557,3 +557,24 @@ for (const field of fields) {
     expect(reading.text?.length).toBeGreaterThan(0);
   });
 }
+
+for (const field of choices) {
+  test(`${field}: the caret turns while the list is open and the trigger stays put`, async ({
+    page,
+  }) => {
+    const study = await openPage(page, field, contexts[0]);
+    const root = study.locator(`[data-zao-component="${field}"]`).first();
+    const trigger = root.locator('[data-zao-slot="trigger"]');
+    const caret = trigger.locator('.field-caret');
+    const closed = await box(trigger);
+    await expect(caret).toHaveCSS('transform', 'none');
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    // Half a turn, as Menu's indicator; instant.
+    await expect(caret).toHaveCSS('transform', 'matrix(-1, 0, 0, -1, 0, 0)');
+    expect(await box(trigger)).toEqual(closed);
+    await page.keyboard.press('Escape');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(caret).toHaveCSS('transform', 'none');
+  });
+}
