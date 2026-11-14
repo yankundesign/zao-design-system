@@ -1,4 +1,12 @@
 /* A fixed reference track and one quantitative face, shared by Su and Yu. */
+/* How far a finished track's frame has taken the face's ink (CR10). Registered so it can
+ * transition as a number. */
+@property --progress-complete {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
 @layer components {
   .progress-construction [data-zao-slot='label'] {
     overflow-wrap: anywhere;
@@ -19,21 +27,39 @@
     position: absolute;
     z-index: 1;
     inset: 0;
-    border: var(--zao-stroke-hairline) solid var(--zao-color-border-subtle);
+    /* How far the frame and walls have taken the face's ink: 0 below full, 1 at full. */
+    --progress-complete: 0;
+    --progress-to-ink: calc(var(--progress-complete) * 100%);
+    border: var(--zao-stroke-hairline) solid
+      color-mix(
+        in oklch,
+        var(--zao-color-seal-ink-solid) var(--progress-to-ink),
+        var(--zao-color-border-subtle)
+      );
     /* A recessed track: stepped walls on the edges facing away from the viewer. */
     --zao-well-face: var(--zao-color-bg-sunken);
+    --progress-wall-near: light-dark(
+      color-mix(in oklch, var(--zao-well-face), black 20%),
+      color-mix(in oklch, var(--zao-well-face), black 60%)
+    );
+    --progress-wall-far: light-dark(
+      color-mix(in oklch, var(--zao-well-face), black 10%),
+      color-mix(in oklch, var(--zao-well-face), black 30%)
+    );
     box-shadow:
       inset calc(-1 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
         calc(-1 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
-        light-dark(
-          color-mix(in oklch, var(--zao-well-face), black 20%),
-          color-mix(in oklch, var(--zao-well-face), black 60%)
+        color-mix(
+          in oklch,
+          var(--zao-color-seal-ink-solid) var(--progress-to-ink),
+          var(--progress-wall-near)
         ),
       inset calc(-2 * var(--zao-depth-axis-x) * var(--zao-depth-contact))
         calc(-2 * var(--zao-depth-axis-y) * var(--zao-depth-contact)) 0
-        light-dark(
-          color-mix(in oklch, var(--zao-well-face), black 10%),
-          color-mix(in oklch, var(--zao-well-face), black 30%)
+        color-mix(
+          in oklch,
+          var(--zao-color-seal-ink-solid) var(--progress-to-ink),
+          var(--progress-wall-far)
         );
     pointer-events: none;
   }
@@ -88,14 +114,12 @@
    * on the Seat role, after the reading has arrived on Slide. A first reading at full is
    * simply drawn that way. */
   .progress-construction > [data-zao-slot='track']::before {
-    transition:
-      border-color var(--zao-motion-duration-seat) var(--zao-motion-easing-seat),
-      box-shadow var(--zao-motion-duration-seat) var(--zao-motion-easing-seat);
+    /* One number moves, not the colors, so a change of mode never lags behind it. */
+    transition: --progress-complete var(--zao-motion-duration-seat) var(--zao-motion-easing-seat);
   }
 
   .progress-construction > [data-zao-slot='track'][data-complete]::before {
-    border-color: var(--zao-color-seal-ink-solid);
-    box-shadow: none;
+    --progress-complete: 1;
     transition-delay: var(--zao-motion-duration-slide);
   }
 

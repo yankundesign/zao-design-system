@@ -180,19 +180,26 @@ for (const mode of ['light', 'dark'] as const) {
         .evaluate((track) => {
           const frame = getComputedStyle(track, '::before');
           const face = getComputedStyle(track.querySelector('[data-zao-slot="indicator"]')!);
+          const inks = frame.boxShadow.match(/(?:oklch|rgb|color)\([^)]*\)/g) ?? [];
           return {
             complete: track.hasAttribute('data-complete'),
             frameIsFaceInk: frame.borderTopColor === face.backgroundColor,
-            walls: frame.boxShadow !== 'none',
+            // The walls are still drawn at full, in the face's own ink, so they cannot be seen.
+            wallsAreFaceInk: inks.length === 2 && inks.every((ink) => ink === face.backgroundColor),
             height: track.getBoundingClientRect().height,
           };
         });
-    const finished = await read('Prepare workspace');
-    const running = await read('Upload files');
     // At full the frame and the well's walls take the face's ink: one solid block.
-    expect(finished).toMatchObject({ complete: true, frameIsFaceInk: true, walls: false });
+    await expect
+      .poll(() => read('Prepare workspace'))
+      .toMatchObject({ complete: true, frameIsFaceInk: true, wallsAreFaceInk: true });
     // Below full the recessed well is unchanged, and the track is the same size either way.
-    expect(running).toMatchObject({ complete: false, frameIsFaceInk: false, walls: true });
-    expect(finished.height).toBe(running.height);
+    const running = await read('Upload files');
+    expect(running).toMatchObject({
+      complete: false,
+      frameIsFaceInk: false,
+      wallsAreFaceInk: false,
+    });
+    expect((await read('Prepare workspace')).height).toBe(running.height);
   });
 }

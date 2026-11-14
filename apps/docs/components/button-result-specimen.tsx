@@ -37,21 +37,21 @@ export function ButtonResultSpecimen() {
         />
         <Button
           loading={save === 'saving'}
-          loadingAnnouncement="Saving changes"
-          result={save === 'saved' ? 'Saved' : null}
-          resultAnnouncement="Saved changes"
+          loadingAnnouncement="Publishing changes"
+          result={save === 'saved' ? 'Published' : null}
+          resultAnnouncement="Published changes"
           onResultEnd={() => setSave('idle')}
           onClick={() => {
             setSave('saving');
             window.setTimeout(() => setSave('saved'), 900);
           }}
         >
-          Save changes
+          Publish changes
         </Button>
       </div>
       <p className="type-caption text-muted">
         Press an action. The face stays seated while it reads the result, then lifts. This local
-        demo copies and saves nothing.
+        demo copies and publishes nothing.
       </p>
     </div>
   );
