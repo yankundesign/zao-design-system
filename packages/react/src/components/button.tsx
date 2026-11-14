@@ -39,19 +39,20 @@ const sizeClasses: Record<ButtonSize, string> = {
   large: 'h-10 px-4',
 };
 
+/**
+ * The pending mark: eight hairline ticks, one per motion grade, that fill in eight steps per
+ * loading duration and start again. The ticks are a pixel wide and two apart in a box of any
+ * size. Only transforms move, so the mark keeps stepping while the page is busy.
+ */
 export function LoadingIndicator() {
   return (
-    <svg
-      data-zao-slot="spinner"
-      className="button-loading-indicator"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M12 3a9 9 0 1 1-9 9" />
-    </svg>
+    <span data-zao-slot="spinner" className="button-loading-indicator" aria-hidden="true">
+      <span className="button-loading-ticks">
+        <span className="button-loading-window">
+          <span className="button-loading-lit" />
+        </span>
+      </span>
+    </span>
   );
 }
 

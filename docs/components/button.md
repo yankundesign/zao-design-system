@@ -90,7 +90,7 @@ The native `<button>` carries `data-zao-component="button"`. It owns activation,
 | `button-label`                  | Children within that group. Plain children otherwise sit directly in `face`.                                                            |
 | `leading-icon`, `trailing-icon` | Decorative icon carriers, mounted when the corresponding prop is supplied.                                                              |
 | `trailing-action`               | Decorative indicator pinned to the logical end. It does not create another action or target.                                            |
-| `spinner`                       | One decorative pending indicator, present while loading.                                                                                |
+| `spinner`                       | One decorative pending mark, present while loading: eight hairline ticks that fill a tick per step (Nov 14, S1 A).                      |
 | `loading-overlay`               | Centered pending indicator when no icon carrier exists; overlays the retained label.                                                    |
 | `loading-announcement`          | Visually hidden sibling after the native button, mounted whenever `loading` is defined, including `false`.                              |
 
@@ -168,14 +168,14 @@ Here `saving` starts false and `saveDraft` updates the host's state. For form su
 
 ## Motion
 
-| Response                      | Duration token            | Easing token                           | Current Su resolution         |
-| ----------------------------- | ------------------------- | -------------------------------------- | ----------------------------- |
-| Hover lift and return/release | `motion.duration.lift`    | `motion.easing.lift`                   | Grade 7, 157.5ms; fold-enter  |
-| Press seating                 | `motion.duration.seat`    | `motion.easing.seat`                   | Fast, 80ms; standard          |
-| Face fill/perimeter emphasis  | `motion.duration.fast`    | `motion.easing.standard`               | 80ms; standard                |
-| Focus bracket approach        | `motion.duration.grade.7` | `motion.easing.fold-enter`             | 157.5ms; fold-enter           |
-| Focus bracket opacity         | `motion.duration.fast`    | `motion.easing.standard`               | 80ms; standard                |
-| Functional pending indicator  | `motion.duration.loading` | Linear rotation in the loading utility | 1000ms per turn while pending |
+| Response                      | Duration token            | Easing token                                             | Current Su resolution         |
+| ----------------------------- | ------------------------- | -------------------------------------------------------- | ----------------------------- |
+| Hover lift and return/release | `motion.duration.lift`    | `motion.easing.lift`                                     | Grade 7, 157.5ms; fold-enter  |
+| Press seating                 | `motion.duration.seat`    | `motion.easing.seat`                                     | Fast, 80ms; standard          |
+| Face fill/perimeter emphasis  | `motion.duration.fast`    | `motion.easing.standard`                                 | 80ms; standard                |
+| Focus bracket approach        | `motion.duration.grade.7` | `motion.easing.fold-enter`                               | 157.5ms; fold-enter           |
+| Focus bracket opacity         | `motion.duration.fast`    | `motion.easing.standard`                                 | 80ms; standard                |
+| Functional pending indicator  | `motion.duration.loading` | Eight steps in the loading utility; only transforms move | 1000ms per fill while pending |
 
 Lift aliases grade 7: the structural grade height is 5.25 and Su's grade unit is 30ms. The exact faceted `linear()` fold is generated from the roof-fold rule. Seat remains shorter than release. Component code reads the tokens; these numbers describe the present resolution, not independent values to copy. Button return uses lift/fold-enter, not fold-exit.
 

@@ -255,7 +255,7 @@
 }
 
 .zao-message [data-zao-slot='status'] .button-loading-indicator {
-  inline-size: var(--zao-space-3);
+  inline-size: var(--zao-space-4);
   block-size: var(--zao-space-3);
 }
 
