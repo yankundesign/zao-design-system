@@ -2,7 +2,7 @@
 
 ZAO names a component’s functional parts with `data-zao-slot` and identifies its authored container with `data-zao-component`. These are existing styling hooks, not a replacement for native semantics or the component API. Qualify a part by its owning component before styling it: the same role can have different native semantics or paint in different components.
 
-This catalog includes all 84 package-authored slot names and all 17 component markers. Names are static; parts may be conditional, portal-mounted, or supplied by a compound component. Host-added hooks and Base UI’s internal focus guards, hidden form fields and positioners are outside this catalog. An icon implementation must forward supplied SVG props to expose its `icon` hook.
+This catalog includes all 85 package-authored slot names and all 17 component markers. Names are static; parts may be conditional, portal-mounted, or supplied by a compound component. Host-added hooks and Base UI’s internal focus guards, hidden form fields and positioners are outside this catalog. An icon implementation must forward supplied SVG props to expose its `icon` hook.
 
 The source owners below identify where a hook is authored. Reused Button hooks remain Button-authored even when a component composes Button. No public hooks need renaming for this catalog.
 
@@ -58,6 +58,7 @@ Shared Button hooks also appear through IconButton, Menu.Trigger, Dialog.Trigger
 | `detail`               | Optional supporting text below a Plan step title.                                                                 | Plan                                                                                   |
 | `empty`                | No-match message in the Combobox popup.                                                                           | Combobox                                                                               |
 | `error`                | Visible field, send or response failure and recovery guidance.                                                    | Combobox, Composer, Message, Select, TextField                                         |
+| `error-icon`           | Decorative warning glyph before a field's correction, shared by TextField, Select and Combobox.                   | FieldCorrection                                                                        |
 | `face`                 | Front painted plane: Button content surface or Switch thumb surface.                                              | Button, Switch                                                                         |
 | `facts`                | Definition list of request facts shown by ApprovalGate.                                                           | ApprovalGate                                                                           |
 | `footer`               | Native table footer group (`tfoot`).                                                                              | Table                                                                                  |

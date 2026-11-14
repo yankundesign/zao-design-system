@@ -3,6 +3,7 @@
 import { Select as BaseSelect } from '@base-ui/react/select';
 import { useId } from 'react';
 import type { ReactNode } from 'react';
+import { FieldCorrection } from './field-correction.js';
 import { useFieldPopup } from './use-field-popup.js';
 
 export type SelectSize = 'small' | 'default' | 'large';
@@ -180,8 +181,12 @@ export function Select({
         </BaseSelect.Portal>
       </BaseSelect.Root>
       {error && (
-        <div id={errorId} data-zao-slot="error" className="type-caption text-danger">
-          {error}
+        <div
+          id={errorId}
+          data-zao-slot="error"
+          className="flex items-start gap-1 type-caption text-danger"
+        >
+          <FieldCorrection>{error}</FieldCorrection>
         </div>
       )}
       {description && (

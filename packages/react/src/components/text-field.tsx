@@ -3,6 +3,7 @@
 import { Field } from '@base-ui/react/field';
 import { forwardRef } from 'react';
 import type { ComponentProps, ReactNode, Ref } from 'react';
+import { FieldCorrection } from './field-correction.js';
 
 export type TextFieldSize = 'small' | 'default' | 'large';
 
@@ -66,8 +67,12 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
           .join(' ')}
       />
       {error && (
-        <Field.Error match data-zao-slot="error" className="type-caption text-danger">
-          {error}
+        <Field.Error
+          match
+          data-zao-slot="error"
+          className="flex items-start gap-1 type-caption text-danger"
+        >
+          <FieldCorrection>{error}</FieldCorrection>
         </Field.Error>
       )}
       {description && (

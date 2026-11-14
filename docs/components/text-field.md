@@ -53,13 +53,13 @@ tokens:
 
 The Base UI Field wrapper carries `data-zao-component="text-field"`. Its `Field.Control` renders the native `<input>` and receives the forwarded `HTMLInputElement` ref. The field frame, native input target, text, outside focus outline, and neighboring layout stay stationary; the recess is paint rather than a moving face.
 
-| Literal `data-zao-slot` | Owner and presence                                                    |
-| ----------------------- | --------------------------------------------------------------------- |
-| `root`                  | Always-present Field wrapper; vertical label/control/guidance layout. |
-| `label`                 | Always-present Field.Label; visible name associated by Base UI.       |
-| `control`               | Always-present native input through Field.Control.                    |
-| `error`                 | Field.Error with `match`, mounted when `error` is truthy.             |
-| `description`           | Field.Description, mounted when `description` is truthy.              |
+| Literal `data-zao-slot` | Owner and presence                                                                                                                                                                                                                                                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `root`                  | Always-present Field wrapper; vertical label/control/guidance layout.                                                                                                                                                                                                                                                     |
+| `label`                 | Always-present Field.Label; visible name associated by Base UI.                                                                                                                                                                                                                                                           |
+| `control`               | Always-present native input through Field.Control.                                                                                                                                                                                                                                                                        |
+| `error`                 | Field.Error with `match`, mounted when `error` is truthy. Since Nov 13 (CR3) it is a flex row: a decorative warning glyph (`error-icon`, Iconoir's warning triangle at `size.icon.sm`, hidden from assistive technology, in the message's ink) and then the message, so the correction is marked by shape as well as hue. |
+| `description`           | Field.Description, mounted when `description` is truthy.                                                                                                                                                                                                                                                                  |
 
 `data-zao-field-frame`, `data-zao-invalid`, and `data-zao-disabled` mark the input's existing frame/state; they are not slots. There is no separate face, well-wall, base, or contact-edge element. `construction-well field-well` draws stepped inner walls from the canvas face and `depth.contact` (currently 1px), along the screen axis (right/up). Forced colors remove those walls.
 

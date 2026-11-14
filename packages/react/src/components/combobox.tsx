@@ -3,6 +3,7 @@
 import { Combobox as BaseCombobox } from '@base-ui/react/combobox';
 import { useId, useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { FieldCorrection } from './field-correction.js';
 import { useFieldPopup } from './use-field-popup.js';
 
 export type ComboboxSize = 'small' | 'default' | 'large';
@@ -218,8 +219,12 @@ export function Combobox({
         </BaseCombobox.Portal>
       </BaseCombobox.Root>
       {error && (
-        <div id={errorId} data-zao-slot="error" className="type-caption text-danger">
-          {error}
+        <div
+          id={errorId}
+          data-zao-slot="error"
+          className="flex items-start gap-1 type-caption text-danger"
+        >
+          <FieldCorrection>{error}</FieldCorrection>
         </div>
       )}
       {description && (

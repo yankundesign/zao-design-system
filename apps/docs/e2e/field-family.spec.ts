@@ -519,3 +519,41 @@ test.describe('touch', () => {
     });
   }
 });
+
+for (const field of fields) {
+  test(`${field}: a correction is marked by a decorative glyph as well as its hue`, async ({
+    page,
+  }) => {
+    const study = await openPage(page, field, contexts[0]);
+    const error = study.locator(`[data-zao-component="${field}"] [data-zao-slot="error"]`).first();
+    await expect(error).toBeVisible();
+    const glyph = error.locator('svg[data-zao-slot="error-icon"]');
+    await expect(glyph).toHaveAttribute('aria-hidden', 'true');
+    await expect(glyph).toHaveAttribute('focusable', 'false');
+    const reading = await error.evaluate((node) => {
+      const glyph = node.querySelector('svg')!;
+      const message = glyph.nextElementSibling!;
+      const glyphBox = glyph.getBoundingClientRect();
+      const messageBox = message.getBoundingClientRect();
+      return {
+        first: node.firstElementChild === glyph,
+        size: [glyphBox.width, glyphBox.height],
+        // One caption line: the glyph shares the message's first line box.
+        sameLine: Math.abs(glyphBox.top - messageBox.top) <= 1,
+        before: glyphBox.right <= messageBox.left,
+        ink: getComputedStyle(glyph).color === getComputedStyle(message).color,
+        text: node.textContent,
+      };
+    });
+    expect(reading).toMatchObject({
+      first: true,
+      size: [16, 16],
+      sameLine: true,
+      before: true,
+      ink: true,
+    });
+    // The glyph adds nothing to the message a screen reader hears.
+    expect(reading.text).toBe(reading.text?.trim());
+    expect(reading.text?.length).toBeGreaterThan(0);
+  });
+}
