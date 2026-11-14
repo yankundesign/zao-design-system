@@ -185,7 +185,7 @@ describe('approved Quiet instrument finish values', () => {
 });
 
 describe('loading indicator timing', () => {
-  it('resolves one-second loading rotations with reduced-motion guidance in every context', () => {
+  it('resolves one-second loading fills with reduced-motion guidance in every context', () => {
     for (const ctx of contexts) {
       const token = resolved[ctx.id]!['motion.duration.loading'];
       expect(token?.$type, `loading duration type in ${ctx.id}`).toBe('duration');
@@ -194,7 +194,8 @@ describe('loading indicator timing', () => {
         unit: 'ms',
       });
       expect(token?.$description, `loading usage in ${ctx.id}`).toMatch(
-        /linear.*loading|loading.*linear/i,
+        // The mark is stepped, never spun (component review, S1).
+        /step.*loading|loading.*step/i,
       );
       expect(token?.$description, `reduced-motion guidance in ${ctx.id}`).toMatch(
         /reduced motion.*static/i,
