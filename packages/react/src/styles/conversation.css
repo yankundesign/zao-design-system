@@ -149,10 +149,14 @@
   grid-column: 1 / -1;
 }
 
+/* A rule with :last-child on an ancestor names its target by class. When a part stops being its
+ * parent's last child, Chromium restyles whatever below it the rule could reach; an attribute
+ * here (data-zao-slot) reached every slotted part, so appending to a page-level container
+ * restyled them all. The class matches the same element. */
 .zao-conversation-list
   > li:not(:last-child)
   > .zao-message
-  > [data-zao-slot='actions'][data-zao-placement='header'] {
+  > .zao-message-actions[data-zao-placement='header'] {
   opacity: 0;
   transition: opacity var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
 }
@@ -161,7 +165,7 @@
   .zao-conversation-list
     > li:not(:last-child):is(:hover, :focus-within)
     > .zao-message
-    > [data-zao-slot='actions'][data-zao-placement='header'] {
+    > .zao-message-actions[data-zao-placement='header'] {
     opacity: 1;
   }
 }
@@ -170,7 +174,7 @@
   .zao-conversation-list
     > li:not(:last-child)
     > .zao-message
-    > [data-zao-slot='actions'][data-zao-placement='header'] {
+    > .zao-message-actions[data-zao-placement='header'] {
     opacity: 1;
   }
 }

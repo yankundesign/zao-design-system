@@ -144,7 +144,10 @@ const Actions = forwardRef<HTMLDivElement, MessageActionsProps>(function Message
       ref={ref}
       data-zao-slot="actions"
       data-zao-placement={placement}
-      className={classes('flex min-w-0 flex-wrap items-center gap-2', className)}
+      className={classes(
+        'zao-message-actions flex min-w-0 flex-wrap items-center gap-2',
+        className,
+      )}
     />
   );
 });
