@@ -35,6 +35,7 @@ export type {
   DialogTitleProps,
   DialogDescriptionProps,
   DialogCloseProps,
+  DialogActionsProps,
 } from './components/dialog.js';
 export { Menu } from './components/menu.js';
 export type { MenuProps, MenuAction, MenuSize } from './components/menu.js';

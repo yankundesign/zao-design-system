@@ -26,12 +26,12 @@ function DialogSizeSpecimen({ size }: { size: ButtonSize }) {
                 <Dialog.Description>
                   Approving gives the three invited members access to North workspace.
                 </Dialog.Description>
-                <div className="flex flex-wrap justify-end gap-2 pt-2">
+                <Dialog.Actions>
                   <Dialog.Close size={size}>Cancel {size}</Dialog.Close>
                   <Dialog.Close size={size} variant="primary">
                     Approve {size}
                   </Dialog.Close>
-                </div>
+                </Dialog.Actions>
               </div>
             </Dialog.Popup>
           </Dialog.Viewport>
@@ -59,12 +59,12 @@ export function DialogSpecimen() {
                 <Dialog.Description>
                   Approving gives the three invited members access to North workspace.
                 </Dialog.Description>
-                <div className="flex flex-wrap justify-end gap-2 pt-2">
+                <Dialog.Actions note="3 members · North workspace">
                   <Dialog.Close>Cancel</Dialog.Close>
                   <Dialog.Close variant="primary" onClick={() => setApproved(true)}>
                     Approve access
                   </Dialog.Close>
-                </div>
+                </Dialog.Actions>
               </div>
             </Dialog.Popup>
           </Dialog.Viewport>

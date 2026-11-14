@@ -318,3 +318,58 @@ for (const mode of modes) {
     await expect(trigger).toBeFocused();
   });
 }
+
+test('Dialog.Actions closes a dialog with a ruled row: note leading, actions trailing, primary last', async ({
+  page,
+}) => {
+  await page.goto('/components/dialog');
+  await page.locator('.study [data-zao-slot="trigger"]').first().click();
+  const popup = page.locator('[data-zao-component="dialog"]');
+  await expect(popup).toBeVisible();
+  const actions = popup.locator('[data-zao-slot="actions"]');
+  await expect(actions.locator('[data-zao-slot="note"]')).toHaveText('3 members · North workspace');
+  await expect(actions.getByRole('button')).toHaveText(['Cancel', 'Approve access']);
+  await expect(actions.getByRole('button').last()).toHaveAttribute('data-zao-variant', 'primary');
+  const row = await actions.evaluate((node) => {
+    const style = getComputedStyle(node);
+    const hairline = document.createElement('span');
+    hairline.style.width = 'var(--zao-stroke-hairline)';
+    node.append(hairline);
+    const stroke = getComputedStyle(hairline).width;
+    hairline.remove();
+    const box = node.getBoundingClientRect();
+    const note = node.querySelector('[data-zao-slot="note"]')!.getBoundingClientRect();
+    const buttons = Array.from(node.querySelectorAll('button'), (button) =>
+      button.getBoundingClientRect(),
+    );
+    return {
+      rule: style.borderTopWidth === stroke && style.borderTopStyle === 'solid',
+      noteLeading: Math.round(note.left - box.left),
+      actionsTrailing: Math.round(box.right - buttons.at(-1)!.right),
+      oneLine: Math.abs(buttons[0]!.top - buttons[1]!.top) <= 1,
+    };
+  });
+  expect(row).toEqual({ rule: true, noteLeading: 0, actionsTrailing: 0, oneLine: true });
+});
+
+test('in a narrow dialog the actions stack at full width in focus order', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto('/components/dialog');
+  await page.locator('.study [data-zao-slot="trigger"]').first().click();
+  const actions = page.locator('[data-zao-component="dialog"] [data-zao-slot="actions"]');
+  await expect(actions).toBeVisible();
+  const stack = await actions.evaluate((node) => {
+    const width = node.getBoundingClientRect().width;
+    return Array.from(node.querySelectorAll('button'), (button) => {
+      const box = button.getBoundingClientRect();
+      return {
+        label: button.textContent,
+        full: Math.round(box.width) === Math.round(width),
+        top: box.top,
+      };
+    });
+  });
+  expect(stack.map((button) => button.label)).toEqual(['Cancel', 'Approve access']);
+  expect(stack.every((button) => button.full)).toBe(true);
+  expect(stack[1]!.top).toBeGreaterThan(stack[0]!.top);
+});
