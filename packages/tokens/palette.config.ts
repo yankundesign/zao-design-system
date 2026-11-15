@@ -79,8 +79,12 @@ export const finishes: Record<'su' | 'yu', FinishInput> = {
     contrast: 0.5,
     // The azurite seal 青 (V1, Oct 11): the mineral blue of 碾玉装. Opt in with
     // data-zao-seal="azurite"; the mode files map it to color.seal.azurite.*.
+    // Nov 14 (azurite plan, Z1 and Z2): chroma raised from 0.10 to 0.13 so the seal still
+    // reads as blue on 2px marks; the dark face stays light, with an ink label. The input is
+    // 0.131: at exactly 0.13 the unused light step 1 lands on the sRGB gamut's edge, and the
+    // shipped CSS rounds its hue 0.3 degrees away from the token JSON (lab parity test).
     extraRamps: {
-      azurite: { hue: 261, chroma: 0.1, solid: { light: 0.42, dark: 0.75 } },
+      azurite: { hue: 259, chroma: 0.131, solid: { light: 0.4, dark: 0.72 } },
     },
   },
   yu: {
@@ -91,7 +95,7 @@ export const finishes: Record<'su' | 'yu', FinishInput> = {
     contrast: 0.5,
     // Completeness entry so every finish ships the same seal tokens; not Yu design work.
     extraRamps: {
-      azurite: { hue: 261, chroma: 0.1, solid: { light: 0.42, dark: 0.75 } },
+      azurite: { hue: 259, chroma: 0.131, solid: { light: 0.4, dark: 0.72 } },
     },
   },
 };

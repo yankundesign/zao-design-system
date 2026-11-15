@@ -6,9 +6,10 @@ import { finishes } from '../palette.config.ts';
 
 // Updated Oct 11 for the finish plan: warm ink neutrals (V1b), the ink seal and the
 // azurite seal ramp (V1). Change these only with an intended palette change.
+// Updated Nov 14 for the azurite plan (Z1): the azurite ramp at hue 259, chroma 0.131.
 const baselineHashes: Record<string, string> = {
-  su: '3bd406c9c6b52eccef48cbb3efe12254be701ca8d37dc5baa9976d74a85b8e8e',
-  yu: 'c8fd82dfbcc53f69076b9671ce27b229b9a3bb274ebbdb2f4d6edc5d5054b573',
+  su: 'a15ce471ebf0d19ce1efe52a93296fa96e0f6b2584a5861c5ebbfb13e0761e27',
+  yu: '16dfd7ddbcd53218e89f6f177205a491aaf3e8118b8b66dce2cdcc87d6781deb',
 };
 
 describe('palette generator preserves its original output', () => {
