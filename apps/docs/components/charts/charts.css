@@ -92,7 +92,8 @@
   display: inline-block;
   inline-size: var(--zao-space-1-5);
   block-size: var(--zao-space-1-5);
-  background: var(--zao-color-fg-default);
+  /* The accent carries the seal (azurite plan C1, Nov 14); data ink stays ink. */
+  background: var(--zao-color-accent-solid);
 }
 
 @media (forced-colors: active) {

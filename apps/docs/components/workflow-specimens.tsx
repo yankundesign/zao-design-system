@@ -205,7 +205,7 @@ function ApprovalRecordSample({
 }) {
   const { theme, resolved } = useFinish();
   return (
-    <div {...finish(theme, resolved)} data-zao-seal={seal === 'azurite' ? 'azurite' : undefined}>
+    <div {...finish(theme, resolved)} data-zao-seal={seal}>
       <ApprovalGate
         title={`${seal === 'ink' ? 'Ink' : 'Azurite'} seal record`}
         approveLabel="Approve"

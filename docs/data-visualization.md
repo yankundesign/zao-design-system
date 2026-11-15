@@ -13,7 +13,7 @@ Yankun shared a short recording of an audio instrument: fine radial strokes arou
 1. **One stroke per datum.** Draw thin strokes only when each one is a real observation, a bin, or one part of a whole. A dense comb of strokes is a histogram, not a texture. Never fill a mark with decorative hatching.
 2. **Solid for structure, dashed for comparison.** Baselines and axes are solid hairlines with graduations and end stops, like the Tabs ruler. A dashed line always means a reference value: an average, a previous period, a target, or a median. Label it. Like that ruler it answers inspection: in Bar and Histogram a tick at the major length stands under the inspected datum, in ink, and leaves with the inspection. It is an inspection state, so it is instant (rule 5 holds).
 3. **Four slots around the plot.** The top row names the series in mono: on the left, the identifier a person or agent would query (`latency.p95`); on the right, the scale, sampling, or period. Below the plot, a summary sentence in sans says what the chart shows. The bottom row is the readout on the left and the unit on the right, in mono. Inspection writes into the readout; there is no floating tooltip.
-4. **One accent square.** Mark the value that matters most: the latest value, the current period, the selected item, or the one reading a ring shows. Use a square, never a dot, in full-strength ink (`fg-default`). Everything else stays in muted or subtle ink. Data never carries the seal: since Oct 11 the seal marks only the primary action, the current selection and focus (finish plan V1).
+4. **One accent square.** Mark the value that matters most: the latest value, the current period, the selected item, or the one reading a ring shows. Use a square, never a dot, in the seal (`accent-solid`): ink by default, azurite on an azurite island (azurite plan C1, Nov 14). It is the only mark in a chart that carries the seal. Data ink stays `fg-default`, and everything else stays in muted or subtle ink, so a lead series, an inspected datum and a heatmap ramp read the same in either seal.
 5. **Motion only from data.** Charts are still at rest and never loop. Real live data, or a simulation that says it is one, may update them: a line scrolls left, a histogram fills, the current heatmap cell darkens, bars step to new values. Updates are discrete; nothing tweens between readings, and nothing moves when the data has not changed.
 
 ## Start with the question
@@ -81,7 +81,7 @@ Each chart below applies the five rules. The [Charts](/charts) section shows the
 
 - Square cells with a small gap; no borders around cells.
 - At most five gray steps, with a legend. Past five steps readers can no longer tell them apart; use a table.
-- The current cell gets accent corner brackets, because a gray ramp cannot also carry an accent fill.
+- The current cell gets accent corner brackets in the seal, because a gray ramp cannot also carry an accent fill.
 - "No data yet" is a small dot, different from a light zero cell. Unknown is not zero.
 - Arrow keys move by cell; Up and Down move by row.
 - Live updates darken the current cell as its period fills.
@@ -153,7 +153,7 @@ Each chart states its question and reading in the summary sentence. Every chart 
 ## Open decisions
 
 - **Data ramp:** the heatmap borrows five ordered neutral roles (`border-subtle`, `border-default`, `border-strong`, `fg-muted`, `fg-default`). A published sequential ramp is Yankun's choice.
-- **Accent color:** Su gray for now. Signal red and vermilion 朱 remain options.
+- **Accent color:** decided Nov 14 (azurite plan C1–C3): the accent mark carries the seal. Still open: whether a selected datum or the heatmap ramp may carry it too (Yankun took the leans, which keep both in ink).
 - **Stroke weights:** the hairline (1px) for structure and combs, and the ring's existing 1.5px for needles and traces, until Yankun chooses data stroke values.
 - **Publishing:** the charts are docs-local. A package API, props, and tokens need their own decision.
 

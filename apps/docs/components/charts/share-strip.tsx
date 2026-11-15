@@ -187,7 +187,7 @@ export function ShareStrip({
                   y={labelY - 7}
                   width="6"
                   height="6"
-                  fill="var(--zao-color-fg-default)"
+                  fill="var(--zao-color-accent-solid)"
                 />
               )}
               {fits &&

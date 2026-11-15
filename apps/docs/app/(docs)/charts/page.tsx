@@ -27,7 +27,7 @@ const rules = [
   {
     name: 'One accent square',
     detail:
-      'The value that matters most: the latest, the current, the selected, or the single reading. It is drawn in full-strength ink; data never carries the seal.',
+      'The value that matters most: the latest, the current, the selected, or the single reading. It carries the seal, the only mark in a chart that does; data stays ink.',
   },
   {
     name: 'Motion only from data',

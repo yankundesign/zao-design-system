@@ -221,7 +221,7 @@ export function ChartLabel({
   );
 }
 
-/** Rule 4: one accent square, in ink. Data never carries the seal (finish plan V1). */
+/** Rule 4: one accent square, in the seal (azurite plan C1, Nov 14). Data ink never carries it. */
 export function AccentSquare({ x, y, size = 6 }: { x: number; y: number; size?: number }) {
   return (
     <rect
@@ -231,7 +231,7 @@ export function AccentSquare({ x, y, size = 6 }: { x: number; y: number; size?: 
       y={Math.round(y - size / 2)}
       width={size}
       height={size}
-      fill="var(--zao-color-fg-default)"
+      fill="var(--zao-color-accent-solid)"
     />
   );
 }
