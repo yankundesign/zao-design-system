@@ -1,0 +1,102 @@
+{
+  "today": {
+    "light": {
+      "solid": "#2c4c83",
+      "solid-hover": "#224077",
+      "subtle": "#e4f1ff",
+      "subtle-hover": "#d8e9ff",
+      "border": "#224077",
+      "text": "#456396",
+      "on": "#ffffff"
+    },
+    "dark": {
+      "solid": "#8aafee",
+      "solid-hover": "#96bbfb",
+      "subtle": "#1b2434",
+      "subtle-hover": "#222e43",
+      "border": "#96bbfb",
+      "text": "#9dbff8",
+      "on": "#23201a"
+    }
+  },
+  "mineral": {
+    "light": {
+      "solid": "#15448c",
+      "solid-hover": "#07397f",
+      "subtle": "#e0f2ff",
+      "subtle-hover": "#d2eaff",
+      "border": "#07397f",
+      "text": "#3862a5",
+      "on": "#ffffff"
+    },
+    "dark": {
+      "solid": "#72a5f5",
+      "solid-hover": "#7eb2ff",
+      "subtle": "#182438",
+      "subtle-hover": "#1d2e49",
+      "border": "#7eb2ff",
+      "text": "#90bfff",
+      "on": "#23201a"
+    }
+  },
+  "vivid": {
+    "light": {
+      "solid": "#00419b",
+      "solid-hover": "#00348e",
+      "subtle": "#dff2ff",
+      "subtle-hover": "#d2eaff",
+      "border": "#00348e",
+      "text": "#2b60b4",
+      "on": "#ffffff"
+    },
+    "dark": {
+      "solid": "#64a4ff",
+      "solid-hover": "#77b1ff",
+      "subtle": "#14243d",
+      "subtle-hover": "#182d4f",
+      "border": "#77b1ff",
+      "text": "#8dbfff",
+      "on": "#23201a"
+    }
+  },
+  "deep": {
+    "light": {
+      "solid": "#15448c",
+      "solid-hover": "#07397f",
+      "subtle": "#e0f2ff",
+      "subtle-hover": "#d2eaff",
+      "border": "#07397f",
+      "text": "#3862a5",
+      "on": "#ffffff"
+    },
+    "dark": {
+      "solid": "#3767b3",
+      "solid-hover": "#4373c0",
+      "subtle": "#182438",
+      "subtle-hover": "#1d2e49",
+      "border": "#4373c0",
+      "text": "#90bfff",
+      "on": "#ffffff"
+    }
+  },
+  "qing": {
+    "light": {
+      "solid": "#005189",
+      "solid-hover": "#00457d",
+      "subtle": "#dcf4ff",
+      "subtle-hover": "#cdecff",
+      "border": "#00457d",
+      "text": "#21689c",
+      "on": "#ffffff"
+    },
+    "dark": {
+      "solid": "#65b2f1",
+      "solid-hover": "#71bfff",
+      "subtle": "#132635",
+      "subtle-hover": "#163045",
+      "border": "#71bfff",
+      "text": "#80c5ff",
+      "on": "#23201a"
+    }
+  }
+}
