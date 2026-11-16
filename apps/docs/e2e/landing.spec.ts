@@ -186,7 +186,8 @@ test.describe('the bracket set answers the pointer', () => {
     await expect(caption(page)).toHaveText('柱头方 Beam · 15 fen high, one cai');
     await expect(page.locator('.landing-ruler')).toHaveAttribute('data-measuring', '');
 
-    // L17 B: the parts not picked are ghosted in the rule ink; the picked part keeps full ink.
+    // L17 B: the parts not picked are ghosted in the rule ink. The picked part carries the seal
+    // (azurite plan L1), which is ink by default.
     const inks = await page.locator('[data-landing-bracket]').evaluate((drawing) => {
       const probe = (color: string) => {
         const span = document.createElement('span');
@@ -200,7 +201,7 @@ test.describe('the bracket set answers the pointer', () => {
       return {
         picked: color('[data-course="5"]'),
         other: color('[data-course="0"]'),
-        ink: probe('var(--zao-color-fg-default)'),
+        ink: probe('var(--zao-color-seal-ink-solid)'),
         rule: probe('var(--zao-color-border-subtle)'),
       };
     });
@@ -230,6 +231,46 @@ test.describe('the bracket set answers the pointer', () => {
     await expect(caption(page)).toHaveText('斗拱 Bracket set. Standard parts, assembled by rule.');
     await expect(page.locator('.landing-ruler')).not.toHaveAttribute('data-measuring', '');
   });
+
+  for (const mode of ['light', 'dark'] as const) {
+    test(`${mode}: under azurite the picked course and its measure carry the seal`, async ({
+      page,
+    }) => {
+      await page.addInitScript(() => localStorage.setItem('zao-seal', 'azurite'));
+      await open(page, '', mode);
+      await pointAt(page, 0.5, 39.5 - 9);
+      await expect(caption(page)).toHaveText('慢栱 Long arm · 92 × 15 fen');
+      const paints = await page.locator('[data-landing-hero-figure]').evaluate(async (figure) => {
+        await Promise.all(
+          figure
+            .getAnimations({ subtree: true })
+            .map((animation) => animation.finished.catch(() => {})),
+        );
+        const probe = (property: 'color' | 'backgroundColor', token: string) => {
+          const span = document.createElement('span');
+          span.style[property] = `var(${token})`;
+          figure.append(span);
+          const value = getComputedStyle(span)[property];
+          span.remove();
+          return value;
+        };
+        return {
+          picked: getComputedStyle(figure.querySelector('[data-picked]')!).color,
+          other: getComputedStyle(figure.querySelector('.landing-bracket-part:not([data-picked])')!)
+            .color,
+          span: getComputedStyle(figure.querySelector('[data-ruler-span]')!).backgroundColor,
+          seal: probe('color', '--zao-color-seal-azurite-solid'),
+          sealFill: probe('backgroundColor', '--zao-color-seal-azurite-solid'),
+          ink: probe('color', '--zao-color-fg-default'),
+          rule: probe('color', '--zao-color-border-subtle'),
+        };
+      });
+      expect(paints.picked).toBe(paints.seal);
+      expect(paints.picked).not.toBe(paints.ink);
+      expect(paints.span).toBe(paints.sealFill);
+      expect(paints.other).toBe(paints.rule);
+    });
+  }
 
   test('keyboard picks and opens, Escape rests, and readings are announced', async ({ page }) => {
     await open(page);

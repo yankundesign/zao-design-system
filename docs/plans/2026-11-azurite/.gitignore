@@ -1,0 +1,5 @@
+# Full-page and close-up sets: regenerate with capture.mjs and closeups.mjs.
+screenshots/before/*.png
+screenshots/before/closeups/
+screenshots/after/*.png
+screenshots/after/closeups/

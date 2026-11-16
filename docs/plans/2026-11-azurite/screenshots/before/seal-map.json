@@ -1,0 +1,256 @@
+{
+  "/ light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | background-color ×3",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | border-color ×12",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | box-shadow ×3",
+    "span part=button slot=side construction-planes::before | box-shadow ×4",
+    "span part=button slot=side construction-planes::after | box-shadow ×4",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×4",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×4",
+    "span part=tabs slot=indicator tabs-indicator::before | background-color ×1",
+    "span part=tabs slot=indicator tabs-indicator::after | background-color ×1",
+    "span part=tabs slot=selection-line tabs-selection-line | background-color ×1",
+    "span part=tabs slot=selection-line tabs-selection-line::after | background-color ×1"
+  ],
+  "/components/button light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×4",
+    "span part=button slot=side construction-planes::after | box-shadow ×4",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×4",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×4"
+  ],
+  "/components/icon-button light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×1",
+    "span part=button slot=side construction-planes::after | box-shadow ×1",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×1",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×1"
+  ],
+  "/components/card light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×2",
+    "span part=button slot=side construction-planes::after | box-shadow ×2",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×2",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×2"
+  ],
+  "/components/menu light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/select light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/combobox light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/text-field light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/dialog light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/tabs light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=tabs slot=indicator tabs-indicator::before | background-color ×2",
+    "span part=tabs slot=indicator tabs-indicator::after | background-color ×2",
+    "span part=tabs slot=selection-line tabs-selection-line | background-color ×2",
+    "span part=tabs slot=selection-line tabs-selection-line::after | background-color ×2"
+  ],
+  "/components/switch light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | background-color ×1",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | border-color ×4",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | box-shadow ×1"
+  ],
+  "/components/progress light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/table light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/conversation light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×1",
+    "span part=button slot=side construction-planes::after | box-shadow ×1",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×1",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×1"
+  ],
+  "/components/composer light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×2",
+    "span part=button slot=side construction-planes::after | box-shadow ×2",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×2",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×2"
+  ],
+  "/components/plan light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/approval-gate light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×3",
+    "span part=button slot=side construction-planes::after | box-shadow ×3",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×3",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×3",
+    "span part=card slot=impression approval-gate-impression | background-color ×2",
+    "span part=card slot=seal-well approval-gate-impression.approval-gate-seal-fill | background-color ×1"
+  ],
+  "/charts light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/ring light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/meter light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/share light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/bar light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/line light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/heatmap light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/histogram light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/foundations/color light": [
+    "span docs-nav-paper::after | background-color ×33",
+    "td px-3.py-2.type-code | color ×35",
+    "span block.size-6.rounded-control | background-color ×6"
+  ],
+  "/foundations/data-visualization light": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/ dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | background-color ×3",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | border-color ×12",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | box-shadow ×3",
+    "span part=button slot=side construction-planes::before | box-shadow ×4",
+    "span part=button slot=side construction-planes::after | box-shadow ×4",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×4",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×4",
+    "span part=tabs slot=indicator tabs-indicator::before | background-color ×1",
+    "span part=tabs slot=indicator tabs-indicator::after | background-color ×1",
+    "span part=tabs slot=selection-line tabs-selection-line | background-color ×1",
+    "span part=tabs slot=selection-line tabs-selection-line::after | background-color ×1"
+  ],
+  "/components/button dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×4",
+    "span part=button slot=side construction-planes::after | box-shadow ×4",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×4",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×4"
+  ],
+  "/components/icon-button dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×1",
+    "span part=button slot=side construction-planes::after | box-shadow ×1",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×1",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×1"
+  ],
+  "/components/card dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×2",
+    "span part=button slot=side construction-planes::after | box-shadow ×2",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×2",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×2"
+  ],
+  "/components/menu dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/select dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/combobox dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/text-field dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/dialog dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/tabs dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=tabs slot=indicator tabs-indicator::before | background-color ×2",
+    "span part=tabs slot=indicator tabs-indicator::after | background-color ×2",
+    "span part=tabs slot=selection-line tabs-selection-line | background-color ×2",
+    "span part=tabs slot=selection-line tabs-selection-line::after | background-color ×2"
+  ],
+  "/components/switch dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | background-color ×1",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | border-color ×4",
+    "span part=switch slot=root switch-construction.construction-shading.construction-well | box-shadow ×1"
+  ],
+  "/components/progress dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/table dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/conversation dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×1",
+    "span part=button slot=side construction-planes::after | box-shadow ×1",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×1",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×1"
+  ],
+  "/components/composer dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×2",
+    "span part=button slot=side construction-planes::after | box-shadow ×2",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×2",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×2"
+  ],
+  "/components/plan dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/components/approval-gate dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "span part=button slot=side construction-planes::before | box-shadow ×3",
+    "span part=button slot=side construction-planes::after | box-shadow ×3",
+    "span part=button slot=face inline-flex.w-full.items-center | background-color ×3",
+    "span part=button slot=face inline-flex.w-full.items-center | box-shadow ×3",
+    "span part=card slot=impression approval-gate-impression | background-color ×2",
+    "span part=card slot=seal-well approval-gate-impression.approval-gate-seal-fill | background-color ×1"
+  ],
+  "/charts dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/ring dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/meter dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/share dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/bar dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/line dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/heatmap dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/charts/histogram dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ],
+  "/foundations/color dark": [
+    "span docs-nav-paper::after | background-color ×33",
+    "td px-3.py-2.type-code | color ×35",
+    "span block.size-6.rounded-control | background-color ×6"
+  ],
+  "/foundations/data-visualization dark": [
+    "span docs-nav-paper::after | background-color ×33"
+  ]
+}

@@ -129,6 +129,12 @@
     background-color var(--zao-motion-duration-fast) var(--zao-motion-easing-standard);
 }
 
+/* The header's Seal switch: 青 is set in azurite whichever seal is active, so the switch shows
+ * the color it offers (azurite plan L2, Nov 14). */
+[data-seal-glyph='azurite'] {
+  color: var(--zao-color-seal-azurite-text);
+}
+
 .docs-nav-paper::after {
   position: absolute;
   inset-block: var(--zao-space-2);

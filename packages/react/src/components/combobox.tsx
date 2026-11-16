@@ -222,7 +222,10 @@ export function Combobox({
                         <MatchedLabel label={option.label} query={query} />
                       </span>
                       <span data-zao-slot="indicator-space" className="inline-flex size-4 shrink-0">
-                        <BaseCombobox.ItemIndicator data-zao-slot="item-indicator">
+                        <BaseCombobox.ItemIndicator
+                          data-zao-slot="item-indicator"
+                          className="text-accent in-data-disabled:text-disabled"
+                        >
                           <svg
                             className="size-4"
                             viewBox="0 0 16 16"

@@ -32,7 +32,8 @@ export function FinishSwitcher() {
             aria-checked={seal === 'azurite'}
             aria-selected={undefined}
           >
-            <span aria-hidden="true" className="font-display">
+            {/* The character shows the seal it names, whichever seal is active (azurite plan L2). */}
+            <span aria-hidden="true" data-seal-glyph="azurite" className="font-display">
               青
             </span>
             Azurite

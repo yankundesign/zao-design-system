@@ -338,6 +338,12 @@
   color: var(--zao-color-border-subtle);
 }
 
+/* The picked course is the figure's current selection, so it and its measure on the ruler
+ * carry the seal (azurite plan L1, Nov 14). */
+.landing-bracket[data-picking] .landing-bracket-part[data-picked] {
+  color: var(--zao-color-accent-solid);
+}
+
 /* The figure stands on a ruler: solid baseline, end stops, graduations. */
 .landing-ruler {
   position: relative;
@@ -383,7 +389,7 @@
   position: absolute;
   inset-block-start: calc(-0.5 * var(--zao-stroke-hairline) - var(--zao-space-0-5) / 2);
   block-size: var(--zao-space-0-5);
-  background-color: var(--zao-color-fg-default);
+  background-color: var(--zao-color-accent-solid);
   opacity: 0;
   transition:
     inset-inline-start var(--zao-motion-duration-slide) var(--zao-motion-easing-slide),
@@ -888,6 +894,10 @@
 
   .landing-bracket[data-picking] .landing-bracket-part:not([data-picked]) {
     color: GrayText;
+  }
+
+  .landing-bracket[data-picking] .landing-bracket-part[data-picked] {
+    color: CanvasText;
   }
 
   .landing-ruler::before,

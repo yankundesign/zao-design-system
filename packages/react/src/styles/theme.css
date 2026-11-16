@@ -610,9 +610,14 @@
     background: var(--zao-color-fg-default);
   }
 
-  & .zao-plan-step[data-zao-status='running']::before,
   & .zao-plan-step[data-zao-status='waiting']::before {
     border-color: var(--zao-color-fg-default);
+  }
+
+  /* The running step is the plan's current position, so its marker carries the seal
+   * (azurite plan S4, Nov 14). Finished steps are a record and stay ink. */
+  & .zao-plan-step[data-zao-status='running']::before {
+    border-color: var(--zao-color-accent-solid);
   }
 
   & .zao-plan-step[data-zao-status='failed']::before {
@@ -1262,10 +1267,12 @@
     visibility: hidden;
   }
 
+  /* A checked box is a current selection, so it carries the seal (azurite plan S2, Nov 14). */
   &:checked,
   &:indeterminate {
-    border-color: var(--zao-color-fg-default);
-    background-color: var(--zao-color-fg-default);
+    border-color: var(--zao-color-accent-solid);
+    background-color: var(--zao-color-accent-solid);
+    color: var(--zao-color-fg-on-accent);
   }
 
   &:checked::after {

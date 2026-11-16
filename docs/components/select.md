@@ -54,6 +54,7 @@ tokens:
   - color.bg.field-disabled
   - color.bg.hover
   - color.fg.default
+  - color.accent.text
   - color.fg.muted
   - color.fg.disabled
   - color.border.field
@@ -92,7 +93,7 @@ The labeled outer wrapper carries `data-zao-component="select"`. Base UI Select 
 | `viewport`, `list`         | Bounded scrolling region and named BaseSelect.List.                                                                                                                                                                                                 |
 | `item`, `item-text`        | One option and label per supplied option.                                                                                                                                                                                                           |
 | `indicator-space`          | A permanent 4-fen (16px) carrier per option, retaining row geometry.                                                                                                                                                                                |
-| `item-indicator`           | Base UI mounts the committed-value checkmark as appropriate.                                                                                                                                                                                        |
+| `item-indicator`           | Base UI mounts the committed-value checkmark as appropriate. It takes `accent-text`.                                                                                                                                                                |
 | `reveal-edge`              | Decorative sibling of the viewport; authored in the package, but moving-lip styling is study-only.                                                                                                                                                  |
 | `error`, `description`     | Outer guidance siblings, each mounted when its corresponding content is truthy. Since Nov 13 (CR3) the error is a flex row: a decorative warning glyph (`error-icon`, hidden from assistive technology, in the message's ink) and then the message. |
 
@@ -185,5 +186,6 @@ No standalone Select approval paragraph exists in [BRIEF.md](../../BRIEF.md#curr
 | Oct 9, D8, [item decision](../plans/2026-10-improvement/decision-drafts/menu-item-b.md)                                                                                       | Approves fill-only enabled navigation and square rows; keep keyboard outline and independent committed checkmark.                                                                                                 | Source reason (summary): One navigation cue, consistent corners, focus/selection remain distinct.                         |
 | Oct 10, [portal protection](../../AGENTS.md#the-one-idea-structure-is-shared-finish-is-chosen) / [D9](../plans/2026-10-improvement/decision-drafts/default-height-c.md)       | Portal wrapper has no flex box; default height is shared 34px.                                                                                                                                                    | Source reason (summary): Correct a measured opening gap and preserve the shared native target.                            |
 | Oct 11, V1b/V2–V6/V12, [finish decisions](../plans/2026-10-finish/decision-drafts.md)                                                                                         | Promotes field colors; wells/planes/facet follow shared construction; study reveal reads derived role values, superseding D11's 160ms/common-curve values. Select focus remains an outline.                       | Source reason (summary): Generated warm ink, unblurred depth, rule-derived motion; brackets do not apply to fields/items. |
+| Nov 14, S1, [azurite plan](../plans/2026-11-azurite/README.md)                                                                                                                | The committed checkmark takes the seal's text role: ink by default, azurite on an azurite island. A disabled option's check stays `fg-disabled`.                                                                  | Yankun took the plan's lean: a committed value is a current selection.                                                    |
 
 The finish authorizes shared values without promoting every local component recipe. Source approvals remain in place; this document changes no runtime, prop, token, or website text.

@@ -57,6 +57,7 @@ tokens:
   - color.bg.field-disabled
   - color.bg.hover
   - color.fg.default
+  - color.accent.text
   - color.fg.muted
   - color.fg.disabled
   - color.border.field
@@ -97,7 +98,7 @@ The outer field carries `data-zao-component="combobox"`. A native label targets 
 | `popup`, `viewport`, `list`         | Conditional floating frame, available-height scroll viewport and named option list.                                                                                                                                                        |
 | `empty`                             | Base UI empty-filter result; visible text is `No matches found.`                                                                                                                                                                           |
 | `item`, `item-text`                 | Filtered option target and its label.                                                                                                                                                                                                      |
-| `indicator-space`, `item-indicator` | Reserved 16px mark carrier and conditionally mounted committed-value checkmark.                                                                                                                                                            |
+| `indicator-space`, `item-indicator` | Reserved 16px mark carrier and conditionally mounted committed-value checkmark, in `accent-text`.                                                                                                                                          |
 | `reveal-edge`                       | Decorative sibling of viewport; package hook whose moving-lip styling exists only in Quiet instrument.                                                                                                                                     |
 | `error`, `description`              | Associated guidance siblings when the corresponding content is truthy. Since Nov 13 (CR3) the error is a flex row: a decorative warning glyph (`error-icon`, hidden from assistive technology, in the message's ink) and then the message. |
 
@@ -194,5 +195,6 @@ No standalone Combobox approval paragraph exists in [BRIEF.md](../../BRIEF.md#cu
 | Oct 9, D8, [item decision](../plans/2026-10-improvement/decision-drafts/menu-item-b.md)                                                                                       | Approves fill-only enabled navigation, square rows, input focus/virtual highlighting and independent committed marks.                                                                             | Source reason (summary): One navigation cue while keeping focus and committed selection distinct.                            |
 | Oct 10, [portal correction](../../AGENTS.md#the-one-idea-structure-is-shared-finish-is-chosen) / [D9](../plans/2026-10-improvement/decision-drafts/default-height-c.md)       | No portal flex box; shared 34px default.                                                                                                                                                          | Source reason (summary): Prevent measured opening gaps without changing field targets.                                       |
 | Oct 11, V1b/V2–V6/V12, [finish decisions](../plans/2026-10-finish/decision-drafts.md)                                                                                         | Published field roles, stepped wells, banded popup planes and leading facet. Study reveals use derived role values, replacing D11's old timings/curves. Fields keep outlines, not brackets.       | Source reason (summary): Warm ink, no blurred depth, rule-derived motion; shared tokens do not promote every local recipe.   |
+| Nov 14, S1, [azurite plan](../plans/2026-11-azurite/README.md)                                                                                                                | The committed checkmark takes the seal's text role: ink by default, azurite on an azurite island.                                                                                                 | Yankun took the plan's lean: a committed value is a current selection.                                                       |
 
 Approvals stay in their source files. This reference adds no prop, hook, interaction, token, dependency, or public page content.

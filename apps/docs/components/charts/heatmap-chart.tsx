@@ -242,7 +242,7 @@ export function HeatmapChart({
                 className="chart-accent-stroke"
                 d={bracket}
                 fill="none"
-                stroke="var(--zao-color-fg-default)"
+                stroke="var(--zao-color-accent-solid)"
                 strokeWidth="1.5"
               />
               {[0, 6, 12, 18].map((hour) => (

@@ -40,6 +40,7 @@ tokens:
   - color.danger.subtle
   - color.danger.text
   - color.fg.default
+  - color.accent.solid
   - color.fg.muted
   - stroke.hairline
   - space.0-5
@@ -65,7 +66,7 @@ The header counts `done` and `declined` as complete. The rail sits at inline sta
 
 Since Nov 13 (CR17) the header draws a decorative `gauge` before the summary: one hairline tick per step, finished steps full height in ink, a failed step full height in the danger ink, the rest half height and muted.
 
-`status` is `planned | running | waiting | done | declined | failed | skipped`. Planned and skipped steps use muted text; running and waiting use the default ink; failed uses danger semantics. Done and declined fill their station and segment. Running and waiting expose `aria-current="step"`. When no step is planned, running, waiting, or failed, the summary begins “Finished”.
+`status` is `planned | running | waiting | done | declined | failed | skipped`. Planned and skipped steps use muted text; running and waiting use the default ink for their text; failed uses danger semantics. The running step's station is drawn in `accent-solid`, the seal, because it is the plan's current position (Nov 14); a waiting station stays ink. Done and declined fill their station and segment. Running and waiting expose `aria-current="step"`. When no step is planned, running, waiting, or failed, the summary begins “Finished”.
 
 `entering` on Root controls the drawn arrival. When omitted, only a Plan mounted after its Conversation's first committed render enters. Restored plans can pass `entering={false}`. A step added later draws alone without the initial stagger. The host owns every status and result; Plan does not execute a step.
 
@@ -94,4 +95,5 @@ Root's visible label names the section. The native ordered list exposes step pos
 
 - **P1, Oct 13, 2026:** Yankun chose the flat ruler rail with a station and segment per step. Finished and declined steps fill their station and segment.
 - **P2, Oct 13, 2026:** Yankun chose the drawn-in arrival, one Fast interval apart. Existing Menu row behavior remains unchanged.
+- **S4, Nov 14, 2026:** Yankun took the [azurite plan](../plans/2026-11-azurite/README.md)'s lean: the running step's station carries the seal. Finished and declined stations and the header gauge are a record and stay ink.
 - **WP 2.1–2.2:** [Components plan](../plans/2026-10-components/README.md) records the implementation recipe and host ownership.
